@@ -1,0 +1,57 @@
+name: AWS DEPLOY TO STAGING
+# turn off deploy to AWS
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - dev
+
+jobs:
+  aws-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: dev
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: npm install
+
+      - run: |
+          touch .env
+          echo DB_HOST = ${{secrets.DB_HOST}} >> .env
+          echo DB_PW = ${{secrets.DB_PW}} >> .env
+          echo DB_USER = ${{secrets.DB_USER}} >> .env
+          echo DB_NAME = ${{secrets.DB_NAME}} >> .env
+          echo CLIENT_ID = ${{secrets.CLIENT_ID}} >> .env
+          echo CLIENT_SECRET = ${{secrets.CLIENT_SECRET}} >> .env
+          echo PORT = ${{secrets.PORT}} >> .env
+
+      - run: npm run bundle
+
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@v2.1.1
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          ARGS: "-rltgoDzvO --delete"
+          SOURCE: "deploy/"
+          REMOTE_HOST: "tutorial.eaglesoftwareteam.com"
+          REMOTE_USER: ubuntu
+          TARGET: "nodeapps/2025/project3/t3"
+      - name: Execute SSH commmands on remote server
+        uses: JimCronqvist/action-ssh@master
+        env:
+          NAME: "Root"
+        with:
+          hosts: "ubuntu@tutorial.eaglesoftwareteam.com"
+          privateKey: ${{ secrets.SERVER_SSH_KEY }}
+          debug: false
+          command: |
+            cd nodeapps/2025/project3/t3
+            npm install
+            sudo systemctl stop tracker-t3-backend
+            sudo cp tracker-t3-backend.service /lib/systemd/system/tracker-t3-backend.service
+            sudo systemctl daemon-reload
+            sudo systemctl start tracker-t3-backend
