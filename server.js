@@ -5,12 +5,14 @@ import cors from "cors";
 
 import db  from "./app/models/index.js";
 
+import https from 'https';
+import fs from 'fs';
 
 const app = express();
 
 // Also use the cors middleware as backup
 var corsOptions = {
-  origin: "http://localhost:8081",
+  origin: "https://localhost:8081",
   credentials: true
 }
 app.use(cors(corsOptions));
@@ -27,8 +29,11 @@ app.use("/tracker-t3", routes);
 // set port, listen for requests
 const PORT = process.env.PORT || 3100;
 if (process.env.NODE_ENV !== "test") {
-  app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
+  https.createServer({
+    key: fs.readFileSync('./localhost+2-key.pem'),
+    cert: fs.readFileSync('./localhost+2.pem'),
+  }, app).listen(PORT, () => {
+    console.log(`Server is running on https port ${PORT}.`);
   });
 }
 
