@@ -1,7 +1,6 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.js";
 
-const allowedRoles = ['user', 'coach', 'admin'];
 const User = SequelizeInstance.define("user", {
 
   id: {
@@ -9,11 +8,11 @@ const User = SequelizeInstance.define("user", {
     autoIncrement: true,
     primaryKey: true,
   },
-  first_name: {
+  firstName: {
     type: Sequelize.STRING(25),
     allowNull: false,
   },
-  last_name: {
+  lastName: {
     type: Sequelize.STRING(25),
     allowNull: true,
   },
@@ -21,23 +20,18 @@ const User = SequelizeInstance.define("user", {
     type: Sequelize.STRING(100),
     allowNull: false,
   },
-  role: {
-    type: Sequelize.ENUM(allowedRoles),
-    validate: {
-      isIn: {
-        args: [allowedRoles],
-        msg: "role not allowed. Valid roles are user and admin"
-      }
-    }
+  pushToken: {
+    type: Sequelize.STRING(256),
+    allowNull: true,
   },
-  // refresh_token: {
-  //   type: Sequelize.STRING(512),
-  //   allowNull: true
-  // },
-  // expiration_date: {
-  //   type: Sequelize.DATE,
-  //   allowNull: true
-  // },
+  ocID: {
+    type: Sequelize.STRING(50),
+    allowNull: true,
+  },
+  isAdmin: {
+    type: Sequelize.BOOLEAN,
+    allowNull: false,
+  },
 });
 
 export default User;

@@ -69,17 +69,17 @@ exports.login = async (req, res) => {
         user = data.dataValues;
       } else {
         // create a new User and save to database
-        let role = "user";
+        let isAdmin = false;
         let emailDomain = (email.split("@"));
         emailDomain = emailDomain[1];
         if (emailDomain == "oc.edu") {
-          role = "coach";
+          isAdmin = true;
         }
         user = {
           first_name: firstName,
           last_name: lastName || "",
           email: email,
-          role: role
+          isAdmin: isAdmin,
         };
       }
     })
@@ -160,11 +160,10 @@ exports.login = async (req, res) => {
             email: user.email,
             firstName: user.first_name,
             lastName: user.last_name,
-            user_id: user.id,
+            id: user.id,
+            ocID: user.ocID,
+            isAdmin: user.isAdmin,
             token: session.token,
-            role: user.role,
-            // refresh_token: user.refresh_token,
-            // expiration_date: user.expiration_date
           };
           console.log("found a session, don't need to make another one");
           console.log(userInfo);
@@ -203,10 +202,9 @@ exports.login = async (req, res) => {
           firstName: user.first_name,
           lastName: user.last_name,
           id: user.id,
+          ocID: user.ocID,
           token: token,
-          role: user.role,
-          // refresh_token: user.refresh_token,
-          // expiration_date: user.expiration_date
+          isAdmin: user.isAdmin,
         };
         console.log(userInfo);
         res.send(userInfo);

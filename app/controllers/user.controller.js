@@ -113,10 +113,10 @@ exports.update = async (req, res) => {
     }
     if (req.body.role) {
       res.status(400).send({ message: "user role cannot be changed from this endpoint, please use PUT user/:id/role" })
+      return;
     }
   }
-  let updateInfo = convertToSnake(req.body);
-  User.update(updateInfo, {
+  User.update(req.body, {
     where: { id: id },
   })
     .then((num) => {
@@ -231,12 +231,4 @@ async function getUserForId(id) {
   return User.findByPk(id);
 }
 
-function convertToSnake(req) {
-  let updateInfo = {};
-  updateInfo.email = req.email ?? undefined;
-  updateInfo.first_name = req.firstName ?? undefined;
-  updateInfo.last_name = req.lastName ?? undefined;
-  updateInfo.role = req.role ?? undefined;
-  return updateInfo;
-}
 export default exports;
