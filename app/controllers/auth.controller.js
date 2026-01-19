@@ -188,7 +188,7 @@ exports.login = async (req, res) => {
     const session = {
       token: token,
       email: email,
-      user_id: user.id,
+      userID: user.id,
       expirationDate: tempExpirationDate,
     };
 
@@ -211,6 +211,7 @@ exports.login = async (req, res) => {
       })
       .catch((err) => {
         res.status(500).send({ message: err.message });
+        return;
       });
   }
 };
