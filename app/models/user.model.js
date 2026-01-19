@@ -9,17 +9,21 @@ const User = SequelizeInstance.define("user", {
     autoIncrement: true,
     primaryKey: true,
   },
-  first_name: {
+  firstName: {
     type: Sequelize.STRING(25),
     allowNull: false,
   },
-  last_name: {
+  lastName: {
     type: Sequelize.STRING(25),
     allowNull: true,
   },
   email: {
     type: Sequelize.STRING(100),
     allowNull: false,
+  },
+  pushToken: {
+    type: Sequelize.STRING(256),
+    allowNull: true,
   },
   role: {
     type: Sequelize.ENUM(allowedRoles),

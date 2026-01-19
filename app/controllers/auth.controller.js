@@ -160,7 +160,7 @@ exports.login = async (req, res) => {
             email: user.email,
             firstName: user.first_name,
             lastName: user.last_name,
-            user_id: user.id,
+            id: user.id,
             token: session.token,
             role: user.role,
             // refresh_token: user.refresh_token,
