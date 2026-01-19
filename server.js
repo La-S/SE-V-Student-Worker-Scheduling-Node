@@ -28,12 +28,17 @@ app.use("/tracker-t3", routes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3100;
-if (process.env.NODE_ENV !== "test") {
+if (process.env.NODE_ENV == "dev") {
   https.createServer({
     key: fs.readFileSync('./localhost+2-key.pem'),
     cert: fs.readFileSync('./localhost+2.pem'),
   }, app).listen(PORT, () => {
     console.log(`Server is running on https port ${PORT}.`);
+  });
+} else {
+  //prod
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}.`);
   });
 }
 
