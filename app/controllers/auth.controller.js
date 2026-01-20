@@ -76,8 +76,8 @@ exports.login = async (req, res) => {
           isAdmin = true;
         }
         user = {
-          first_name: firstName,
-          last_name: lastName || "",
+          firstName: firstName,
+          lastName: lastName || "",
           email: email,
           isAdmin: isAdmin,
         };
@@ -90,7 +90,6 @@ exports.login = async (req, res) => {
 
   // this lets us get the user id
   if (user.id === undefined) {
-
     await User.create(user)
       .then((data) => {
         user = data.dataValues;
@@ -99,12 +98,13 @@ exports.login = async (req, res) => {
       })
       .catch((err) => {
         res.status(500).send({ message: err.message });
+        return;
       });
   } else {
 
     // doing this to ensure that the user's name is the one listed with Google
-    user.first_name = firstName;
-    user.last_name = lastName;
+    user.firstName = firstName;
+    user.lastName = lastName;
 
     await User.update(user, { where: { id: user.id } })
       .then((num) => {
@@ -158,8 +158,8 @@ exports.login = async (req, res) => {
           // if the session is still valid, then send info to the front end
           let userInfo = {
             email: user.email,
-            firstName: user.first_name,
-            lastName: user.last_name,
+            firstName: user.firstName,
+            lastName: user.lastName,
             id: user.id,
             ocID: user.ocID,
             isAdmin: user.isAdmin,
@@ -188,7 +188,7 @@ exports.login = async (req, res) => {
     const session = {
       token: token,
       email: email,
-      userID: user.id,
+      userID: user.id, // this is null, which is a problem.
       expirationDate: tempExpirationDate,
     };
 
@@ -199,8 +199,8 @@ exports.login = async (req, res) => {
       .then(() => {
         let userInfo = {
           email: user.email,
-          firstName: user.first_name,
-          lastName: user.last_name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           id: user.id,
           ocID: user.ocID,
           token: token,
