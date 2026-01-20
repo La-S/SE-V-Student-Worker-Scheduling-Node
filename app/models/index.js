@@ -38,9 +38,9 @@ db.pushToken.belongsTo(db.user,
 
 
 // db.sequelize.sync({force: true});
-// db.sequelize.sync({alter: true});
+db.sequelize.sync({alter: true});
 
 
-db.sequelize.sync({force: true});
+// db.sequelize.sync({force: true});
 
 export default db;
