@@ -59,8 +59,10 @@ exports.login = async (req, res) => {
   let user = {};
   let session = {};
 
+  console.log("1",email);
+
   await User.findOne({
-    where: {
+    where: { // could be this one
       email: email,
     },
   })
@@ -123,8 +125,9 @@ exports.login = async (req, res) => {
 
   // try to find session first
 
+  console.log("2",email);
   await Session.findOne({
-    where: {
+    where: { // could be this one
       email: email,
       token: { [Op.ne]: "" },
     },

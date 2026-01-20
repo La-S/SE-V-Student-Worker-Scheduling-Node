@@ -80,8 +80,9 @@ exports.findOne = (req, res) => {
 exports.findByEmail = (req, res) => {
   const email = req.params.email;
 
+  console.log("3",email);
   User.findOne({
-    where: {
+    where: { // could be this one
       email: email,
     },
   })
@@ -221,8 +222,9 @@ exports.updateRole = async (req, res) => {
 
 
 function getUserForEmail(email) {
+  console.log("4",email);
   return User.findOne({
-    where: {
+    where: { // could be this one
       email: email,
     },
   });
