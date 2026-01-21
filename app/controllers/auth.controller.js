@@ -59,7 +59,7 @@ exports.login = async (req, res) => {
   let user = {};
   let session = {};
 
-  console.log("1",email);
+  // NOTE: email can sometime be null if ouath2 failed! If we want to check for that, we could
 
   await User.findOne({
     where: { // could be this one
@@ -125,7 +125,6 @@ exports.login = async (req, res) => {
 
   // try to find session first
 
-  console.log("2",email);
   await Session.findOne({
     where: { // could be this one
       email: email,
