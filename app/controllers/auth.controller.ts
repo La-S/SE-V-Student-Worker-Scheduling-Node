@@ -8,8 +8,8 @@ import pkg from 'express';
 import { UserType } from "../types/user.type.js";
 import { SessionType } from "../types/session.type.js";
 
-const User = db.user;
-const Session = db.session;
+const User = db.User;
+const Session = db.Session;
 
 let googleUser: TokenPayload | undefined;
 
@@ -116,26 +116,22 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
   }
 };
 
-// exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
-//   Session.findAll({ where: { token: req.body.token } })
-//     .then((data) => {
-//       let session = data[0];
-//       console.log(session.expirationDate);
-//       if (session != null) {
-//         if (session.expirationDate >= Date.now()) {
-//           return res.status(200).send({ message: "token not expired" });
-//         } else
-//           return res.status(401).send({
-//             message: "Unauthorized! Expired Token, Logout and Login again",
-//           });
-//       }
-//     })
-//     .catch((err) => {
-//       return res.status(500).send({
-//         message: err.message || "an unknown error occurred while authenticating",
-//       });
-//     });
-// }
+exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
+  try {
+    let response = await Session.findOne({ where: { token: req.body.token } })
+    let session = response?.dataValues as SessionType | undefined;
+    console.log(session?.expirationDate);
+    if (session && session.expirationDate.getTime() >= Date.now()) {
+        return res.status(200).send({ message: "token not expired" });
+    } else {
+      return res.status(401).send({message: "Unauthorized! Expired Token, Logout and Login again"});
+    }
+  } catch(err: any) {
+      return res.status(500).send({
+        message: err.message || "an unknown error occurred while authenticating",
+      });
+  }
+}
 
 async function createSession(session: SessionType) {
   await Session.create(session as any);

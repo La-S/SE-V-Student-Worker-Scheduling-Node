@@ -1,5 +1,5 @@
 import db from "../models/index.js";
-const User = db.user;
+const User = db.User;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { UserType } from "../types/user.type.js";
