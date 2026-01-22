@@ -1,19 +1,10 @@
 import db from "../models/index.js";
 const User = db.user;
-import { Op } from 'sequelize';
+import { Model, Op } from 'sequelize';
 import pkg from 'express';
+import { UserType } from "../types/user.type.js";
 
 const exports: any = {};
-
-interface User {
-  id?: number,
-  firstName: string,
-  lastName: string,
-  email: string,
-  ocID?: string,
-  isAdmin: boolean,
-  pushToken?: string
-}
 
 // Create and Save a new User
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
@@ -23,7 +14,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   }
 
   // Create a User
-  const user: User = {
+  const user: UserType = {
     id: req.body.id,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
@@ -32,8 +23,8 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   };
 
   // Save User in the database
-  User.create(user)
-    .then((data: User) => {
+  User.create(user as any)
+    .then((data: any) => {
       res.send(data);
     })
     .catch((err: any) => {
@@ -51,11 +42,11 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 // Retrieve all People from the database.
 exports.findAll = (req: pkg.Request, res: pkg.Response) => {
-  const id = req.query.id;
-  var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
+  const id = req.query.id!;
+  var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
   User.findAll({ where: condition })
-    .then((data: User) => {
+    .then((data: any) => {
       res.send(data);
     })
     .catch((err: any) => {
@@ -70,7 +61,7 @@ exports.findOne = (req: pkg.Request, res: pkg.Response) => {
   const id = req.params.id;
 
   User.findByPk(id)
-    .then((data: User) => {
+    .then((data: any) => {
       if (data) {
         res.send(data);
       } else {
@@ -95,7 +86,7 @@ exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
       email: email,
     },
   })
-    .then((data: User) => {
+    .then((data: any) => {
       if (data) {
         res.send(data);
       } else {
@@ -129,8 +120,8 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   User.update(req.body, {
     where: { id: id },
   })
-    .then((num: number) => {
-      if (num == 1) {
+    .then((num: [number]) => {
+      if (num[0] == 1) {
         res.send({
           message: "User was updated successfully.",
         });
@@ -188,8 +179,8 @@ exports.updateRole = async (req: pkg.Request, res: pkg.Response) => {
   User.update(req.body, {
     where: { id: id },
   })
-    .then((num: number) => {
-      if (num == 1) {
+    .then((num: [number]) => {
+      if (num[0] == 1) {
         res.send({
           message: "User role was updated successfully.",
         });

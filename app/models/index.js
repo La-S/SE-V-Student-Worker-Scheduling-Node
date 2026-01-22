@@ -4,7 +4,7 @@ import sequelize from "../config/sequelizeInstance.js";
 
 // Models
 
-import User from "./user.model.js";
+import User from "./user.model.ts";
 import Session from "./session.model.js";
 
 
