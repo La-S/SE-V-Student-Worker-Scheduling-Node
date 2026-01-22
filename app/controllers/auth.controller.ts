@@ -160,6 +160,7 @@ async function getExistingSessionToken(email: string) {
 }
 
 async function clearSession(session: SessionType) {
+  session.token = ""
   let response = await Session.update(session, { where: { id: session.id } });
   if (response[0] == 1) {
     console.log("successfully logged out");
