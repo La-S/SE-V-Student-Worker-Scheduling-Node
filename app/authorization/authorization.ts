@@ -1,8 +1,11 @@
 import db from "../models/index.js";
-const Session = db.session;
+import pkg from 'express';
+import { SessionType } from "../types/session.type.js";
 
-const auth = {};
-auth.authenticate = (req, res, next) => {
+const Session = db.Session;
+
+const auth: any = {};
+auth.authenticate = (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = null;
 
   let authHeader = req.get("authorization");
@@ -12,10 +15,10 @@ auth.authenticate = (req, res, next) => {
 
       Session.findAll({ where: { token: token } })
         .then((data) => {
-          let session = data[0];
+          let session = data[0].dataValues as SessionType;
           console.log(session.expirationDate);
           if (session != null) {
-            if (session.expirationDate >= Date.now()) {
+            if (session.expirationDate.getTime() >= Date.now()) {
               next();
               return;
             } else
@@ -75,7 +78,7 @@ auth.authenticate = (req, res, next) => {
 // };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.isAdminOnly = (req, res, next) => {
+auth.isAdminOnly = (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = null;
 
   let authHeader = req.get("authorization");
@@ -89,7 +92,7 @@ auth.isAdminOnly = (req, res, next) => {
       .then(async (data) => {
         let session = data[0];
         if (session != null) {
-          let user = await session.getUser();
+          let user = await (session as any).getUser();
           if (user.isAdmin === true) {
             next();
             return;
