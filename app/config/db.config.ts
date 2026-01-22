@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { Dialect } from 'sequelize';
 
 const db_host = process.env.DB_HOST;
 const db_pw = process.env.DB_PW;
@@ -11,7 +10,7 @@ const dbConfig = {
   USER: db_user,
   PASSWORD: db_pw,
   DB: db_name,
-  dialect: "mysql" as Dialect,
+  dialect: "mysql" as any,
   pool: {
     max: 5,
     min: 0,

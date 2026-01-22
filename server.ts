@@ -1,9 +1,8 @@
 
 import routes from "./app/routes/index.js";
-import express, { json, urlencoded } from "express"
+import express from "express"
 import cors from "cors";
 
-import db  from "./app/models/index.js";
 
 import https from 'https';
 import fs from 'fs';

@@ -21,8 +21,5 @@ router.put("/:id/role", [auth.authenticate, auth.isAdminOnly], users.updateRole)
 // Delete a User with id
 router.delete("/:id", [auth.authenticate], users.delete);
 
-//Get teams for user
-router.get("/:id/teams", [auth.authenticate], users.getTeams);
-
 export default router;
 
