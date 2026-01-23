@@ -174,7 +174,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     });
 };
 
-exports.updateRole = async (req: pkg.Request, res: pkg.Response) => {
+exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
   const id = req.params.id;
   User.update(req.body, {
     where: { id: id },
