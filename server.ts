@@ -23,7 +23,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
   
 // Load the routes from the routes folder
-app.use("/tracker-t3", routes); 
+app.use("/workerscheduling-t3", routes); 
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3100;
