@@ -10,7 +10,7 @@ const dbConfig = {
   USER: db_user,
   PASSWORD: db_pw,
   DB: db_name,
-  dialect: "mysql",
+  dialect: "mysql" as any,
   pool: {
     max: 5,
     min: 0,

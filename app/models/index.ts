@@ -8,12 +8,12 @@ import User from "./user.model.js";
 import Session from "./session.model.js";
 
 
-const db = {};
-db.Sequelize = Sequelize;
-db.sequelize = sequelize;
-
-db.user = User;
-db.session = Session;
+const db = {
+    Sequelize,
+    sequelize,
+    User,
+    Session,
+};
 
 //users can be on many teams and teams have many users
 // db.user.belongsToMany(db.team,
@@ -22,9 +22,9 @@ db.session = Session;
 //     { through: "TeamUser" });
 
 // a user has many sessions
-db.user.hasMany(db.session,
+db.User.hasMany(db.Session,
     { foreignKey: { name: "userID", allowNull: false }, onDelete: "CASCADE" });
-db.session.belongsTo(db.user,
+db.Session.belongsTo(db.User,
     { foreignKey: { name: "userID", allowNull: false }, onDelete: "CASCADE" });
 
 

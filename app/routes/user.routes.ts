@@ -16,13 +16,10 @@ router.get("/:id", [auth.authenticate], users.findOne);
 // Update a User with idF
 router.put("/:id", [auth.authenticate], users.update);
 
-router.put("/:id/role", [auth.authenticate, auth.isAdminOnly], users.updateRole)
+router.put("/:id/admin", [auth.authenticate, auth.isAdminOnly], users.updateIsAdmin)
 
 // Delete a User with id
 router.delete("/:id", [auth.authenticate], users.delete);
-
-//Get teams for user
-router.get("/:id/teams", [auth.authenticate], users.getTeams);
 
 export default router;
 

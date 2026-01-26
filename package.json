@@ -3,12 +3,12 @@
   "name": "student-worker-scheduling-backend",
   "version": "1.0.0",
   "description": "A Node.js Rest API for Student Worker Scheduling",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
     "test": "jest --",
-    "start": "node server.js",
-    "dev": "NODE_ENV=dev node server.js",
-    "bundle": "mkdir deploy && cp -r app server.js package.json package-lock.json workerscheduling-t3-backend.service .env deploy"
+    "start": "tsx server.ts",
+    "dev": "NODE_ENV=dev tsx server.ts",
+    "bundle": "mkdir deploy && cp -r app server.ts package.json package-lock.json tracker-t3-backend.service .env deploy"
   },
   "keywords": [
     "node.js",
@@ -27,6 +27,11 @@
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.16.1",
     "sequelize": "^6.37.7",
-    "supertest": "^7.2.2"
+    "supertest": "^7.2.2",
+    "tsx": "^4.21.0"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/jsonwebtoken": "^9.0.10"
   }
 }

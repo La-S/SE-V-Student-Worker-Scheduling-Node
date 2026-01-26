@@ -1,32 +1,33 @@
 import db from "../models/index.js";
-const User = db.user;
-const Op = db.Sequelize.Op;
-const exports = {};
-const missingAttr = "Missing attribute: "
+const User = db.User;
+import { Model, Op } from 'sequelize';
+import pkg from 'express';
+import { UserType } from "../types/user.type.js";
+
+const exports: any = {};
+
 // Create and Save a new User
-exports.create = async (req, res) => {
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
   if (req.body.email && await getUserForEmail(req.body.email)) {
     res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
     return;
   }
 
   // Create a User
-  const user = {
+  const user: UserType = {
     id: req.body.id,
-    first_name: req.body.firstName,
-    last_name: req.body.lastName,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
     email: req.body.email,
-    role: req.body.role ?? "user",
-    // refresh_token: req.body.refresh_token,
-    // expiration_date: req.body.expiration_date
+    isAdmin: req.body.isAdmin,
   };
 
   // Save User in the database
-  User.create(user)
-    .then((data) => {
+  User.create(user as any)
+    .then((data: any) => {
       res.send(data);
     })
-    .catch((err) => {
+    .catch((err: any) => {
       if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
         res.status(400).send({
           message: err.message
@@ -40,15 +41,15 @@ exports.create = async (req, res) => {
 };
 
 // Retrieve all People from the database.
-exports.findAll = (req, res) => {
-  const id = req.query.id;
-  var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
+exports.findAll = (req: pkg.Request, res: pkg.Response) => {
+  const id = req.query.id!;
+  var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
   User.findAll({ where: condition })
-    .then((data) => {
+    .then((data: any) => {
       res.send(data);
     })
-    .catch((err) => {
+    .catch((err: any) => {
       res.status(500).send({
         message: err.message || "Some error occurred while retrieving people.",
       });
@@ -56,11 +57,11 @@ exports.findAll = (req, res) => {
 };
 
 // Find a single User with an id
-exports.findOne = (req, res) => {
+exports.findOne = (req: pkg.Request, res: pkg.Response) => {
   const id = req.params.id;
 
   User.findByPk(id)
-    .then((data) => {
+    .then((data: any) => {
       if (data) {
         res.send(data);
       } else {
@@ -69,7 +70,7 @@ exports.findOne = (req, res) => {
         });
       }
     })
-    .catch((err) => {
+    .catch((err: any) => {
       res.status(500).send({
         message: "Error retrieving User with id=" + id,
       });
@@ -77,16 +78,15 @@ exports.findOne = (req, res) => {
 };
 
 // Find a single User with an email
-exports.findByEmail = (req, res) => {
+exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
 
-  console.log("3",email);
   User.findOne({
     where: { // could be this one
       email: email,
     },
   })
-    .then((data) => {
+    .then((data: any) => {
       if (data) {
         res.send(data);
       } else {
@@ -96,7 +96,7 @@ exports.findByEmail = (req, res) => {
         });*/
       }
     })
-    .catch((err) => {
+    .catch((err: any) => {
       res.status(500).send({
         message: "Error retrieving User with email=" + email,
       });
@@ -104,8 +104,8 @@ exports.findByEmail = (req, res) => {
 };
 
 // Update a User by the id in the request
-exports.update = async (req, res) => {
-  const id = req.params.id;
+exports.update = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
     if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(await getUserForId(id)))) {
@@ -120,8 +120,8 @@ exports.update = async (req, res) => {
   User.update(req.body, {
     where: { id: id },
   })
-    .then((num) => {
-      if (num == 1) {
+    .then((num: [number]) => {
+      if (num[0] == 1) {
         res.send({
           message: "User was updated successfully.",
         });
@@ -131,7 +131,7 @@ exports.update = async (req, res) => {
         });
       }
     })
-    .catch((err) => {
+    .catch((err: any) => {
       if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
         res.status(400).send({
           message: err.message
@@ -145,8 +145,8 @@ exports.update = async (req, res) => {
 };
 
 // Delete a User with the specified id in the request
-exports.delete = async (req, res) => {
-  const id = req.params.id;
+exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
   let userForId = await getUserForId(id)
   if (!userForId) {
     res.status(404).send({ message: `user for id ${id} not found.` });
@@ -156,7 +156,7 @@ exports.delete = async (req, res) => {
   User.destroy({
     where: { id: id },
   })
-    .then((num) => {
+    .then((num: number) => {
       if (num == 1) {
         res.send({
           message: "User was deleted successfully!",
@@ -167,37 +167,20 @@ exports.delete = async (req, res) => {
         });
       }
     })
-    .catch((err) => {
+    .catch((err: string) => {
       res.status(500).send({
         message: "Could not delete User with id=" + id,
       });
     });
 };
 
-exports.getTeams = async (req, res) => {
-  const id = req.params.id;
-  const user = await User.findByPk(id);
-  if (!user) {
-    res.status(404).send({ message: "user not found!" });
-    return;
-  }
-  user.getTeams()
-    .then((data) =>
-      res.status(200).send(data))
-    .catch((err) => {
-      res.status(500).send({
-        message: `Unknown error getting teams`,
-      });
-    });
-}
-
-exports.updateRole = async (req, res) => {
+exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
   const id = req.params.id;
   User.update(req.body, {
     where: { id: id },
   })
-    .then((num) => {
-      if (num == 1) {
+    .then((num: [number]) => {
+      if (num[0] == 1) {
         res.send({
           message: "User role was updated successfully.",
         });
@@ -207,7 +190,7 @@ exports.updateRole = async (req, res) => {
         });
       }
     })
-    .catch((err) => {
+    .catch((err: any) => {
       if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
         res.status(400).send({
           message: err.message
@@ -221,15 +204,14 @@ exports.updateRole = async (req, res) => {
 }
 
 
-function getUserForEmail(email) {
-  console.log("4",email);
+function getUserForEmail(email: string) {
   return User.findOne({
     where: { // could be this one
       email: email,
     },
   });
 }
-async function getUserForId(id) {
+async function getUserForId(id: number) {
   return User.findByPk(id);
 }
 
