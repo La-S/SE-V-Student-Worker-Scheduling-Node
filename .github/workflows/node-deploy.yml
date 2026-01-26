@@ -38,21 +38,21 @@ jobs:
           SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
           ARGS: "-rltgoDzvO --delete"
           SOURCE: "deploy/"
-          REMOTE_HOST: "tutorial.eaglesoftwareteam.com"
+          REMOTE_HOST: "workerscheduling.eaglesoftwareteam.com"
           REMOTE_USER: ubuntu
-          TARGET: "nodeapps/2025/project3/t3"
+          TARGET: "nodeapps/sev2026/t3"
       - name: Execute SSH commmands on remote server
         uses: JimCronqvist/action-ssh@master
         env:
           NAME: "Root"
         with:
-          hosts: "ubuntu@tutorial.eaglesoftwareteam.com"
+          hosts: "ubuntu@workerscheduling.eaglesoftwareteam.com"
           privateKey: ${{ secrets.SERVER_SSH_KEY }}
           debug: false
           command: |
-            cd nodeapps/2025/project3/t3
+            cd nodeapps/sev2026/t3
             npm install
-            sudo systemctl stop tracker-t3-backend
-            sudo cp tracker-t3-backend.service /lib/systemd/system/tracker-t3-backend.service
+            sudo systemctl stop workerscheduling-t3-backend.service
+            sudo cp workerscheduling-t3-backend.service /lib/systemd/system/workerscheduling-t3-backend.service
             sudo systemctl daemon-reload
-            sudo systemctl start tracker-t3-backend
+            sudo systemctl start workerscheduling-t3-backend.service
