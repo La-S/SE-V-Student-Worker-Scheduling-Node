@@ -6,8 +6,12 @@ import cors from "cors";
 
 import https from 'https';
 import fs from 'fs';
+import firebaseApp from "./app/config/firebase.js";
+
 
 const app = express();
+
+const fbApp = firebaseApp;
 
 // Also use the cors middleware as backup
 var corsOptions = {

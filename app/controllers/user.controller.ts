@@ -3,6 +3,7 @@ const User = db.User;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { UserType } from "../types/user.type.js";
+import { getMessaging } from "firebase-admin/messaging";
 
 const exports: any = {};
 
@@ -117,6 +118,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
       return;
     }
   }
+
+  if (req.body.pushToken) {
+    console.log("subscribing to topic all-users!");
+    await getMessaging().subscribeToTopic(req.body.pushToken, 'all-users');
+  }
+
   User.update(req.body, {
     where: { id: id },
   })
