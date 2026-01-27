@@ -9,6 +9,3 @@ router.post("/globalNotification", notification.globalNotification);
 router.post("/notificationByToken", notification.notificationByToken);
 
 export default router
-
-
-///notifications/notificationByToken
