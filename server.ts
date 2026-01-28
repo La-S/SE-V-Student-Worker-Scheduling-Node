@@ -12,11 +12,11 @@ const app = express();
 
 if (process.env.NODE_ENV == "dev") {
   // add dev cors options.
-  var cors2Options = {
+  var corsOptions = {
     origin: ["http://localhost:8081",  "https://localhost:8081"],
     credentials: true
   }
-  app.use(cors(cors2Options));
+  app.use(cors(corsOptions));
 }
 
 // parse requests of content-type - application/json
