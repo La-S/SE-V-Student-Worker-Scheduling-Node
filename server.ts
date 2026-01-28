@@ -9,13 +9,6 @@ import fs from 'fs';
 
 const app = express();
 
-<<<<<<< Updated upstream
-// Also use the cors middleware as backup
-var corsOptions = {
-  origin: "https://localhost:8081",
-  credentials: true
-=======
-const fbApp = firebaseApp;
 
 if (process.env.NODE_ENV == "dev") {
   // add dev cors options.
@@ -24,7 +17,6 @@ if (process.env.NODE_ENV == "dev") {
     credentials: true
   }
   app.use(cors(cors2Options));
->>>>>>> Stashed changes
 }
 
 // parse requests of content-type - application/json
