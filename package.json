@@ -7,7 +7,8 @@
   "scripts": {
     "test": "jest --",
     "start": "tsx server.ts",
-    "dev": "NODE_ENV=dev tsx server.ts",
+    "dev": "cross-env NODE_ENV=dev tsx server.ts",
+    "devinsecure": "cross-env USE_HTTP=true NODE_ENV=dev tsx server.ts",
     "bundle": "mkdir deploy && cp -r app server.ts package.json package-lock.json workerscheduling-t3-backend.service .env deploy"
   },
   "keywords": [
@@ -33,6 +34,7 @@
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10"
+    "@types/jsonwebtoken": "^9.0.10",
+    "cross-env": "^10.1.0"
   }
 }
