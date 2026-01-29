@@ -5,7 +5,7 @@ const exports: any = {};
 
 exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
     if (!req.body.title || !req.body.body) {
-        res.status(409).send({ message: `you need a title and message` });
+        res.status(400).send({ message: `you need a title and message` });
         return;
     }
   
@@ -31,7 +31,7 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
     if (!req.body.title || !req.body.body || !req.body.pushToken) {
-        res.status(409).send({ message: `you need a title, message, and pushToken` });
+        res.status(400).send({ message: `you need a title, message, and pushToken` });
         return;
     }
   
