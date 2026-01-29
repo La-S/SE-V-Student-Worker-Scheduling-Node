@@ -6,9 +6,12 @@ import cors from "cors";
 
 import https from 'https';
 import fs from 'fs';
+import firebaseApp from "./app/config/firebase.js";
+
 
 const app = express();
 
+const fbApp = firebaseApp;
 
 if (process.env.NODE_ENV == "dev") {
   // add dev cors options.
