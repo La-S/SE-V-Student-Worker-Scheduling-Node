@@ -30,7 +30,7 @@ jobs:
           echo CLIENT_SECRET = ${{secrets.CLIENT_SECRET}} >> .env
           echo PORT = ${{secrets.PORT}} >> .env
           echo GOOGLE_APPLICATION_CREDENTIALS = \"./creds.json\" >> .env
-          echo ${{secrets.sa}} >> creds.json
+          echo '${{secrets.sa}}' >> creds.json
 
       - run: npm run bundle
 
