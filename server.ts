@@ -6,16 +6,21 @@ import cors from "cors";
 
 import https from 'https';
 import fs from 'fs';
+import firebaseApp from "./app/config/firebase.js";
+
 
 const app = express();
 
-// Also use the cors middleware as backup
-var corsOptions = {
-  origin: "https://localhost:8081",
-  credentials: true
-}
-app.use(cors(corsOptions));
+const fbApp = firebaseApp;
 
+if (process.env.NODE_ENV == "dev") {
+  // add dev cors options.
+  var corsOptions = {
+    origin: ["http://localhost:8081",  "https://localhost:8081"],
+    credentials: true
+  }
+  app.use(cors(corsOptions));
+}
 
 // parse requests of content-type - application/json
 app.use(express.json());
@@ -27,7 +32,7 @@ app.use("/workerscheduling-t3", routes);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3100;
-if (process.env.NODE_ENV == "dev") {
+if (process.env.NODE_ENV == "dev" && !process.env.USE_HTTP) {
   https.createServer({
     key: fs.readFileSync('./localhost+2-key.pem'),
     cert: fs.readFileSync('./localhost+2.pem'),
