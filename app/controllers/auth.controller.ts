@@ -95,7 +95,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.logout = async (req: pkg.Request, res: pkg.Response) => {
-  console.log(req.body);
+  console.log('logout this guy --->>', req.body);
   if (req.body === null) {
     res.send({ message: "User has already been successfully logged out!" });
     return;
