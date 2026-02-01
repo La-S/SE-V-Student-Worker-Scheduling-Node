@@ -65,15 +65,16 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   try {
-    let businessUnitForId = await BusinessUnit.findByPk(id);
-    if (!businessUnitForId) {
-      res.status(404).send({ message: `Business Unit for id ${id} not found.` });
+    //throws error if not found
+    getBusinessUnitForId(id, res);
+    if (res.headersSent){
       return;
     }
-    const numChanged = await BusinessUnit.update(req.body, {
+
+    const numUpdated = await BusinessUnit.update(req.body, {
       where: { id: id },
     });
-    if (numChanged[0] <= 0) {
+    if (numUpdated[0] <= 0) {
       res.status(400).send({ message: `Update for id ${id} did not update. Check request body.` })
       return;
     }
@@ -91,9 +92,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   try {
-    let businessUnitForId = await BusinessUnit.findByPk(id);
-    if (!businessUnitForId) {
-      res.status(404).send({ message: `Business Unit for id ${id} not found.` });
+    //throws error if not found
+    getBusinessUnitForId(id, res);
+    if (res.headersSent){
       return;
     }
 
@@ -114,5 +115,22 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 
 };
 
+async function getBusinessUnitForId(id: number, res: pkg.Response): Promise<Model<any, any> | null>{
+  try {
+    const data = await BusinessUnit.findByPk(id);
+    if (!data) {
+      res.status(404).send({
+        message: `Business Unit for id ${id} not found`
+      })
+    }
+    return data;
+  }
+  catch (err: any) {
+    res.status(500).send({
+      message: err.message || "Some error occurred.",
+    });
+  }
+  return null;
+}
 
 export default exports;
