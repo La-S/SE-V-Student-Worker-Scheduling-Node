@@ -66,7 +66,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   try {
     //throws error if not found
-    getBusinessUnitForId(id, res);
+    await getBusinessUnitForId(id, res);
     if (res.headersSent){
       return;
     }
@@ -93,7 +93,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   try {
     //throws error if not found
-    getBusinessUnitForId(id, res);
+    await getBusinessUnitForId(id, res);
     if (res.headersSent){
       return;
     }
