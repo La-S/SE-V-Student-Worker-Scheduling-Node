@@ -6,6 +6,7 @@ import sequelize from "../config/sequelizeInstance.js";
 
 import User from "./user.model.js";
 import Session from "./session.model.js";
+import BusinessUnit from "./businessunit.model.js";
 
 
 const db = {
@@ -13,6 +14,7 @@ const db = {
     sequelize,
     User,
     Session,
+    BusinessUnit
 };
 
 //users can be on many teams and teams have many users
