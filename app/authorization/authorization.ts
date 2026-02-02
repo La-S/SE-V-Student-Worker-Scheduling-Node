@@ -1,6 +1,6 @@
-import db from "../models/index.js";
+import db from "../models/index.ts";
 import pkg from 'express';
-import { SessionType } from "../types/session.type.js";
+import type { SessionType } from "../types/session.type.ts";
 
 const Session = db.Session;
 

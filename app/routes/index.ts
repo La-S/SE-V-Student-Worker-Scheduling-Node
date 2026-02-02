@@ -1,9 +1,9 @@
 import { Router } from "express";
 
-import AuthRoutes from "./auth.routes.js";
-import UserRoutes from "./user.routes.js";
-import BusinessUnitRoutes from "./businessunit.routes.js";
-import Notifications from "./notifications.routes.js";
+import AuthRoutes from "./auth.routes.ts";
+import UserRoutes from "./user.routes.ts";
+import BusinessUnitRoutes from "./businessunit.routes.ts";
+import Notifications from "./notifications.routes.ts";
 
 const router = Router();
 

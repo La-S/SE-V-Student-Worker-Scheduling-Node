@@ -1,4 +1,4 @@
-import notification from "../controllers/notification.controller.js";
+import notification from "../controllers/notification.controller.ts";
 import { Router } from "express";
 var router = Router()
 

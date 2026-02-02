@@ -1,5 +1,5 @@
-import auth from "../authorization/authorization.js";
-import businessunits from "../controllers/businessunit.controller.js"
+import auth from "../authorization/authorization.ts";
+import businessunits from "../controllers/businessunit.controller.ts"
 import { Router } from "express";
 var router = Router()
 

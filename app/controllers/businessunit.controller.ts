@@ -1,8 +1,8 @@
-import db from "../models/index.js";
+import db from "../models/index.ts";
 const BusinessUnit = db.BusinessUnit;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import { BusinessUnitType } from "../types/businessunit.type.js";
+import type { BusinessUnitType } from "../types/businessunit.type.ts";
 
 const exports: any = {};
 

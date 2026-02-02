@@ -1,12 +1,12 @@
-import db from "../models/index.js";
-import authconfig from "../config/auth.config.js";
-import { OAuth2Client, TokenPayload } from "google-auth-library";
+import db from "../models/index.ts";
+import authconfig from "../config/auth.config.ts";
+import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
 import { Op } from 'sequelize';
 import pkg from 'express';
-import { UserType } from "../types/user.type.js";
-import { SessionType } from "../types/session.type.js";
+import type { UserType } from "../types/user.type.ts";
+import type { SessionType } from "../types/session.type.ts";
 
 const User = db.User;
 const Session = db.Session;

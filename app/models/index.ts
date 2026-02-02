@@ -1,12 +1,12 @@
-import dbConfig from "../config/db.config.js";
+import dbConfig from "../config/db.config.ts";
 import { Sequelize } from "sequelize";
-import sequelize from "../config/sequelizeInstance.js";
+import sequelize from "../config/sequelizeInstance.ts";
 
 // Models
 
-import User from "./user.model.js";
-import Session from "./session.model.js";
-import BusinessUnit from "./businessunit.model.js";
+import User from "./user.model.ts";
+import Session from "./session.model.ts";
+import BusinessUnit from "./businessunit.model.ts";
 
 
 const db = {

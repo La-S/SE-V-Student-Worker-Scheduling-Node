@@ -1,8 +1,8 @@
-import db from "../models/index.js";
+import db from "../models/index.ts";
 const User = db.User;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import { UserType } from "../types/user.type.js";
+import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 
 const exports: any = {};

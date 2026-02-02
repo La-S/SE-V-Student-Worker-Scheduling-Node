@@ -1,12 +1,12 @@
 
-import routes from "./app/routes/index.js";
+import routes from "./app/routes/index.ts";
 import express from "express"
 import cors from "cors";
 
 
 import https from 'https';
 import fs from 'fs';
-import firebaseApp from "./app/config/firebase.js";
+import firebaseApp from "./app/config/firebase.ts";
 
 
 const app = express();

@@ -1,5 +1,5 @@
 import Sequelize from "sequelize";
-import SequelizeInstance from "../config/sequelizeInstance.js";
+import SequelizeInstance from "../config/sequelizeInstance.ts";
 
 const User = SequelizeInstance.define("user", {
 
