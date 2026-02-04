@@ -75,6 +75,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
             return;
         }
 
+        //an employee should refer to a userId and businessUnitId, these should not change
+        req.body.userId ?? undefined;
+        req.body.businessUnitId ?? undefined;
+
         const numUpdated = await Employee.update(req.body, {
             where: { id: id },
         });
