@@ -6,6 +6,6 @@ var router = Router()
 router.post("/globalNotification", notification.globalNotification);
 
 // Send a notification to a specific token
-router.post("/notification/token", notification.notificationByToken);
+router.post("/token", notification.notificationByToken);
 
 export default router
