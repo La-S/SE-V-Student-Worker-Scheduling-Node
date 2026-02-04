@@ -8,7 +8,7 @@ var router = Router()
 router.post("/", [auth.authenticate], businessunits.create);
 
 // Retrieve all BusinessUnits
-router.get("/", [auth.authenticate], businessunits.findAll);
+router.get("/all", [auth.authenticate], businessunits.findAll);
 
 // Retrieve a single BusinessUnit by id
 router.get("/:id", [auth.authenticate], businessunits.findOne);

@@ -8,7 +8,7 @@ var router = Router()
 router.post("/", [auth.authenticate], employees.create);
 
 // Retrieve all Employees
-router.get("/", [auth.authenticate], employees.findAll);
+router.get("/all", [auth.authenticate], employees.findAll);
 
 // Retrieve a single Employee by id
 router.get("/:id", [auth.authenticate], employees.findOne);

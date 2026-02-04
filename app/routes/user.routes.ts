@@ -8,7 +8,7 @@ var router = Router()
 router.post("/", [auth.authenticate], users.create);
 
 // Retrieve all People
-router.get("/", [auth.authenticate], users.findAll);
+router.get("/all", [auth.authenticate], users.findAll);
 
 // Retrieve a single User with id
 router.get("/:id", [auth.authenticate], users.findOne);
