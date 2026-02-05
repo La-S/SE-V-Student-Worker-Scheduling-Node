@@ -24,58 +24,60 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   };
 
   // Save User in the database
-  User.create(user as any)
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        })
-        return;
-      }
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the User.",
-      });
+  try {
+    const data = await User.create(user as any);
+    res.send(data);
+  }
+  catch (err: any) {
+    if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
+      res.status(400).send({
+        message: err.message
+      })
+      return;
+    }
+    res.status(500).send({
+      message: err.message || "Some error occurred while creating the user.",
     });
+  };
 };
 
 // Retrieve all People from the database.
-exports.findAll = (req: pkg.Request, res: pkg.Response) => {
+exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
   const id = req.query.id!;
   var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
-  User.findAll({ where: condition })
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving people.",
-      });
+  try {
+    const data = await User.findAll({ where: condition });
+    res.send(data);
+  }
+  catch (err: any) {
+    res.status(500).send({
+      message: err.message || "Some error occurred while retrieving users.",
     });
+  };
 };
 
 // Find a single User with an id
 exports.findOne = (req: pkg.Request, res: pkg.Response) => {
   const id = req.params.id;
 
-  User.findByPk(id)
+  try
+  const data = await User.findByPk(id)
+  if 
     .then((data: any) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.status(404).send({
-          message: `Cannot find User with id=${id}.`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: "Error retrieving User with id=" + id,
+    if (data) {
+      res.send(data);
+    } else {
+      res.status(404).send({
+        message: `Cannot find User with id=${id}.`,
       });
-    });
+    }
+  })
+      .catch((err: any) => {
+        res.status(500).send({
+          message: "Error retrieving User with id=" + id,
+        });
+      });
 };
 
 // Find a single User with an email
@@ -108,8 +110,14 @@ exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   if (req.body.email) {
-    let userForEmail = await getUserForEmail(req.body.email)
-    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(await getUserForId(id)))) {
+    let userForEmail = await getUserForEmail(req.body.email, res)
+    if (res.headersSent) {
+      return;
+    }
+    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(await getUserForId(id, res)))) {
+      if (res.headersSent) {
+        return;
+      }
       res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
       return;
     }
@@ -154,31 +162,25 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 // Delete a User with the specified id in the request
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  let userForId = await getUserForId(id)
-  if (!userForId) {
-    res.status(404).send({ message: `user for id ${id} not found.` });
-    return;
-  }
-
-  User.destroy({
-    where: { id: id },
-  })
-    .then((num: number) => {
-      if (num == 1) {
-        res.send({
-          message: "User was deleted successfully!",
-        });
-      } else {
-        res.send({
-          message: `Cannot delete User with id=${id}. Maybe User was not found!`,
-        });
-      }
+  try {
+    let userForId = await getUserForId(id, res)
+    if (res.headersSent) {
+      return;
+    }
+    const numDeleted = await User.destroy({
+      where: { id: id },
     })
-    .catch((err: string) => {
-      res.status(500).send({
-        message: "Could not delete User with id=" + id,
-      });
+    if (numDeleted <= 0) {
+      res.status(400).send({ message: `Delete for id ${id} did not delete. Check request body.` })
+      return;
+    }
+    res.status(200).send({ message: "User deleted successfully!" });
+  }
+  catch (err: string) {
+    res.status(500).send({
+      message: err.message || "Some error occurred.",
     });
+  };
 };
 
 exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
@@ -211,15 +213,39 @@ exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-function getUserForEmail(email: string) {
-  return User.findOne({
-    where: { // could be this one
-      email: email,
-    },
-  });
-}
-async function getUserForId(id: number) {
-  return User.findByPk(id);
+async function getUserForEmail(email: string, res: pkg.Response) {
+  try {
+    const data = await User.findOne({ where: { email: email } });
+    if (!data) {
+      res.status(404).send({
+        message: `User for email ${email} not found`
+      })
+    }
+    return data;
+  }
+  catch (err: any) {
+    res.status(500).send({
+      message: err.message || "Some error occurred.",
+    });
+  }
+};
+
+async function getUserForId(id: number, res: pkg.Response): Promise<Model<any, any> | null> {
+  try {
+    const data = await User.findByPk(id);
+    if (!data) {
+      res.status(404).send({
+        message: `User for id ${id} not found`
+      })
+    }
+    return data;
+  }
+  catch (err: any) {
+    res.status(500).send({
+      message: err.message || "Some error occurred.",
+    });
+  }
+  return null;
 }
 
 export default exports;
