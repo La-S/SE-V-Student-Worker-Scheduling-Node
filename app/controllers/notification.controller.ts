@@ -8,7 +8,7 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
     if (!req.body.title || !req.body.body) {
         throw new AppError(400, `request body requires title and message`)
     }
-  
+
     // console.log("GOT A PUSH TOKEN, gotta test it, right?");
     const message = {
         notification: {
@@ -18,7 +18,7 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
         topic: 'all-users'
     };
     const response = await getMessaging().send(message)
-    if (response){
+    if (response) {
         console.log("Successfully sent message: ", response)
     }
     console.log("sending to all-users!");
@@ -29,7 +29,7 @@ exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
     if (!req.body.title || !req.body.body || !req.body.pushToken) {
         throw new AppError(400, `request body requires title, message, and pushToken`)
     }
-  
+
     const message = {
         notification: {
             title: req.body.title,
@@ -38,7 +38,7 @@ exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
         token: req.body.pushToken
     };
     const response = await getMessaging().send(message)
-    if (response){
+    if (response) {
         console.log("Successfully sent message: ", response)
     }
 
