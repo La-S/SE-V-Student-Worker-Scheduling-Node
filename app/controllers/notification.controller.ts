@@ -1,6 +1,6 @@
 import pkg from 'express';
 import { getMessaging } from "firebase-admin/messaging";
-import { AppError } from '../error/app.error';
+import { AppError } from '../error/app.error.ts';
 
 const exports: any = {};
 
