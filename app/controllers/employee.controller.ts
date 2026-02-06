@@ -75,7 +75,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
         where: { id: id },
     })
     if (numDeleted <= 0) {
-        throw new AppError(409, `Delete for id ${id} did not delete. Check request body.`)
+        throw new AppError(400, `Delete for id ${id} did not delete. Check request body.`)
     }
     res.status(200).send({ message: "Employee deleted successfully!" });
 

@@ -4,14 +4,16 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
+import { AppError } from "../error/app.error.ts";
+import { NotFoundError } from "../error/notfound.error.ts";
 
 const exports: any = {};
+const errorClassName = "User";
 
 // Create and Save a new User
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
   if (req.body.email && await getUserForEmail(req.body.email)) {
-    res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
-    return;
+    throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
   }
 
   // Create a User
@@ -24,84 +26,33 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   };
 
   // Save User in the database
-  User.create(user as any)
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        })
-        return;
-      }
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the User.",
-      });
-    });
+  const data = await User.create(user as any);
+  res.send(data);
 };
 
 // Retrieve all People from the database.
-exports.findAll = (req: pkg.Request, res: pkg.Response) => {
-  const id = req.query.id!;
+exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
   var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
-  User.findAll({ where: condition })
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving people.",
-      });
-    });
+  const data = await User.findAll({ where: condition })
+  res.send(data);
 };
 
 // Find a single User with an id
-exports.findOne = (req: pkg.Request, res: pkg.Response) => {
-  const id = req.params.id;
+exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
 
-  User.findByPk(id)
-    .then((data: any) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.status(404).send({
-          message: `Cannot find User with id=${id}.`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: "Error retrieving User with id=" + id,
-      });
-    });
+  const data = await getUserForId(id);
+  res.send(data);
 };
 
 // Find a single User with an email
 exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
-  const email = req.params.email;
+  const email = req.body.email;
 
-  User.findOne({
-    where: { // could be this one
-      email: email,
-    },
-  })
-    .then((data: any) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.send({ email: "not found" });
-        /*res.status(404).send({
-          message: `Cannot find User with email=${email}.`
-        });*/
-      }
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: "Error retrieving User with email=" + email,
-      });
-    });
+  const data = getUserForEmail(email);
+  res.send(data);
 };
 
 // Update a User by the id in the request
@@ -109,13 +60,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
-    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(await getUserForId(id)))) {
-      res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
-      return;
+    let userForId = await getUserForId(id)
+    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(userForId))) {
+      throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
     }
-    if (req.body.role) {
-      res.status(400).send({ message: "user role cannot be changed from this endpoint, please use PUT user/:id/role" })
-      return;
+    if (req.body.isAdmin) {
+      throw new AppError(400, "isAdmin cannot be changed from this endpoint, please use PUT user/:id/role");
     }
   }
 
@@ -124,102 +74,63 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     await getMessaging().subscribeToTopic(req.body.pushToken, 'all-users');
   }
 
-  User.update(req.body, {
+  const numUpdated = await User.update(req.body, {
     where: { id: id },
   })
-    .then((num: [number]) => {
-      if (num[0] == 1) {
-        res.send({
-          message: "User was updated successfully.",
-        });
-      } else {
-        res.status(404).send({
-          message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        });
-        return;
-      }
-      res.status(500).send({
-        message: "Error updating User with id=" + id,
-      });
-    });
+  if (numUpdated[0] <= 0) {
+    throw new AppError(400, `Unable to update user with id ${id}. Check request body`)
+  }
+  const updatedUser = getUserForId(id);
+  res.send(updatedUser);
 };
 
 // Delete a User with the specified id in the request
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  let userForId = await getUserForId(id)
-  if (!userForId) {
-    res.status(404).send({ message: `user for id ${id} not found.` });
-    return;
-  }
+  //throws an error if not found
+  await getUserForId(id)
 
-  User.destroy({
+  const numDeleted = await User.destroy({
     where: { id: id },
   })
-    .then((num: number) => {
-      if (num == 1) {
-        res.send({
-          message: "User was deleted successfully!",
-        });
-      } else {
-        res.send({
-          message: `Cannot delete User with id=${id}. Maybe User was not found!`,
-        });
-      }
-    })
-    .catch((err: string) => {
-      res.status(500).send({
-        message: "Could not delete User with id=" + id,
-      });
-    });
+  if (numDeleted <= 0) {
+    throw new AppError(400, `Delete for id ${id} did not delete. Check request body.`)
+  }
+  res.status(200).send({ message: "Employee deleted successfully!" });
+
 };
 
 exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
-  const id = req.params.id;
-  User.update(req.body, {
+  const id = parseInt(req.params.id, 10);
+  const numUpdated = await User.update(req.body, {
     where: { id: id },
   })
-    .then((num: [number]) => {
-      if (num[0] == 1) {
-        res.send({
-          message: "User role was updated successfully.",
-        });
-      } else {
-        res.status(404).send({
-          message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        });
-        return;
-      }
-      res.status(500).send({
-        message: "Error updating User Role with id=" + id,
-      });
-    });
+  if (numUpdated[0] <= 0) {
+    throw new AppError(400, `Update for id ${id} failed. Check request body.`)
+  }
+  const updatedUser = await getUserForId(id);
+  res.send(updatedUser);
 }
 
 
 function getUserForEmail(email: string) {
-  return User.findOne({
+  const data = User.findOne({
     where: { // could be this one
       email: email,
     },
   });
+  if (!data) {
+    throw new AppError(404, `User for email ${email} not found.`)
+  }
+  return data;
 }
+
 async function getUserForId(id: number) {
-  return User.findByPk(id);
+  const data = await User.findByPk(id);
+  if (!data) {
+    throw new NotFoundError(errorClassName, id);
+  }
+  return data;
 }
 
 export default exports;

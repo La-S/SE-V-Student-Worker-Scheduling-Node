@@ -13,6 +13,8 @@ router.get("/all", [auth.authenticate], users.findAll);
 // Retrieve a single User with id
 router.get("/:id", [auth.authenticate], users.findOne);
 
+router.get("/email", [auth.authenticate], users.findByEmail);
+
 // Update a User with idF
 router.put("/:id", [auth.authenticate], users.update);
 
