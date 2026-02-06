@@ -17,10 +17,10 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
         },
         topic: 'all-users'
     };
-    await getMessaging().send(message).then((response) => {
-    // Response is a message ID string.
-        console.log('Successfully sent message:', response);
-    })
+    const response = await getMessaging().send(message)
+    if (response){
+        console.log("Successfully sent message: ", response)
+    }
     console.log("sending to all-users!");
     res.send("ok");
 };
@@ -37,10 +37,10 @@ exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
         },
         token: req.body.pushToken
     };
-    await getMessaging().send(message).then((response) => {
-        // Response is a message ID string.
-        console.log('Successfully sent message:', response);
-    })
+    const response = await getMessaging().send(message)
+    if (response){
+        console.log("Successfully sent message: ", response)
+    }
 
     // console.log(userInfo);
     // res.send(userInfo);
