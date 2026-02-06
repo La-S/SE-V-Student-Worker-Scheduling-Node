@@ -9,6 +9,7 @@ import type { UserType } from "../types/user.type.ts";
 import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
+import { UnauthorizedError } from "../error/unauthorized.error.ts";
 
 const User = db.User;
 const Session = db.Session;
@@ -111,7 +112,7 @@ exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   let session = response?.dataValues as SessionType | undefined;
   console.log(session?.expirationDate);
   if (!session || session.expirationDate.getTime() < Date.now()) {
-    throw new AppError(401, "Unauthorized! Expired Token, Logout and Login again")
+    throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
   return res.status(200).send({ message: "token not expired" });
 }
