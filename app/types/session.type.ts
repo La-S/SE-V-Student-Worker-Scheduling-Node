@@ -3,5 +3,5 @@ export interface SessionType {
     email: string,
     token: string,
     expirationDate: Date,
-    userID: number,
+    userId: number,
 }

@@ -78,7 +78,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     const session: SessionType = {
       token: token,
       email: googleUserInfo.email,
-      userID: user.id!,
+      userId: user.id!,
       expirationDate: tempExpirationDate,
     };
 
