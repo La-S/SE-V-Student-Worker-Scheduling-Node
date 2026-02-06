@@ -16,7 +16,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
   // Create a User
   const user: UserType = {
-    id: req.body.id,
+    id: undefined,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     email: req.body.email,

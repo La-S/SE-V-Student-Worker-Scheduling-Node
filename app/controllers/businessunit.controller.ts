@@ -13,7 +13,7 @@ const errorClassName = "Business Unit";
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
   const businessUnit: BusinessUnitType = {
-    id: req.body.id,
+    id: undefined,
     name: req.body.name,
   };
 
@@ -43,7 +43,8 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   //throws error if not found
   await getBusinessUnitForId(id);
-
+  
+  req.body.id = undefined;
   const numUpdated = await BusinessUnit.update(req.body, {
     where: { id: id },
   });
