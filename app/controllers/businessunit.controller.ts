@@ -31,10 +31,7 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 // Find a single User with an id
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  const data = await BusinessUnit.findByPk(id);
-  if (!data) {
-    throw new NotFoundError(errorClassName, id);
-  }
+  const data = await getBusinessUnitForId(id);
   res.send(data);
 };
 
