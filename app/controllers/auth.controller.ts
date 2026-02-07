@@ -97,6 +97,9 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
   //   res.status(200).send({ message: "User has already been successfully logged out!" });
   //   return;
   // }
+  if (!req.body || !req.body.token){
+    throw new AppError(400,  "Must have a request body with a token");
+  }
 
   // invalidate session -- delete token out of session table
   let response = await Session.update({ token: "" }, { where: { token: req.body.token } })
@@ -158,18 +161,15 @@ async function upsertUser(user: UserType): Promise<UserType> {
   if (!user.id) {
     let createdRow = await User.create(user as any);
     return createdRow.dataValues;
-  } else {
-    const userToUpdate = await User.findByPk(user.id);
-    if (!userToUpdate) {
-      throw new NotFoundError("User", user.id);
-    }
-    let response = await User.update(user, { where: { id: user.id } });
-    if (response[0] <= 0) {
-      throw new AppError(400, `Cannot update User with id ${user.id}. Check request body`);
-    }
-    console.log("updated user's name");
-    return user;
   }
+
+  let response = await User.update(user, { where: { id: user.id } });
+  if (response[0] <= 0) {
+    throw new AppError(400, `Cannot update User with id ${user.id}. Check request body`);
+  }
+  console.log("updated user's name");
+  return user;
+
 }
 
 async function getGoogleUserInfo(googleToken: string, googleAccessToken: string) {

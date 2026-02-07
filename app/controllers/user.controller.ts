@@ -48,7 +48,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let userForEmail = await getUserForEmail(req.body.email)
     let userForId = await getOneForId(User, id)
     if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(userForId))) {
-      throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
+      throw new AppError(409, `${req.body.email} is already in use by another user. Use a different email.`)
     }
     if (req.body.isAdmin) {
       throw new AppError(400, "isAdmin cannot be changed from this endpoint, please use PUT user/:id/role");
@@ -66,7 +66,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Unable to update user with id ${id}. Check request body`)
   }
-  const updatedUser = getOneForId(User, id);
+  const updatedUser = await getOneForId(User, id);
   res.send(updatedUser);
 };
 
