@@ -1,17 +1,20 @@
 import users from "../controllers/user.controller.ts";
 import auth from "../authorization/authorization.ts";
+import generalcontroller from "../controllers/general.controller.ts"
+import UserModel from "../models/user.model.ts"
 import { Router } from "express";
 var router = Router()
 
+//User has email validation checks, so some functions cannot be moved to general controller
 
 // Create a new User
 router.post("/", [auth.authenticate], users.create);
 
 // Retrieve all People
-router.get("/all", [auth.authenticate], users.findAll);
+router.get("/all", [auth.authenticate], generalcontroller.findAll(UserModel));
 
 // Retrieve a single User with id
-router.get("/:id", [auth.authenticate], users.findOne);
+router.get("/:id", [auth.authenticate], generalcontroller.findOne(UserModel));
 
 router.get("/email", [auth.authenticate], users.findByEmail);
 
@@ -21,7 +24,7 @@ router.put("/:id", [auth.authenticate], users.update);
 router.put("/:id/admin", [auth.authenticate, auth.isAdminOnly], users.updateIsAdmin)
 
 // Delete a User with id
-router.delete("/:id", [auth.authenticate], users.delete);
+router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserModel));
 
 export default router;
 

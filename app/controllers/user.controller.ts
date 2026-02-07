@@ -6,6 +6,7 @@ import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
+import { getOneForId } from "../services/services.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -22,7 +23,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     email: req.body.email,
-    isAdmin: req.body.isAdmin,
+    isAdmin: req.body.isAdmin ?? false,
   };
 
   // Save User in the database
@@ -30,22 +31,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 };
 
-// Retrieve all People from the database.
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
-  var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
-  const data = await User.findAll({ where: condition })
-  res.send(data);
-};
-
-// Find a single User with an id
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
-
-  const data = await getUserForId(id);
-  res.send(data);
-};
 
 // Find a single User with an email
 exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
@@ -60,7 +46,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
-    let userForId = await getUserForId(id)
+    let userForId = await getOneForId(User, id)
     if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(userForId))) {
       throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
     }
@@ -80,25 +66,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Unable to update user with id ${id}. Check request body`)
   }
-  const updatedUser = getUserForId(id);
+  const updatedUser = getOneForId(User, id);
   res.send(updatedUser);
 };
 
-// Delete a User with the specified id in the request
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
-  //throws an error if not found
-  await getUserForId(id)
-
-  const numDeleted = await User.destroy({
-    where: { id: id },
-  })
-  if (numDeleted <= 0) {
-    throw new AppError(400, `Delete for id ${id} did not delete. Check request body.`)
-  }
-  res.status(200).send({ message: "Employee deleted successfully!" });
-
-};
 
 exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
@@ -108,7 +79,7 @@ exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Update for id ${id} failed. Check request body.`)
   }
-  const updatedUser = await getUserForId(id);
+  const updatedUser = await getOneForId(User, id);
   res.send(updatedUser);
 }
 
@@ -125,12 +96,5 @@ function getUserForEmail(email: string) {
   return data;
 }
 
-async function getUserForId(id: number) {
-  const data = await User.findByPk(id);
-  if (!data) {
-    throw new NotFoundError(errorClassName, id);
-  }
-  return data;
-}
 
 export default exports;

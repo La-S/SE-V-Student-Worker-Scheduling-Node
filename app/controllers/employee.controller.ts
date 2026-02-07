@@ -8,26 +8,8 @@ import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 
 const exports: any = {};
-const errorClassName = "Business Unit";
+const errorClassName = "Employee";
 
-// Create and Save a new Employee
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
-
-    const employee: EmployeeType = {
-        id: undefined,
-        userId: req.body.userId,
-        businessUnitId: req.body.businessUnitId,
-        semester: req.body.semester,
-        currentlyEmployed: req.body.currentlyEmployed ?? true,
-        maxWeeklyHours: req.body.maxWeeklyHours ?? 20,
-        minWeeklyHours: req.body.minWeeklyHours ?? 0,
-        isManager: false
-    };
-
-    // Save User in the database
-    const data = await Employee.create(employee as any)
-    res.send(data);
-};
 
 // Retrieve all Employees from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
@@ -65,23 +47,11 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedEmployee);
 };
 
-// Delete a Employee with the specified id in the request
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    //throws error if not found
-    await getEmployeeForId(id, res);
-
-    const numDeleted = await Employee.destroy({
-        where: { id: id },
-    })
-    if (numDeleted <= 0) {
-        throw new AppError(400, `Delete for id ${id} did not delete. Check request body.`)
-    }
-    res.status(200).send({ message: "Employee deleted successfully!" });
-
-};
-
+//cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number, res: pkg.Response): Promise<Model<any, any> | null> {
+    if (!id) {
+        throw new AppError(400, "id provided must be an integer")
+    }
     const data = await Employee.findByPk(id, { include: [User] });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
