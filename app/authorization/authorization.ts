@@ -1,43 +1,42 @@
 import db from "../models/index.ts";
 import pkg from 'express';
 import type { SessionType } from "../types/session.type.ts";
+import { UnauthorizedError } from "../error/unauthorized.error.ts";
+import { AppError } from "../error/app.error.ts";
 
 const Session = db.Session;
 
 const auth: any = {};
-auth.authenticate = (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
-  let token = null;
-
-  let authHeader = req.get("authorization");
-  if (authHeader != null) {
-    if (authHeader.startsWith("Bearer ")) {
-      token = authHeader.slice(7);
-
-      Session.findAll({ where: { token: token } })
-        .then((data) => {
-          let session = data[0].dataValues as SessionType;
-          console.log(session.expirationDate);
-          if (session != null) {
-            if (session.expirationDate.getTime() >= Date.now()) {
-              next();
-              return;
-            } else
-              return res.status(401).send({
-                message: "Unauthorized! Expired Token, Logout and Login again",
-              });
-          }
-        })
-        .catch((err) => {
-          return res.status(500).send({
-            message: err.message || "an unknown error occurred while authenticating",
-          });
-        });
-    }
-  } else {
-    return res.status(401).send({
-      message: "Unauthorized! No Auth Header",
-    });
+auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+  let token = getToken(req);
+  const sessions = await Session.findAll({ where: { token: token } })
+  if (sessions.length == 0) {
+    //maybe have new error class that holds token and we can keep info server-side 
+    throw new AppError(500, "No sessions found for user")
   }
+  let session = sessions[0].dataValues as SessionType;
+  console.log(session.expirationDate);
+  if (session == null || session.expirationDate.getTime() < Date.now()) {
+    throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again");
+  }
+  next();
+  return;
+};
+
+//AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
+auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+  let token = getToken(req);
+  const data = await Session.findAll({ where: { token: token } });
+  let session = data[0];
+  if (!session) {
+    throw new AppError(404, "No sessions found for token");
+  }
+  let user = await (session as any).getUser();
+  if (user.isAdmin !== true) {
+    throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
+  }
+  next();
+  return;
 };
 
 // //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
@@ -77,43 +76,15 @@ auth.authenticate = (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction
 //   }
 // };
 
-//AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.isAdminOnly = (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
-  let token = null;
-
+function getToken(req: pkg.Request): string {
   let authHeader = req.get("authorization");
   if (authHeader == null) {
-    return res.status(401).send("Unauthorized, no auth header");
+    throw new UnauthorizedError("Unauthorized! No Auth header!");
   }
-  if (authHeader.startsWith("Bearer ")) {
-    token = authHeader.slice(7);
-
-    Session.findAll({ where: { token: token } })
-      .then(async (data) => {
-        let session = data[0];
-        if (session != null) {
-          let user = await (session as any).getUser();
-          if (user.isAdmin === true) {
-            next();
-            return;
-          }
-          else
-            return res.status(401).send({
-              message: "Unauthorized! User must be admin to perform this function"
-            });
-        }
-        return res.status(401).send({
-          message: "Unauthorized! No Session!"
-        });
-      })
-      .catch((err) => {
-        return res.status(500).send({
-          message: err.message || "an unknown error occurred while authenticating",
-        });
-      });
+  if (!authHeader.startsWith("Bearer ")) {
+    throw new UnauthorizedError("Unauthorized! Please Use Bearer Token for authentication!");
   }
-};
-
-
+  return authHeader.slice(7);
+}
 
 export default auth;

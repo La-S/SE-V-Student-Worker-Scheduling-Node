@@ -7,14 +7,15 @@ import sequelize from "../config/sequelizeInstance.ts";
 import User from "./user.model.ts";
 import Session from "./session.model.ts";
 import BusinessUnit from "./businessunit.model.ts";
-
+import Employee from "./employee.model.ts"
 
 const db = {
     Sequelize,
     sequelize,
     User,
     Session,
-    BusinessUnit
+    BusinessUnit,
+    Employee
 };
 
 //users can be on many teams and teams have many users
@@ -25,13 +26,25 @@ const db = {
 
 // a user has many sessions
 db.User.hasMany(db.Session,
-    { foreignKey: { name: "userID", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 db.Session.belongsTo(db.User,
-    { foreignKey: { name: "userID", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+
+//User can be many employees
+db.User.hasMany(db.Employee,
+    {foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.Employee.belongsTo(db.User,
+        { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+
+//BusinessUnit has many employees
+db.BusinessUnit.hasMany(db.Employee,
+    {foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Employee.belongsTo(db.BusinessUnit,
+        {foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 
-// db.sequelize.sync({force: true});
-db.sequelize.sync({alter: true});
+db.sequelize.sync({force: true});
+// db.sequelize.sync({alter: true});
 
 
 // db.sequelize.sync({force: true});

@@ -4,104 +4,40 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
+import { AppError } from "../error/app.error.ts";
+import { NotFoundError } from "../error/notfound.error.ts";
+import { getOneForId } from "../services/services.ts";
 
 const exports: any = {};
+const errorClassName = "User";
 
 // Create and Save a new User
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
   if (req.body.email && await getUserForEmail(req.body.email)) {
-    res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
-    return;
+    throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
   }
 
   // Create a User
   const user: UserType = {
-    id: req.body.id,
+    id: undefined,
     firstName: req.body.firstName,
     lastName: req.body.lastName,
     email: req.body.email,
-    isAdmin: req.body.isAdmin,
+    isAdmin: req.body.isAdmin ?? false,
   };
 
   // Save User in the database
-  User.create(user as any)
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        })
-        return;
-      }
-      res.status(500).send({
-        message: err.message || "Some error occurred while creating the User.",
-      });
-    });
+  const data = await User.create(user as any);
+  res.send(data);
 };
 
-// Retrieve all People from the database.
-exports.findAll = (req: pkg.Request, res: pkg.Response) => {
-  const id = req.query.id!;
-  var condition = id ? { id: { [Op.like]: `%${id}%` } } : undefined;
 
-  User.findAll({ where: condition })
-    .then((data: any) => {
-      res.send(data);
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: err.message || "Some error occurred while retrieving people.",
-      });
-    });
-};
-
-// Find a single User with an id
-exports.findOne = (req: pkg.Request, res: pkg.Response) => {
-  const id = req.params.id;
-
-  User.findByPk(id)
-    .then((data: any) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.status(404).send({
-          message: `Cannot find User with id=${id}.`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: "Error retrieving User with id=" + id,
-      });
-    });
-};
 
 // Find a single User with an email
-exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
-  const email = req.params.email;
-
-  User.findOne({
-    where: { // could be this one
-      email: email,
-    },
-  })
-    .then((data: any) => {
-      if (data) {
-        res.send(data);
-      } else {
-        res.send({ email: "not found" });
-        /*res.status(404).send({
-          message: `Cannot find User with email=${email}.`
-        });*/
-      }
-    })
-    .catch((err: any) => {
-      res.status(500).send({
-        message: "Error retrieving User with email=" + email,
-      });
-    });
+exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
+  const email = req.body.email;
+  const data = await getUserForEmail(email);
+  res.send(data);
 };
 
 // Update a User by the id in the request
@@ -109,13 +45,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
-    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(await getUserForId(id)))) {
-      res.status(409).send({ message: `user with email ${req.body.email} already exists. Use a different email.` });
-      return;
+    let userForId = await getOneForId(User, id)
+    if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(userForId))) {
+      throw new AppError(409, `${req.body.email} is already in use by another user. Use a different email.`)
     }
-    if (req.body.role) {
-      res.status(400).send({ message: "user role cannot be changed from this endpoint, please use PUT user/:id/role" })
-      return;
+    if (req.body.isAdmin) {
+      throw new AppError(400, "isAdmin cannot be changed from this endpoint, please use PUT user/:id/role");
     }
   }
 
@@ -124,102 +59,41 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     await getMessaging().subscribeToTopic(req.body.pushToken, 'all-users');
   }
 
-  User.update(req.body, {
+  const numUpdated = await User.update(req.body, {
     where: { id: id },
   })
-    .then((num: [number]) => {
-      if (num[0] == 1) {
-        res.send({
-          message: "User was updated successfully.",
-        });
-      } else {
-        res.status(404).send({
-          message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        });
-        return;
-      }
-      res.status(500).send({
-        message: "Error updating User with id=" + id,
-      });
-    });
-};
-
-// Delete a User with the specified id in the request
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
-  let userForId = await getUserForId(id)
-  if (!userForId) {
-    res.status(404).send({ message: `user for id ${id} not found.` });
-    return;
+  if (numUpdated[0] <= 0) {
+    throw new AppError(400, `Unable to update user with id ${id}. Check request body`)
   }
-
-  User.destroy({
-    where: { id: id },
-  })
-    .then((num: number) => {
-      if (num == 1) {
-        res.send({
-          message: "User was deleted successfully!",
-        });
-      } else {
-        res.send({
-          message: `Cannot delete User with id=${id}. Maybe User was not found!`,
-        });
-      }
-    })
-    .catch((err: string) => {
-      res.status(500).send({
-        message: "Could not delete User with id=" + id,
-      });
-    });
+  const updatedUser = await getOneForId(User, id);
+  res.send(updatedUser);
 };
+
 
 exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
-  const id = req.params.id;
-  User.update(req.body, {
+  const id = parseInt(req.params.id, 10);
+  const numUpdated = await User.update(req.body, {
     where: { id: id },
   })
-    .then((num: [number]) => {
-      if (num[0] == 1) {
-        res.send({
-          message: "User role was updated successfully.",
-        });
-      } else {
-        res.status(404).send({
-          message: `Cannot update User with id=${id}. Maybe User was not found or req.body is empty!`,
-        });
-      }
-    })
-    .catch((err: any) => {
-      if (err.name === 'SequelizeValidationError' || err.name === "SequelizeForeignKeyConstraintError") {
-        res.status(400).send({
-          message: err.message
-        });
-        return;
-      }
-      res.status(500).send({
-        message: "Error updating User Role with id=" + id,
-      });
-    });
+  if (numUpdated[0] <= 0) {
+    throw new AppError(400, `Update for id ${id} failed. Check request body.`)
+  }
+  const updatedUser = await getOneForId(User, id);
+  res.send(updatedUser);
 }
 
 
-function getUserForEmail(email: string) {
-  return User.findOne({
+async function getUserForEmail(email: string) {
+  const data = await User.findOne({
     where: { // could be this one
       email: email,
     },
   });
+  if (!data) {
+    return false;
+  }
+  return data;
 }
-async function getUserForId(id: number) {
-  return User.findByPk(id);
-}
+
 
 export default exports;
