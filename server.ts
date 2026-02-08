@@ -7,7 +7,7 @@ import cors from "cors";
 import https from 'https';
 import fs from 'fs';
 import firebaseApp from "./app/config/firebase.ts";
-import { errorHandler } from "./app/error/errorHandler.ts";
+import { errorHandler } from "./app/error/errorhandler.ts";
 
 
 const app = express();
