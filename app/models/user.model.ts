@@ -24,7 +24,7 @@ const User = SequelizeInstance.define("user", {
     type: Sequelize.STRING(256),
     allowNull: true,
   },
-  ocID: {
+  ocId: {
     type: Sequelize.STRING(50),
     allowNull: true,
   },
