@@ -43,7 +43,7 @@ db.Employee.belongsTo(db.BusinessUnit,
         {foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 
-//db.sequelize.sync({force: true});
+// db.sequelize.sync({force: true});
 db.sequelize.sync({alter: true});
 
 
