@@ -34,10 +34,9 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 
 // Find a single User with an email
-exports.findByEmail = (req: pkg.Request, res: pkg.Response) => {
+exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.body.email;
-
-  const data = getUserForEmail(email);
+  const data = await getUserForEmail(email);
   res.send(data);
 };
 
@@ -84,14 +83,14 @@ exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-function getUserForEmail(email: string) {
-  const data = User.findOne({
+async function getUserForEmail(email: string) {
+  const data = await User.findOne({
     where: { // could be this one
       email: email,
     },
   });
   if (!data) {
-    throw new AppError(404, `User for email ${email} not found.`)
+    return false;
   }
   return data;
 }

@@ -13,10 +13,10 @@ router.post("/", [auth.authenticate], users.create);
 // Retrieve all People
 router.get("/all", [auth.authenticate], generalcontroller.findAll(UserModel));
 
+router.get("/email", [auth.authenticate], users.findByEmail);
+
 // Retrieve a single User with id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(UserModel));
-
-router.get("/email", [auth.authenticate], users.findByEmail);
 
 // Update a User with idF
 router.put("/:id", [auth.authenticate], users.update);
