@@ -1,7 +1,9 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 
-const BusinessUnit = SequelizeInstance.define("employee", {
+//businessUnitId
+//userId
+const Employee = SequelizeInstance.define("employee", {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -31,4 +33,4 @@ const BusinessUnit = SequelizeInstance.define("employee", {
     }
 });
 
-export default BusinessUnit;
+export default Employee;

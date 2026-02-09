@@ -8,6 +8,7 @@ import User from "./user.model.ts";
 import Session from "./session.model.ts";
 import BusinessUnit from "./businessunit.model.ts";
 import Employee from "./employee.model.ts"
+import Shift from "./shift.model.ts"
 
 const db = {
     Sequelize,
@@ -15,7 +16,8 @@ const db = {
     User,
     Session,
     BusinessUnit,
-    Employee
+    Employee,
+    Shift
 };
 
 //users can be on many teams and teams have many users
@@ -32,19 +34,31 @@ db.Session.belongsTo(db.User,
 
 //User can be many employees
 db.User.hasMany(db.Employee,
-    {foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 db.Employee.belongsTo(db.User,
-        { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 
 //BusinessUnit has many employees
 db.BusinessUnit.hasMany(db.Employee,
-    {foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Employee.belongsTo(db.BusinessUnit,
-        {foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+
+//shift fks, missing dailyscheduletemplate and position
+db.BusinessUnit.hasMany(db.Shift,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Shift.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Employee.hasMany(db.Shift,
+    { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
+db.Shift.belongsTo(db.Employee,
+    { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
+
+
 
 
 // db.sequelize.sync({force: true});
-db.sequelize.sync({alter: true});
+db.sequelize.sync({ alter: true });
 
 
 // db.sequelize.sync({force: true});
