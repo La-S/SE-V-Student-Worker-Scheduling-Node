@@ -2,7 +2,7 @@ import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 
 //    employeeId: int
-//     positionId: int - not implemented
+//     positionId: int
 //     dailyScheduleTemplateId: int - not implemented
 //     businessUnitId: int
 const Shift = SequelizeInstance.define("shift", {

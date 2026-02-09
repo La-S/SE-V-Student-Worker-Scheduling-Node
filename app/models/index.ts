@@ -46,7 +46,7 @@ db.BusinessUnit.hasMany(db.Employee,
 db.Employee.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
-//shift fks, missing dailyscheduletemplate and position
+//shift fks, missing dailyscheduletemplate
 db.BusinessUnit.hasMany(db.Shift,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.BusinessUnit,
@@ -55,7 +55,12 @@ db.Employee.hasMany(db.Shift,
     { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.Employee,
     { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
+db.Shift.hasMany(db.Position,
+    { foreignKey: { name: "shiftId", allowNull: true }, onDelete: "CASCADE" });
+db.Position.belongsTo(db.Shift,
+    { foreignKey: { name: "shiftId", allowNull: true }, onDelete: "CASCADE" });
 
+//position FKs
 db.BusinessUnit.hasMany(db.Position,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Position.belongsTo(db.BusinessUnit,
