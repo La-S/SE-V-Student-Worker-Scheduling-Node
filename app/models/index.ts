@@ -9,6 +9,7 @@ import Session from "./session.model.ts";
 import BusinessUnit from "./businessunit.model.ts";
 import Employee from "./employee.model.ts"
 import Shift from "./shift.model.ts"
+import Position from "./position.model.ts"
 
 const db = {
     Sequelize,
@@ -17,7 +18,8 @@ const db = {
     Session,
     BusinessUnit,
     Employee,
-    Shift
+    Shift,
+    Position
 };
 
 //users can be on many teams and teams have many users
@@ -54,7 +56,10 @@ db.Employee.hasMany(db.Shift,
 db.Shift.belongsTo(db.Employee,
     { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
 
-
+db.BusinessUnit.hasMany(db.Position,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Position.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 
 // db.sequelize.sync({force: true});
