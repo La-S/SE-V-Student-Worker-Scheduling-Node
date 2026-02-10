@@ -2,9 +2,9 @@ import pkg from 'express'
 import Shift from "../models/shift.model.ts"
 import BusinessUnit from '../models/businessunit.model.ts';
 import { Model, Op } from 'sequelize';
-import Employee from '../models/employee.model';
+import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
-import Position from '../models/position.model';
+import Position from '../models/position.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -13,79 +13,48 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const startDate = req.query.start;
     const endDate = req.query.end;
     let data = {};
-    let query = {};
-
-    //no dates, get all
+    let includeCondition = [{
+        model: Employee,
+        include: [User]
+    },
+    {
+        model: Position
+    }]
+    let whereCondition = {}
+    //no date range, get all
     if (!startDate && !endDate) {
-        data = Shift.findAll({
-            where: { businessUnitId: id },
-            include: [{
-                model: Employee,
-                include: [User]
-            },
-            {
-                model: Position
-            }
-            ]
-        });
+        whereCondition = {
+            businessUnitId: id
+        }
     }
-    //no start, get all up to end date
+    //no startDate, get all up to end
     else if (!startDate) {
-        data = Shift.findAll({
-            where: {
-                businessUnitId: id,
-                date: {
-                    [Op.lte]: endDate
-                }
-            },
-            include: [{
-                model: Employee,
-                include: [User]
-            },
-            {
-                model: Position
+        whereCondition = {
+            businessUnitId: id,
+            date: {
+                [Op.lte]: endDate
             }
-            ]
-        });
+        }
     }
-    //no end, get all shifts after date
+    //no end date, get all after start
     else if (!endDate) {
-        data = Shift.findAll({
-            where: {
-                businessUnitId: id,
-                date: {
-                    [Op.gte]: startDate
-                }
-            },
-            include: [{
-                model: Employee,
-                include: [User]
-            },
-            {
-                model: Position
+        whereCondition = {
+            businessUnitId: id,
+            date: {
+                [Op.gte]: startDate
             }
-            ]
-        });
+        }
     }
-    //start AND end date, get only within date range
+    //both dates, get between them
     else {
-        data = Shift.findAll({
-            where: {
-                businessUnitId: id,
-                date: {
-                    [Op.between]: startDate
-                }
-            },
-            include: [{
-                model: Employee,
-                include: [User]
-            },
-            {
-                model: Position
+        whereCondition = {
+            businessUnitId: id,
+            date: {
+                [Op.between]: [startDate, endDate]
             }
-            ]
-        });
+        }
     }
+    data = await Shift.findAll({where: whereCondition, include: includeCondition});
     res.send(data);
 };
 
