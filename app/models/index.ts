@@ -55,16 +55,18 @@ db.Employee.hasMany(db.Shift,
     { foreignKey: { name: "employeeId", allowNull: true }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.Employee,
     { foreignKey: { name: "employeeId", allowNull: true }, onDelete: "CASCADE" });
-db.Shift.hasMany(db.Position,
-    { foreignKey: { name: "shiftId", allowNull: true }, onDelete: "CASCADE" });
-db.Position.belongsTo(db.Shift,
-    { foreignKey: { name: "shiftId", allowNull: true }, onDelete: "CASCADE" });
+db.Position.hasMany(db.Shift,
+    { foreignKey: { name: "positionId", allowNull: true }, onDelete: "CASCADE" });
+db.Shift.belongsTo(db.Position,
+    { foreignKey: { name: "positionId", allowNull: true }, onDelete: "CASCADE" });
 
 //position FKs
 db.BusinessUnit.hasMany(db.Position,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Position.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Employee.belongsToMany(db.Position, {through: "employees-positions"});
+db.Shift.belongsToMany(db.Employee, {through: "employees-positions"});
 
 
 // db.sequelize.sync({force: true});
