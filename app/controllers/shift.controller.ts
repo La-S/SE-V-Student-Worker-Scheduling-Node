@@ -2,7 +2,6 @@ import db from "../models/index.ts";
 const Shift = db.Shift;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import type { EmployeeType } from "../types/employee.type.ts";
 import User from "../models/user.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
