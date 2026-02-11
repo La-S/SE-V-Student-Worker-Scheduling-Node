@@ -7,6 +7,8 @@ var router = Router()
 // Login
 router.post("/login", auth.login);
 
+router.post("/debug/createSession/withPassword", auth.debugCreateSession)
+
 // Authorization
 // router.post("/authorize/:id", auth.authorize);
 // todo if want to use this address security concerns first
