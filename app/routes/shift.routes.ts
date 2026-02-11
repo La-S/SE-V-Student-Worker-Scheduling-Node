@@ -1,0 +1,25 @@
+import auth from "../authorization/authorization.ts";
+import generalcontroller from "../controllers/general.controller.ts"
+import ShiftModel from "../models/shift.model.ts";
+import shifts from "../controllers/shift.controller.ts"
+import { Router } from "express";
+var router = Router()
+
+
+// Create a new Shift
+router.post("/", [auth.authenticate], generalcontroller.create(ShiftModel));
+
+// Retrieve all Shifts
+router.get("/all", [auth.authenticate], generalcontroller.findAll(ShiftModel));
+
+// Retrieve a single Shift by id
+router.get("/:id", [auth.authenticate], shifts.findOne);
+
+// Update a Shift by id
+router.put("/:id", [auth.authenticate], generalcontroller.update(ShiftModel));
+
+// Delete a Shift by id
+router.delete("/:id", [auth.authenticate], generalcontroller.delete(ShiftModel));
+
+export default router;
+

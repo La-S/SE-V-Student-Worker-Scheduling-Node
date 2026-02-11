@@ -1,6 +1,7 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 
+//userId
 const Session = SequelizeInstance.define("session", {
     id: {
         type: Sequelize.INTEGER,

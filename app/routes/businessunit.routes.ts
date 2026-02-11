@@ -1,6 +1,7 @@
 import auth from "../authorization/authorization.ts";
 import generalcontroller from "../controllers/general.controller.ts"
 import BusinessUnitModel from "../models/businessunit.model.ts";
+import businessunits from "../controllers/businessunit.controller.ts"
 import { Router } from "express";
 var router = Router()
 
@@ -19,6 +20,9 @@ router.put("/:id", [auth.authenticate], generalcontroller.update(BusinessUnitMod
 
 // Delete a BusinessUnit by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(BusinessUnitModel));
+
+//get shifts for businessUnit
+router.get("/:id/shifts", [auth.authenticate], businessunits.findShifts)
 
 export default router;
 
