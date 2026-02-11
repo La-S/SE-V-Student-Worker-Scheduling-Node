@@ -37,6 +37,9 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.body.email;
   const data = await getUserForEmail(email);
+  if (!data) {
+    throw new AppError(404, `User for email: ${email} not found`);
+  }
   res.send(data);
 };
 
