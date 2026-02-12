@@ -9,7 +9,7 @@ const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
 
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     const startDate = req.query.start;
     const endDate = req.query.end;
     let data = {};
