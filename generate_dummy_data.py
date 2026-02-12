@@ -25,18 +25,18 @@ def create_user(first_name, last_name, email, isAdmin):
     global users_generated
     
     # first see if the user exists, and if so, delete him.
-    r = requests.get(f'{ENDPOINT}/user/email', data = {
+    r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email', data = {
         "email": email,
-    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    }, verify=False)
     if r.status_code == 200 and CLEANUP_OLD_ARTIFACTS:
-        r = requests.delete(f'{ENDPOINT}/user/{r.json()["id"]}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+        r = requests.delete(f'{ENDPOINT}/debug/bdiohjaiofjas/user/{r.json()["id"]}', verify=False)
 
-    r = requests.post(f'{ENDPOINT}/user', data = {
+    r = requests.post(f'{ENDPOINT}/debug/bdiohjaiofjas/user', data = {
         "firstName": first_name,
         "lastName": last_name,
         "email": email,
         "isAdmin": 1 if isAdmin else 0
-    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    }, verify=False)
     if r.status_code == 200:
         users_generated += 1
     else:
@@ -45,7 +45,7 @@ def create_user(first_name, last_name, email, isAdmin):
     return r.json()
 
 def create_session(newToken, email, userId, password):
-    r = requests.post(f'{ENDPOINT}/debug/createSession/withPassword', data = {
+    r = requests.post(f'{ENDPOINT}/debug/bdiohjaiofjas/createSession', data = {
         "newToken": newToken,
         "email": email,
         "userId": userId,
@@ -130,7 +130,6 @@ def create_shift(employeeId, businessUnitId, positionId, startTime, endTime, dat
     return r.json()
 
 
-
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
 obi_wan = create_user("Obi", "Wan", "obi.wan@jedimasters.com", True)
@@ -155,9 +154,9 @@ create_session("user", anakin['email'], anakin['id'], SECRET_PASSWORD)
 
 # BusinessUnits, Employees, and Positions
 sith_blue_milk_cafe = create_business_unit("Sith Blue Milk Cafe")
-create_employee(darth_vader['id'], sith_blue_milk_cafe['id'], 'SP26', True, 40, 0, True)
-create_employee(grevious['id'], sith_blue_milk_cafe['id'], 'SP26', True, 20, 0, False)
-create_employee(maul['id'], sith_blue_milk_cafe['id'], 'SP26', False, 20, 0, False)
+darth_vader_employee_id = create_employee(darth_vader['id'], sith_blue_milk_cafe['id'], 'SP26', True, 40, 0, True)
+grevious_employee_id = create_employee(grevious['id'], sith_blue_milk_cafe['id'], 'SP26', True, 20, 0, False)
+maul_employee_id = create_employee(maul['id'], sith_blue_milk_cafe['id'], 'SP26', False, 20, 0, False)
 register_terror = create_position(sith_blue_milk_cafe['id'], "Register Terror", 10.00)
 darth_barista = create_position(sith_blue_milk_cafe['id'], "Darth Barista", 12.00)
 electric_back_bar = create_position(sith_blue_milk_cafe['id'], "Electric Back Bar", 10.00)
@@ -174,7 +173,7 @@ create_position(jedi_fitness_center['id'], "Force Conditioning Specialist", 12.0
 
 # Shifts:
 TODAYS_DATE = str(datetime.today())[0:10]
-create_shift(darth_vader['id'], sith_blue_milk_cafe['id'], darth_barista['id'], "8:00", "13:00", TODAYS_DATE, True)
+create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], darth_barista['id'], "8:00", "13:00", TODAYS_DATE, True)
 # create_shift(darth_vader['id'], sith_blue_milk_cafe['id'], darth_barista['id'], "8:00", "13:00", TODAYS_DATE, True)
 
 

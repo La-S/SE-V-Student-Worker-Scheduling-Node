@@ -45,7 +45,7 @@ exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
 
 // Update a User by the id in the request
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id as string, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
     let userForId = await getOneForId(User, id)
@@ -74,7 +74,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
 
 exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id as string, 10);
   const numUpdated = await User.update(req.body, {
     where: { id: id },
   })

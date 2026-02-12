@@ -16,13 +16,13 @@ exports.findAll = (model: ModelStatic<Model>) => async (req: pkg.Request, res: p
 }
 
 exports.findOne = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     const data = await getOneForId(model, id);
     res.send(data);
 }
 
 exports.update = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     //throws error if not found
     await getOneForId(model, id);
 
@@ -38,7 +38,7 @@ exports.update = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pk
 }
 
 exports.delete = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id = parseInt(req.params.id as string, 10);
     //throws error if not found
     await getOneForId(model, id);
 

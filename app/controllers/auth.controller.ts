@@ -8,7 +8,6 @@ import pkg from 'express';
 import type { UserType } from "../types/user.type.ts";
 import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
-import { NotFoundError } from "../error/notfound.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 
 const User = db.User;
@@ -119,33 +118,6 @@ exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   }
   return res.status(200).send({ message: "token not expired" });
 }
-
-exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
-  // This function breaks the coding patterns of other functions since it's for debugging.
-  // If you want to use this as an example, please don't!
-  if (!req.body || !req.body.newToken || !req.body.email || !req.body.userId || !req.body.password){
-    throw new AppError(400,  "Must have a request body with an email, userId, password, and newToken.");
-  }
-
-  if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
-     throw new AppError(400,  "Sorry, wrong token bub.");
-  }
-
-  let tempExpirationDate = new Date();
-  tempExpirationDate.setDate(tempExpirationDate.getDate() + 150); // expires once every 5 months
-  const session: SessionType = {
-    token: req.body.newToken,
-    email: req.body.email,
-    userId: req.body.userId,
-    expirationDate: tempExpirationDate,
-  };
-
-  console.log("making a new session for DEBUG USER");
-  console.log(session);
-  await createSession(session)
-
-  res.status(200).send({ token: session.token });
-};
 
 async function createSession(session: SessionType) {
   await Session.create(session as any);
