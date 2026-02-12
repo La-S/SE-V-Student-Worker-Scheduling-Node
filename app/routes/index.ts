@@ -7,6 +7,7 @@ import Notifications from "./notifications.routes.ts";
 import EmployeeRoutes from "./employee.routes.ts"
 import ShiftRoutes from "./shift.routes.ts"
 import PositionRoutes from "./position.routes.ts"
+import DailyScheduleTemplateRoutes from "./dailyscheduletemplate.routes.ts"
 
 const router = Router();
 
@@ -17,5 +18,6 @@ router.use("/notification", Notifications);
 router.use("/employee", EmployeeRoutes);
 router.use("/position", PositionRoutes);
 router.use("/shift", ShiftRoutes);
+router.use("/dailyscheduletemplate", DailyScheduleTemplateRoutes)
 
 export default router;
