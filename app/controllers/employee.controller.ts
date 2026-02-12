@@ -2,10 +2,12 @@ import db from "../models/index.ts";
 const Employee = db.Employee;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import type { EmployeeType } from "../types/employee.type.ts";
 import User from "../models/user.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
+import Position from "../models/position.model.ts";
+import BusinessUnit from "../models/businessunit.model.ts";
+import Shift from "../models/shift.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -46,6 +48,51 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let updatedEmployee = await getEmployeeForId(id);
     res.send(updatedEmployee);
 };
+
+exports.getShiftsForEmployee = async (req: pkg.Request, res: pkg.Response) => {
+
+    const id = parseInt(req.params.id, 10);
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    let data = {};
+    let includeCondition = [Position, BusinessUnit]
+    let whereCondition = {}
+    //no date range, get all
+    if (!startDate && !endDate) {
+        whereCondition = {
+            employeeId: id
+        }
+    }
+    //no startDate, get all up to end
+    else if (!startDate) {
+        whereCondition = {
+            employeeId: id,
+            date: {
+                [Op.lte]: endDate
+            }
+        }
+    }
+    //no end date, get all after start
+    else if (!endDate) {
+        whereCondition = {
+            employeeId: id,
+            date: {
+                [Op.gte]: startDate
+            }
+        }
+    }
+    //both dates, get between them
+    else {
+        whereCondition = {
+            employeeId: id,
+            date: {
+                [Op.between]: [startDate, endDate]
+            }
+        }
+    }
+    data = await Shift.findAll({ where: whereCondition, include: includeCondition });
+    res.send(data);
+}
 
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
