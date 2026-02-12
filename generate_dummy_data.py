@@ -27,15 +27,17 @@ def create_user(first_name, last_name, email, isAdmin):
     # first see if the user exists, and if so, delete him.
     r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email', data = {
         "email": email,
+        "password": SECRET_PASSWORD,
     }, verify=False)
     if r.status_code == 200 and CLEANUP_OLD_ARTIFACTS:
-        r = requests.delete(f'{ENDPOINT}/debug/bdiohjaiofjas/user/{r.json()["id"]}', verify=False)
+        r = requests.delete(f'{ENDPOINT}/debug/bdiohjaiofjas/user/{r.json()["id"]}', data={"password": SECRET_PASSWORD}, verify=False)
 
     r = requests.post(f'{ENDPOINT}/debug/bdiohjaiofjas/user', data = {
         "firstName": first_name,
         "lastName": last_name,
         "email": email,
-        "isAdmin": 1 if isAdmin else 0
+        "isAdmin": 1 if isAdmin else 0,
+        "password": SECRET_PASSWORD
     }, verify=False)
     if r.status_code == 200:
         users_generated += 1
@@ -44,12 +46,12 @@ def create_user(first_name, last_name, email, isAdmin):
 
     return r.json()
 
-def create_session(newToken, email, userId, password):
+def create_session(newToken, email, userId):
     r = requests.post(f'{ENDPOINT}/debug/bdiohjaiofjas/createSession', data = {
         "newToken": newToken,
         "email": email,
         "userId": userId,
-        "password": password,
+        "password": SECRET_PASSWORD,
     }, verify=False)
     if r.status_code != 200:
         print('Hmm, we got an error creating a session', r.text)
@@ -147,9 +149,9 @@ maul = create_user("Darth", "Maul", "darthmaul@empire.gov", False)
 
 
 # set up sessions
-create_session("admin", yoda['email'], yoda['id'], SECRET_PASSWORD)
-create_session("manager", obi_wan['email'], obi_wan['id'], SECRET_PASSWORD)
-create_session("user", anakin['email'], anakin['id'], SECRET_PASSWORD)
+create_session("admin", yoda['email'], yoda['id'])
+create_session("manager", obi_wan['email'], obi_wan['id'])
+create_session("user", anakin['email'], anakin['id'])
 
 
 # BusinessUnits, Employees, and Positions

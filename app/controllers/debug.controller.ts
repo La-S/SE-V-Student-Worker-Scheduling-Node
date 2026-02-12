@@ -35,14 +35,23 @@ exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.debugCreateUser = async (req: pkg.Request, res: pkg.Response) => {
+  if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
+     throw new AppError(400,  "Sorry, wrong token bub.");
+  }
   return users.create(req, res);
 };
 
 exports.debugFindUserByEmail = async (req: pkg.Request, res: pkg.Response) => {
+  if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
+    throw new AppError(400,  "Sorry, wrong token bub.");
+  }
   return users.findByEmail(req, res);
 };
 
 exports.debugDeleteEmail = async (req: pkg.Request, res: pkg.Response) => {
+  if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
+    throw new AppError(400,  "Sorry, wrong token bub.");
+  }
   return users.findByEmail(req, res);
 };
 
