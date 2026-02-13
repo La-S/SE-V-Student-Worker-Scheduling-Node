@@ -26,5 +26,7 @@ router.put("/:id/admin", [auth.authenticate, auth.isAdminOnly], users.updateIsAd
 // Delete a User with id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserModel));
 
+router.get("/:id/employees", [auth.authenticate], users.findEmployeesForUser)
+
 export default router;
 

@@ -7,6 +7,7 @@ import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import { getOneForId } from "../services/services.ts";
+import Employee from "../models/employee.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -98,5 +99,11 @@ async function getUserForEmail(email: string) {
   return data;
 }
 
+exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+
+  const data = await Employee.findAll({ where: { userId: id } });
+  res.send(data);
+};
 
 export default exports;
