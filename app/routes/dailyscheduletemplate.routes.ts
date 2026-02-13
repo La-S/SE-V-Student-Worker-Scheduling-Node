@@ -1,0 +1,25 @@
+import auth from "../authorization/authorization.ts";
+import generalcontroller from "../controllers/general.controller.ts"
+import DailyScheduleTemplateModel from "../models/dailyscheduletemplate.model.ts";
+// import dailyscheduletemplates from "../controllers/dailyscheduletemplate.controller.ts"
+import { Router } from "express";
+var router = Router()
+
+
+// Create a new DailyScheduleTemplate
+router.post("/", [auth.authenticate], generalcontroller.create(DailyScheduleTemplateModel));
+
+// Retrieve all DailyScheduleTemplates
+router.get("/all", [auth.authenticate], generalcontroller.findAll(DailyScheduleTemplateModel));
+
+// Retrieve a single DailyScheduleTemplate by id
+router.get("/:id", [auth.authenticate], generalcontroller.findOne(DailyScheduleTemplateModel));
+
+// DailyScheduleTemplate's attributes should not be updated. Post a new one
+
+// Delete a DailyScheduleTemplate by id
+router.delete("/:id", [auth.authenticate], generalcontroller.delete(DailyScheduleTemplateModel));
+
+
+export default router;
+

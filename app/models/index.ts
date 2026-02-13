@@ -10,6 +10,8 @@ import BusinessUnit from "./businessunit.model.ts";
 import Employee from "./employee.model.ts"
 import Shift from "./shift.model.ts"
 import Position from "./position.model.ts"
+import DailyScheduleTemplate from "./dailyscheduletemplate.model.ts";
+import WeeklyScheduleTemplate from "./weeklyscheduletemplate.model.ts";
 
 const db = {
     Sequelize,
@@ -19,7 +21,9 @@ const db = {
     BusinessUnit,
     Employee,
     Shift,
-    Position
+    Position,
+    DailyScheduleTemplate,
+    WeeklyScheduleTemplate
 };
 
 //users can be on many teams and teams have many users
@@ -46,7 +50,7 @@ db.BusinessUnit.hasMany(db.Employee,
 db.Employee.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
-//shift fks, missing dailyscheduletemplate
+//shift fks
 db.BusinessUnit.hasMany(db.Shift,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.BusinessUnit,
@@ -59,14 +63,29 @@ db.Position.hasMany(db.Shift,
     { foreignKey: { name: "positionId", allowNull: true }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.Position,
     { foreignKey: { name: "positionId", allowNull: true }, onDelete: "CASCADE" });
+db.DailyScheduleTemplate.hasMany(db.Shift,
+    { foreignKey: { name: "dailyScheduleTemplateId", allowNull: true }, onDelete: "CASCADE" });
+db.Shift.belongsTo(db.DailyScheduleTemplate,
+    { foreignKey: { name: "dailyScheduleTemplateId", allowNull: true }, onDelete: "CASCADE" });
 
 //position FKs
 db.BusinessUnit.hasMany(db.Position,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Position.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
-db.Employee.belongsToMany(db.Position, {through: "employees-positions"});
-db.Shift.belongsToMany(db.Employee, {through: "employees-positions"});
+db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
+db.Shift.belongsToMany(db.Employee, { through: "employees-positions" });
+
+
+//weekly/dailyScheduleTemplate FKs
+db.WeeklyScheduleTemplate.hasMany(db.DailyScheduleTemplate,
+    { foreignKey: { name: "weeklyScheduleTemplateId", allowNull: false }, onDelete: "CASCADE" });
+db.DailyScheduleTemplate.belongsTo(db.WeeklyScheduleTemplate,
+    { foreignKey: { name: "weeklyScheduleTemplateId", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnit.hasMany(db.WeeklyScheduleTemplate,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.WeeklyScheduleTemplate.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 
 // db.sequelize.sync({force: true});
