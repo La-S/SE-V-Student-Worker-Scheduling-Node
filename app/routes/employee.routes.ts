@@ -22,5 +22,8 @@ router.put("/:id", [auth.authenticate], employees.update);
 // Delete a Employee by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(EmployeeModel));
 
+//Get shifts for employee
+router.get("/:id/shifts", [auth.authenticate], employees.getShiftsForEmployee);
+
 export default router;
 
