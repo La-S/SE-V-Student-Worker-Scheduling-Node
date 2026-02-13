@@ -8,7 +8,6 @@ import pkg from 'express';
 import type { UserType } from "../types/user.type.ts";
 import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
-import { NotFoundError } from "../error/notfound.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 
 const User = db.User;
