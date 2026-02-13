@@ -57,5 +57,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedWeeklySchedule);
 };
 
+exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
+
+    throw new AppError(404, "Route not allowed")
+    //TODO - implement
+}
 
 export default exports;
