@@ -59,12 +59,20 @@ db.BusinessUnit.hasMany(db.WeeklyScheduleTemplate,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.WeeklyScheduleTemplate.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnit.hasMany(db.TaskList,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.TaskList.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 //Employee-owned FKs
 db.Employee.hasMany(db.Shift,
     { foreignKey: { name: "employeeId", allowNull: true }, onDelete: "CASCADE" });
 db.Shift.belongsTo(db.Employee,
     { foreignKey: { name: "employeeId", allowNull: true }, onDelete: "CASCADE" });
+db.Employee.hasMany(db.TaskCompletion,
+    { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
+db.TaskCompletion.belongsTo(db.Employee,
+    { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
 
 //Position-owned FK
 db.Position.hasMany(db.Shift,
@@ -73,10 +81,27 @@ db.Shift.belongsTo(db.Position,
     { foreignKey: { name: "positionId", allowNull: true }, onDelete: "CASCADE" });
 
 //shift fks
+db.Shift.hasMany(db.TaskCompletion,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+db.TaskCompletion.belongsTo(db.Shift,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 
 //position FKs
 db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
-db.Shift.belongsToMany(db.Employee, { through: "employees-positions" });
+db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
+
+
+//TaskList FK
+db.TaskList.hasMany(db.Task,
+    { foreignKey: { name: "taskListId", allowNull: false }, onDelete: "CASCADE" });
+db.Task.belongsTo(db.TaskList,
+    { foreignKey: { name: "taskListId", allowNull: false }, onDelete: "CASCADE" });
+
+//taskFK
+db.Task.hasMany(db.TaskCompletion,
+    { foreignKey: { name: "taskId", allowNull: false }, onDelete: "CASCADE" });
+db.TaskCompletion.belongsTo(db.Task,
+    { foreignKey: { name: "taskId", allowNull: false }, onDelete: "CASCADE" });
 
 
 //weekly/dailyScheduleTemplate FKs
