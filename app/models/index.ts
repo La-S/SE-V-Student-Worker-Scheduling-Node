@@ -73,6 +73,8 @@ db.Employee.hasMany(db.TaskCompletion,
     { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
 db.TaskCompletion.belongsTo(db.Employee,
     { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
+db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
+db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
 
 //Position-owned FK
 db.Position.hasMany(db.Shift,
@@ -85,11 +87,8 @@ db.Shift.hasMany(db.TaskCompletion,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.TaskCompletion.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
-
-//position FKs
-db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
-db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
-
+db.Shift.belongsToMany(db.TaskList, {through: "shifts-tasklists"})
+db.TaskList.belongsToMany(db.Shift, {through: "shifts-tasklists"})
 
 //TaskList FK
 db.TaskList.hasMany(db.Task,

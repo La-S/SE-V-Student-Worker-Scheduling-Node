@@ -3,9 +3,20 @@ const TaskList = db.TaskList;
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
+import Task from "../models/task.model.ts";
+import { Model } from "sequelize";
+import { NotFoundError } from "../error/notfound.error.ts";
 
 const exports: any = {};
-const errorClassName = "Task";
+const errorClassName = "Task List";
+
+
+exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+
+    const data = await getTaskListForId(id);
+    res.send(data);
+};
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
@@ -25,5 +36,16 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let updatedEmployee = await getOneForId(TaskList, id);
     res.send(updatedEmployee);
 };
+
+async function getTaskListForId(id: number): Promise<Model<any, any> | null> {
+    if (!id) {
+        throw new AppError(400, "id provided must be an integer")
+    }
+    const data = await TaskList.findByPk(id, { include: [Task] });
+    if (!data) {
+        throw new NotFoundError(errorClassName, id);
+    }
+    return data;
+}
 
 export default exports;

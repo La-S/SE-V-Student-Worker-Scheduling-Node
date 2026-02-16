@@ -13,7 +13,7 @@ router.post("/", [auth.authenticate], generalcontroller.create(TaskCompletionMod
 router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskCompletionModel));
 
 // Retrieve a single TaskCompletion by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(TaskCompletionModel));
+router.get("/:id", [auth.authenticate], taskCompletions.findOne);
 
 // Update a TaskCompletion by id
 router.put("/:id", [auth.authenticate], taskCompletions.update);
