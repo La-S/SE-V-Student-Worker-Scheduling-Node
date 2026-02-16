@@ -7,6 +7,7 @@ import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 import Employee from "../models/employee.model.ts";
 import Position from "../models/position.model.ts";
+import BusinessUnit from "../models/businessunit.model.ts";
 
 const exports: any = {};
 const errorClassName = "Shift";
@@ -28,7 +29,10 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
         include: [User]
     },
     {
-        model: Position
+        model: Position,
+    },
+    {
+        model: BusinessUnit
     }
 ]});
     if (!data) {
