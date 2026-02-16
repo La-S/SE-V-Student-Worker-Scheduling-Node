@@ -1,8 +1,8 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 
-//businessUnitId
-const TaskList = SequelizeInstance.define("tasklist", {
+//taskListId
+const Task = SequelizeInstance.define("task", {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -11,7 +11,10 @@ const TaskList = SequelizeInstance.define("tasklist", {
     name: {
         type: Sequelize.STRING,
         allowNull: false
+    },
+    sequenceNumber: {
+        type: Sequelize.INTEGER
     }
 })
 
-export default TaskList
+export default Task

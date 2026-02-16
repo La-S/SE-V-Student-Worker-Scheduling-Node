@@ -1,4 +1,4 @@
-export interface TaskListItemCompletionType {
+export interface TaskCompletionType {
     id?: number,
     shiftId: number,
     taskListItemId: number,
