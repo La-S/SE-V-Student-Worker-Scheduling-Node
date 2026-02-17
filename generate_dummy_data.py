@@ -30,7 +30,7 @@ def get_existing_user(email):
         "password": SECRET_PASSWORD,
     }, verify=False)
     if r.status_code != 200:
-        print("Error, couldn't get existing user...")
+        print("Error, couldn't get existing user...", r.text)
     return r.json()
 
 def create_user(first_name, last_name, email, isAdmin):
@@ -229,7 +229,7 @@ create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], electric_
 if (YOUR_EMAIL):
     # add your user to some of these in order to have good dummy data for easy FE testing.
     your_user = get_existing_user(YOUR_EMAIL);
-    your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True) # you work at the fitness center
+    your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
     create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TODAYS_DATE, True)
     create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "15:00", "17:00", TODAYS_DATE, True)
     create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "23:59", TODAYS_DATE, True)
