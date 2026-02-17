@@ -87,8 +87,8 @@ db.Shift.hasMany(db.TaskCompletion,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.TaskCompletion.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
-db.Shift.belongsToMany(db.TaskList, {through: "shifts-tasklists"})
-db.TaskList.belongsToMany(db.Shift, {through: "shifts-tasklists"})
+db.Shift.belongsToMany(db.TaskList, {through: "shifts-tasklists", as: "taskList"});
+db.TaskList.belongsToMany(db.Shift, {through: "shifts-tasklists", as: "shift"})
 
 //TaskList FK
 db.TaskList.hasMany(db.Task,
