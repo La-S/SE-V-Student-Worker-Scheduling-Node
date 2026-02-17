@@ -10,7 +10,6 @@ import Position from "../models/position.model.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import Task from "../models/task.model.ts";
-import BusinessUnit from "../models/businessunit.model.ts";
 
 const exports: any = {};
 const errorClassName = "Shift";
@@ -43,10 +42,6 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
                 where:{shiftId: id}
             }]
         }]
-        model: Position,
-    },
-    {
-        model: BusinessUnit
     }
 ]});
     if (!data) {
