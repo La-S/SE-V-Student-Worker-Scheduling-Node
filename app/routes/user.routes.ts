@@ -28,5 +28,7 @@ router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserModel));
 
 router.get("/:id/employees", [auth.authenticate], users.findEmployeesForUser)
 
+router.get("/:id/shiftstoday", [auth.authenticate], users.findShiftsForToday)
+
 export default router;
 

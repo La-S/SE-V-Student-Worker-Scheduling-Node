@@ -7,6 +7,9 @@ import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 import Employee from "../models/employee.model.ts";
 import Position from "../models/position.model.ts";
+import TaskCompletion from "../models/taskcompletion.model.ts";
+import TaskList from "../models/tasklist.model.ts";
+import Task from "../models/task.model.ts";
 
 const exports: any = {};
 const errorClassName = "Shift";
@@ -29,6 +32,16 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
     },
     {
         model: Position
+    },
+    {
+        model: TaskList,
+        include: [{
+            model: Task,
+            include: [{
+                model: TaskCompletion,
+                where:{shiftId: id}
+            }]
+        }]
     }
 ]});
     if (!data) {
