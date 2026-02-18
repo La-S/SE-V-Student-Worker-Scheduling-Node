@@ -114,8 +114,8 @@ exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  //definitely gonna have some date problems with this. Will require further
-  const today = new Date(Date.now()).toISOString().split('T')[0]
+  //should provide date foe central time. CA format is YYYY-mm-dd
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
 
   await getOneForId(User, id);
 
