@@ -18,7 +18,7 @@ const TaskCompletion = SequelizeInstance.define("taskcompletion", {
         type: Sequelize.TIME
     },
     date: {
-        type: Sequelize.DATE
+        type: Sequelize.DATEONLY
     }
 })
 
