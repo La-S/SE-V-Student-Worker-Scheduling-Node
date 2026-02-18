@@ -69,7 +69,7 @@ exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = TaskList.findAll({where:{businessUnitId: id}});
+    const data = await TaskList.findAll({where:{businessUnitId: id}});
     res.send(data);
 }
 
