@@ -272,7 +272,9 @@ if (YOUR_EMAIL):
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
     shift1 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TODAYS_DATE, True)
     shift2 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "15:00", "17:00", TODAYS_DATE, True)
-    shift3 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "23:59", TODAYS_DATE, True)
+    shift3 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "22:59", TODAYS_DATE, True)
+    shift4 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "23:30", "23:59", TODAYS_DATE, True) # this is just here to test time zones
+
     add_tasklist_to_shift(shift1['id'], wipe_equipment['id'])
     add_task_completion(shift1['id'], wipe_force_weights_task['id'], anakin['id'], True, "03:00") # Anakin is going to complete one task for you. 
 
