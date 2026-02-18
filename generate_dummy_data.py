@@ -183,7 +183,7 @@ def add_tasklist_to_shift(shift_id, task_list_id):
 
 def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off, time):
     global task_completions_generated
-    print("adding task completion to: ", task_id, shift_id, check_off_employee_id)
+    # print("adding task completion to: ", task_id, shift_id, check_off_employee_id)
     r = requests.post(f'{ENDPOINT}/taskcompletion/', data = {
         "taskId": task_id,
         "shiftId": shift_id,
@@ -237,7 +237,7 @@ jedi_fitness_center = create_business_unit("Jedi Fitness Center")
 create_employee(obi_wan['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True)
 jaba_working_fitness_center = create_employee(jabba['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False)
 create_employee(ahsoka['id'], jedi_fitness_center['id'], 'SP26', True, 32, 0, False)
-create_employee(anakin['id'], jedi_fitness_center['id'], 'SP26', False, 40, 0, False)
+anakin_fitness_employee = create_employee(anakin['id'], jedi_fitness_center['id'], 'SP26', False, 40, 0, False)
 gate_keeper = create_position(jedi_fitness_center['id'], "Gatekeeper", 10.00)
 physical_form_coach = create_position(jedi_fitness_center['id'], "Master of Physical Forms", 10.00)
 conditioning_specialist = create_position(jedi_fitness_center['id'], "Force Conditioning Specialist", 12.00)
@@ -276,7 +276,7 @@ if (YOUR_EMAIL):
     shift4 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "23:30", "23:59", TODAYS_DATE, True) # this is just here to test time zones
 
     add_tasklist_to_shift(shift1['id'], wipe_equipment['id'])
-    add_task_completion(shift1['id'], wipe_force_weights_task['id'], anakin['id'], True, "03:00") # Anakin is going to complete one task for you. 
+    add_task_completion(shift1['id'], wipe_force_weights_task['id'], anakin_fitness_employee['id'], True, "03:00") # Anakin is going to complete one task for you. 
 
 
 
