@@ -146,6 +146,7 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
     },
     {
       model: TaskList,
+      as: "taskList",
       include: [{
         model: Task,
         include: [{
