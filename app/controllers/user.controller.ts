@@ -115,7 +115,7 @@ exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
 exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   //definitely gonna have some date problems with this. Will require further
-  const today = Date.now();
+  const today = new Date(Date.now()).toISOString().split('T')[0]
 
   await getOneForId(User, id);
 
@@ -133,11 +133,6 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
       employeeId: { [Op.in]: employeeIds },
       date: { [Op.eq]: today }
     },
-    //include? User implied by endpoint, no?
-    // include: [{
-    //   model: Employee,
-    //   include: [User]
-    // },
     include: [{
       model: Position
     },
