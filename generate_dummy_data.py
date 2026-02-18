@@ -22,6 +22,7 @@ positions_created = 0
 shifts_generated = 0
 tasklists_generated = 0
 tasks_generated = 0
+task_completions_generated = 0
 
 
 def get_existing_user(email):
@@ -173,6 +174,30 @@ def create_task(taskListId, name, sequence_number):
 
     return r.json()
 
+def add_tasklist_to_shift(shift_id, task_list_id):
+    r = requests.post(f'{ENDPOINT}/shift/{shift_id}/tasklist/{task_list_id}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error creating a task', r.text)
+
+    return r.json()
+
+def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off, time):
+    global task_completions_generated
+    print("adding task completion to: ", task_id, shift_id, check_off_employee_id)
+    r = requests.post(f'{ENDPOINT}/taskcompletion/', data = {
+        "taskId": task_id,
+        "shiftId": shift_id,
+        "checkedOffEmployeeId": check_off_employee_id,
+        "checkedOff": 1 if is_checked_off else 0,
+        "time": time
+    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code == 200:
+        task_completions_generated += 1
+    else:
+        print('Hmm, we got an error creating a task completion', r.text)
+
+    return r.json()
+
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
@@ -204,35 +229,52 @@ maul_employee_id = create_employee(maul['id'], sith_blue_milk_cafe['id'], 'SP26'
 register_terror = create_position(sith_blue_milk_cafe['id'], "Register Terror", 10.00)
 darth_barista = create_position(sith_blue_milk_cafe['id'], "Darth Barista", 12.00)
 electric_back_bar = create_position(sith_blue_milk_cafe['id'], "Electric Back Bar", 10.00)
-create_tasklist(sith_blue_milk_cafe['id'], "Clean Up")
+clean_up_cafe = create_tasklist(sith_blue_milk_cafe['id'], "Clean Up")
+counters_task = create_task(clean_up_cafe['id'], 'Wipe down counters', 2)
 
 
 jedi_fitness_center = create_business_unit("Jedi Fitness Center")
 create_employee(obi_wan['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True)
-create_employee(jabba['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False)
+jaba_working_fitness_center = create_employee(jabba['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False)
 create_employee(ahsoka['id'], jedi_fitness_center['id'], 'SP26', True, 32, 0, False)
 create_employee(anakin['id'], jedi_fitness_center['id'], 'SP26', False, 40, 0, False)
 gate_keeper = create_position(jedi_fitness_center['id'], "Gatekeeper", 10.00)
 physical_form_coach = create_position(jedi_fitness_center['id'], "Master of Physical Forms", 10.00)
 conditioning_specialist = create_position(jedi_fitness_center['id'], "Force Conditioning Specialist", 12.00)
 wipe_equipment = create_tasklist(jedi_fitness_center['id'], "Wipe Down Equipment")
-create_task(wipe_equipment['id'], 'Wipe down force weights (1)', 1)
-create_task(wipe_equipment['id'], 'Wipe down holo bench (3)', 3)
-create_task(wipe_equipment['id'], 'Wipe down saber trainer (2)', 2)
+wipe_force_weights_task = create_task(wipe_equipment['id'], 'Wipe down force weights (1)', 1)
+wipe_holo_bench_task = create_task(wipe_equipment['id'], 'Wipe down holo bench (3)', 3)
+wipe_saber_trainer_task = create_task(wipe_equipment['id'], 'Wipe down saber trainer (2)', 2)
+
+
+dexs_diner = create_business_unit("Dex's Diner") #https://starwars.fandom.com/wiki/Dex%27s_Diner/Legends
+jabba_working_for_dex = create_employee(jabba['id'], dexs_diner['id'], 'SP26', True, 40, 0, False)
+nerf_steak_chef = create_position(dexs_diner['id'], "Nerf Steak Chef", 10.00)
+
 
 # Shifts:
 TODAYS_DATE = str(datetime.today())[0:10]
-create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], darth_barista['id'], "8:00", "13:00", TODAYS_DATE, True)
-create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], electric_back_bar['id'], "8:00", "13:00", TODAYS_DATE, True)
+shift1 = create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], darth_barista['id'], "8:00", "13:00", TODAYS_DATE, True)
+shift2 = create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], electric_back_bar['id'], "8:00", "13:00", TODAYS_DATE, True)
+
+add_tasklist_to_shift(shift1['id'], clean_up_cafe['id'])
+add_tasklist_to_shift(shift2['id'], clean_up_cafe['id'])
+
+# jabba's gotta make all that wealth somehow. Working crazy hours...
+shift3 = create_shift(jaba_working_fitness_center['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "8:00", "13:00", TODAYS_DATE, True)
+shift4 = create_shift(jabba_working_for_dex['id'], dexs_diner['id'], nerf_steak_chef['id'], "14:00", "19:00", TODAYS_DATE, True)
+
 
 
 if (YOUR_EMAIL):
     # add your user to some of these in order to have good dummy data for easy FE testing.
     your_user = get_existing_user(YOUR_EMAIL);
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
-    create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TODAYS_DATE, True)
-    create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "15:00", "17:00", TODAYS_DATE, True)
-    create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "23:59", TODAYS_DATE, True)
+    shift1 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TODAYS_DATE, True)
+    shift2 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "15:00", "17:00", TODAYS_DATE, True)
+    shift3 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "23:59", TODAYS_DATE, True)
+    add_tasklist_to_shift(shift1['id'], wipe_equipment['id'])
+    add_task_completion(shift1['id'], wipe_force_weights_task['id'], anakin['id'], True, "03:00") # Anakin is going to complete one task for you. 
 
 
 
