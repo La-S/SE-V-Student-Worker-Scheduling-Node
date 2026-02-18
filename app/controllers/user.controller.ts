@@ -151,6 +151,7 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
         model: Task,
         include: [{
           model: TaskCompletion,
+          required: false,
           where: { shiftId: id }
         }]
       }]
