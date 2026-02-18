@@ -4,5 +4,6 @@ export interface TaskCompletionType {
     taskListItemId: number,
     checkedOffUser: number,
     checkedOff: boolean,
-    time: string
+    time: string,
+    date: string
 }

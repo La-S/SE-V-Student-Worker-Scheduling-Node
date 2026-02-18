@@ -16,6 +16,9 @@ const TaskCompletion = SequelizeInstance.define("taskcompletion", {
     },
     time: {
         type: Sequelize.TIME
+    },
+    date: {
+        type: Sequelize.DATE
     }
 })
 
