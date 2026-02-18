@@ -8,6 +8,7 @@ const sequelize = new Sequelize(
   {
     host: dbConfig.HOST,
     dialect: dbConfig.dialect,
+    timezone: '+06:00',
     pool: {
       max: dbConfig.pool.max,
       min: dbConfig.pool.min,
