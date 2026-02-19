@@ -25,5 +25,11 @@ router.delete("/:id", [auth.authenticate], generalcontroller.delete(EmployeeMode
 //Get shifts for employee
 router.get("/:id/shifts", [auth.authenticate], employees.getShiftsForEmployee);
 
+router.post("/:id/position/:positionid", [auth.authenticate], employees.addPosition)
+
+router.delete("/:id/position/:positionid", [auth.authenticate], employees.removePosition)
+
+router.get("/:id/positions", [auth.authenticate], employees.findPositions)
+
 export default router;
 
