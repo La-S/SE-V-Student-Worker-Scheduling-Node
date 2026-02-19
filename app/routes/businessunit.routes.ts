@@ -26,5 +26,12 @@ router.get("/:id/shifts", [auth.authenticate], businessunits.findShifts)
 
 router.get("/:id/tasklists", [auth.authenticate], businessunits.findTaskLists)
 
+router.get("/:id/employees", [auth.authenticate], businessunits.findEmployees)
+
+router.get("/:id/positions", [auth.authenticate], businessunits.findPositions)
+
+router.get("/:id/weeklyscheduletemplates", [auth.authenticate], businessunits.findWeeklySchedules)
+
+
 export default router;
 
