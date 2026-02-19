@@ -24,7 +24,8 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         model: Position
     },
     {
-        model: TaskList
+        model: TaskList,
+        as: "taskList"
     }]
     let whereCondition = {}
     //no date range, get all
