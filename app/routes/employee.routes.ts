@@ -29,6 +29,7 @@ router.post("/:id/position/:positionid", [auth.authenticate], employees.addPosit
 
 router.delete("/:id/position/:positionid", [auth.authenticate], employees.removePosition)
 
+router.get("/:id/positions", [auth.authenticate], employees.findPositions)
 
 export default router;
 

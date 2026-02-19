@@ -100,7 +100,7 @@ exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
     const employeeId = parseInt(req.params.id, 10);
     const positionId = parseInt(req.params.positionid, 10)
 
-    if (!employeeId || !positionId){
+    if (!employeeId || !positionId) {
         throw new AppError(400, "one of the entered ids is not a number")
     }
 
@@ -115,7 +115,7 @@ exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
     //@ts-ignore
     const data = await employee.addPosition(position);
     if (!data) {
-        res.status(400).send({message: "Something went wrong adding position"})
+        res.status(400).send({ message: "Something went wrong adding position" })
     }
     else {
         res.send({ message: "Position added successfully" });
@@ -127,7 +127,7 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
     const employeeId = parseInt(req.params.id, 10);
     const positionId = parseInt(req.params.positionid, 10)
 
-    if (!employeeId || !positionId){
+    if (!employeeId || !positionId) {
         throw new AppError(400, "one of the entered ids is not a number")
     }
 
@@ -142,11 +142,19 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
     //@ts-ignore
     const data = await employee.removePosition(position);
     if (!data) {
-        res.status(400).send({message: "Something went wrong adding position"})
+        res.status(400).send({ message: "Something went wrong adding position" })
     }
     else {
         res.send({ message: "Position added successfully" });
     }
+}
+
+exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    //@ts-ignore
+    const data = await employee.getPositions()
+    res.send(data);
 }
 
 
