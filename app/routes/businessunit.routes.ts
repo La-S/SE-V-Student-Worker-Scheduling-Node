@@ -24,5 +24,7 @@ router.delete("/:id", [auth.authenticate], generalcontroller.delete(BusinessUnit
 //get shifts for businessUnit
 router.get("/:id/shifts", [auth.authenticate], businessunits.findShifts)
 
+router.get("/:id/tasklists", [auth.authenticate], businessunits.findTaskLists)
+
 export default router;
 

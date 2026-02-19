@@ -20,7 +20,7 @@ const Shift = SequelizeInstance.define("shift", {
         allowNull: false
     },
     date: {
-        type: Sequelize.DATE,
+        type: Sequelize.DATEONLY,
         allowNull: true
     },
     published: {

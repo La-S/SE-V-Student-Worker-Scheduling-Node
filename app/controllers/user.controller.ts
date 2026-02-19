@@ -8,6 +8,12 @@ import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import { getOneForId } from "../services/services.ts";
 import Employee from "../models/employee.model.ts";
+import Shift from "../models/shift.model.ts";
+import Position from "../models/position.model.ts";
+import Task from "../models/task.model.ts";
+import TaskCompletion from "../models/taskcompletion.model.ts";
+import TaskList from "../models/tasklist.model.ts";
+import BusinessUnit from "../models/businessunit.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -105,5 +111,49 @@ exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   const data = await Employee.findAll({ where: { userId: id } });
   res.send(data);
 };
+
+exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+  //should provide date foe central time. CA format is YYYY-mm-dd
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+
+  await getOneForId(User, id);
+
+  let employeesForUser: Model<any, any>[] = await Employee.findAll({ where: { userId: id } });
+  if (!employeesForUser) {
+    throw new AppError(404, `Employees not found for user with id ${id}`)
+  }
+
+  let employeeIds = employeesForUser.map((employee: Model<any, any>) => {
+    return employee.dataValues.id
+  })
+
+  const data = await Shift.findAll({
+    where: {
+      employeeId: { [Op.in]: employeeIds },
+      date: { [Op.eq]: today }
+    },
+    include: [{
+      model: Position
+    },
+    {
+      model: BusinessUnit
+    },
+    {
+      model: TaskList,
+      as: "taskList",
+      include: [{
+        model: Task,
+        include: [{
+          model: TaskCompletion,
+          required: false,
+          where: { shiftId: id }
+        }]
+      }]
+    }]
+  });
+  res.send(data);
+}
+
 
 export default exports;

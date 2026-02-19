@@ -21,5 +21,12 @@ router.put("/:id", [auth.authenticate], generalcontroller.update(ShiftModel));
 // Delete a Shift by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(ShiftModel));
 
+//add TaskList to shift
+router.post("/:id/tasklist/:tasklistid", [auth.authenticate], shifts.addTaskList);
+
+//remove TaskList from shift
+router.delete("/:id/tasklist/:tasklistid", [auth.authenticate], shifts.removeTaskList);
+
+
 export default router;
 

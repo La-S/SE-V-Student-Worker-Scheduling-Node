@@ -5,11 +5,14 @@ import { Model, Op } from 'sequelize';
 import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
+import TaskList from '../models/tasklist.model.ts';
+import { getOneForId } from '../services/services.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
 
     const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
     const endDate = req.query.end;
     let data = {};
@@ -19,6 +22,9 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     },
     {
         model: Position
+    },
+    {
+        model: TaskList
     }]
     let whereCondition = {}
     //no date range, get all
@@ -54,8 +60,17 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
             }
         }
     }
-    data = await Shift.findAll({where: whereCondition, include: includeCondition});
+    data = await Shift.findAll({ where: whereCondition, include: includeCondition });
     res.send(data);
 };
+
+
+exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const data = await TaskList.findAll({where:{businessUnitId: id}});
+    res.send(data);
+}
 
 export default exports;
