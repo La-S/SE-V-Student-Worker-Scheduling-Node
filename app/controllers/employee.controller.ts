@@ -9,6 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
+import { getOneForId } from "../services/services.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -94,6 +95,60 @@ exports.getShiftsForEmployee = async (req: pkg.Request, res: pkg.Response) => {
     data = await Shift.findAll({ where: whereCondition, include: includeCondition });
     res.send(data);
 }
+
+exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
+    const employeeId = parseInt(req.params.id, 10);
+    const positionId = parseInt(req.params.positionid, 10)
+
+    if (!employeeId || !positionId){
+        throw new AppError(400, "one of the entered ids is not a number")
+    }
+
+    const employee = await Employee.findByPk(employeeId);
+    if (!employee) {
+        throw new NotFoundError(errorClassName, employeeId);
+    }
+    const position = await Position.findByPk(positionId);
+    if (!position) {
+        throw new NotFoundError("Position", positionId);
+    }
+    //@ts-ignore
+    const data = await employee.addPosition(position);
+    if (!data) {
+        res.status(400).send({message: "Something went wrong adding position"})
+    }
+    else {
+        res.send({ message: "Position added successfully" });
+    }
+}
+
+
+exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
+    const employeeId = parseInt(req.params.id, 10);
+    const positionId = parseInt(req.params.positionid, 10)
+
+    if (!employeeId || !positionId){
+        throw new AppError(400, "one of the entered ids is not a number")
+    }
+
+    const employee = await Employee.findByPk(employeeId);
+    if (!employee) {
+        throw new NotFoundError(errorClassName, employeeId);
+    }
+    const position = await Position.findByPk(positionId);
+    if (!position) {
+        throw new NotFoundError("Position", positionId);
+    }
+    //@ts-ignore
+    const data = await employee.removePosition(position);
+    if (!data) {
+        res.status(400).send({message: "Something went wrong adding position"})
+    }
+    else {
+        res.send({ message: "Position added successfully" });
+    }
+}
+
 
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
