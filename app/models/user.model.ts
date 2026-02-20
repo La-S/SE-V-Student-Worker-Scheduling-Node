@@ -20,6 +20,10 @@ const User = SequelizeInstance.define("user", {
     type: Sequelize.STRING(100),
     allowNull: false,
   },
+  phone: {
+    type: Sequelize.STRING,
+    allowNull: true
+  },
   pushToken: {
     type: Sequelize.STRING(256),
     allowNull: true,
@@ -32,6 +36,10 @@ const User = SequelizeInstance.define("user", {
     type: Sequelize.BOOLEAN,
     allowNull: false,
   },
+  isStudent: {
+    type: Sequelize.BOOLEAN
+  },
+  
 });
 
 export default User;
