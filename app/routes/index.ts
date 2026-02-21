@@ -12,6 +12,7 @@ import WeeklyScheduleTemplateRoutes from "./weeklyscheduletemplate.routes.ts";
 import TaskListRoutes from "./tasklist.routes.ts"
 import TaskRoutes from "./task.routes.ts"
 import TaskCompletionRoutes from "./taskcompletion.routes.ts"
+import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
 import DebugRoutes from "./debug.routes.ts";
 
 const router = Router();
@@ -28,6 +29,7 @@ router.use("/weeklyscheduletemplate", WeeklyScheduleTemplateRoutes)
 router.use("/tasklist", TaskListRoutes);
 router.use("/task", TaskRoutes)
 router.use("/taskcompletion", TaskCompletionRoutes)
+router.use("/availabilitytemplate", AvailabilityTemplateRoutes);
 router.use("/debug", DebugRoutes);
 
 export default router;

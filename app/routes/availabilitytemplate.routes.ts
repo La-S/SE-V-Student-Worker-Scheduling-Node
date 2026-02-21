@@ -1,5 +1,5 @@
 import auth from "../authorization/authorization.ts";
-import employees from "../controllers/employee.controller.ts"
+import availabilityTemplates from "../controllers/availabilitytemplate.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"
 import AvailabilityTemplateModel from "../models/availabilitytemplate.model.ts"
 import { Router } from "express";
@@ -11,19 +11,16 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(AvailabilityTemplateModel));
 
 // Retrieve all AvailabilityTemplates
-router.get("/all", [auth.authenticate], employees.findAll);
+router.get("/all", [auth.authenticate], generalcontroller.findAll(AvailabilityTemplateModel));
 
 // Retrieve a single AvailabilityTemplate by id
-router.get("/:id", [auth.authenticate], employees.findOne);
+router.get("/:id", [auth.authenticate], generalcontroller.findOne(AvailabilityTemplateModel));
 
 // Update a AvailabilityTemplate by id
-router.put("/:id", [auth.authenticate], employees.update);
+router.put("/:id", [auth.authenticate], availabilityTemplates.update);
 
 // Delete a AvailabilityTemplate by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(AvailabilityTemplateModel));
-
-//Get shifts for employee
-router.get("/:id/shifts", [auth.authenticate], employees.getShiftsForAvailabilityTemplate);
 
 export default router;
 

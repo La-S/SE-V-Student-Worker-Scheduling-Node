@@ -9,6 +9,8 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
+import { getOneForId } from "../services/services.ts";
+import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -50,7 +52,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedEmployee);
 };
 
-exports.getShiftsForEmployee = async (req: pkg.Request, res: pkg.Response) => {
+exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
 
     const id = parseInt(req.params.id, 10);
     const startDate = req.query.start;
@@ -92,6 +94,18 @@ exports.getShiftsForEmployee = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     data = await Shift.findAll({ where: whereCondition, include: includeCondition });
+    res.send(data);
+}
+
+exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    console.log(Object.getOwnPropertyNames(employee.__proto__));
+
+    //@ts-ignore
+    const userId = employee.userId
+
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId } });
     res.send(data);
 }
 
