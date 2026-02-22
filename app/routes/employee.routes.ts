@@ -27,5 +27,11 @@ router.get("/:id/shifts", [auth.authenticate], employees.findShifts);
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], employees.findAvailabilityTemplates)
 
+router.post("/:id/position/:positionid", [auth.authenticate], employees.addPosition)
+
+router.delete("/:id/position/:positionid", [auth.authenticate], employees.removePosition)
+
+router.get("/:id/positions", [auth.authenticate], employees.findPositions)
+
 export default router;
 

@@ -1,5 +1,7 @@
 import { AppError } from "../error/app.error.ts";
+import Employee from "../models/employee.model.ts";
 import db from "../models/index.ts";
+import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import pkg from 'express'
 const Position = db.Position
@@ -25,5 +27,19 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let updatedEmployee = await getOneForId(Position, id);
     res.send(updatedEmployee);
 };
+
+exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(Position, id);
+
+    const data = await Position.findAll({
+        where:{id: id},
+        include: [{
+                model: Employee,
+                include: [User]
+            }]
+    })
+    res.send(data);
+}
 
 export default exports;

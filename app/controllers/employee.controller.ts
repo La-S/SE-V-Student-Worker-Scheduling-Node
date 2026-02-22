@@ -109,6 +109,68 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 }
 
+exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
+    const employeeId = parseInt(req.params.id, 10);
+    const positionId = parseInt(req.params.positionid, 10)
+
+    if (!employeeId || !positionId) {
+        throw new AppError(400, "one of the entered ids is not a number")
+    }
+
+    const employee = await Employee.findByPk(employeeId);
+    if (!employee) {
+        throw new NotFoundError(errorClassName, employeeId);
+    }
+    const position = await Position.findByPk(positionId);
+    if (!position) {
+        throw new NotFoundError("Position", positionId);
+    }
+    //@ts-ignore
+    const data = await employee.addPosition(position);
+    if (!data) {
+        res.status(400).send({ message: "Something went wrong adding position" })
+    }
+    else {
+        res.send({ message: "Position added successfully" });
+    }
+}
+
+
+exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
+    const employeeId = parseInt(req.params.id, 10);
+    const positionId = parseInt(req.params.positionid, 10)
+
+    if (!employeeId || !positionId) {
+        throw new AppError(400, "one of the entered ids is not a number")
+    }
+
+    const employee = await Employee.findByPk(employeeId);
+    if (!employee) {
+        throw new NotFoundError(errorClassName, employeeId);
+    }
+    const position = await Position.findByPk(positionId);
+    if (!position) {
+        throw new NotFoundError("Position", positionId);
+    }
+    //@ts-ignore
+    const data = await employee.removePosition(position);
+    if (!data) {
+        res.status(400).send({ message: "Something went wrong adding position" })
+    }
+    else {
+        res.send({ message: "Position added successfully" });
+    }
+}
+
+exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    //@ts-ignore
+    const data = await employee.getPositions()
+    res.send(data);
+}
+
+
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {

@@ -30,5 +30,12 @@ router.get("/:id/availability", [auth.authenticate], businessunits.findAvailabil
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], businessunits.findAvailabilityTemplates)
 
+router.get("/:id/employees", [auth.authenticate], businessunits.findEmployees)
+
+router.get("/:id/positions", [auth.authenticate], businessunits.findPositions)
+
+router.get("/:id/weeklyscheduletemplates", [auth.authenticate], businessunits.findWeeklySchedules)
+
+
 export default router;
 
