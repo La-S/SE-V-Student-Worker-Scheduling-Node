@@ -9,6 +9,8 @@ import Shift from "../models/shift.model.ts";
 import User from "../models/user.model.ts";
 import Position from "../models/position.model.ts";
 import DailyScheduleTemplate from "../models/dailyscheduletemplate.model.ts";
+import BusinessUnit from "../models/businessunit.model.ts";
+import { daysOfWeek } from "../types/dayofweek.enum.ts";
 
 const exports: any = {};
 const errorClassName = "Weekly Schedule Template";
@@ -58,9 +60,54 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnitId : number = req.body.businessUnitId;
+    const startDate : string = req.body.startDate;
+    const name: String = req.body.name;
 
-    throw new AppError(404, "Route not allowed")
-    //TODO - implement
+    const shiftsForWeek : Model<any,any>[][] = []
+    let currentDay: Date = new Date(startDate);
+
+    await getOneForId(BusinessUnit, businessUnitId);
+    const weeklyScheduleBody = {
+        "name": name,
+        "businessUnitId": businessUnitId
+    }
+    const weeklyScheduleTemplate = await WeeklyScheduleTemplate.create(weeklyScheduleBody);
+    const weeklyScheduleTemplateId = weeklyScheduleTemplate.dataValues.id
+
+    for (let day = 0; day < 7; day++){
+        //formats to yyyy-mm-dd
+        const dateFormatted = currentDay.toISOString().split('T')[0]
+        const dayOfWeek = daysOfWeek[day];
+        const dailyScheduleTemplateBody = {
+            weeklyScheduleTemplateId: weeklyScheduleTemplateId,
+            dayOfWeek: dayOfWeek
+        }
+        const dailyScheduleTemplate = await DailyScheduleTemplate.create(dailyScheduleTemplateBody);
+        const dailyScheduleTemplateId = dailyScheduleTemplate.id;
+
+        const shiftsForDay = await Shift.findAll({
+            where:{
+                businessUnitId: businessUnitId,
+                date: dateFormatted
+            }
+        });
+        let shifts = shiftsForDay.map((shift) => {return shift.dataValues})
+        //maintain startTime, endTime, businessUnitId, employeeId, positionId
+        shifts.forEach(async (shift) => {
+            shift.id = undefined;
+            shift.date = null;
+            shift.dailyScheduleTemplateId = dailyScheduleTemplateId;
+            shift.createdAt = undefined;
+            shift.updatedAt = undefined;
+            shift.published = false;
+            await Shift.create(shift);
+        })
+        //increment day by one, full week
+        currentDay.setDate(currentDay.getDate() +1 );
+    };
+    res.send(weeklyScheduleTemplate);
+
 }
 
 export default exports;
