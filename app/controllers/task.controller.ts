@@ -14,11 +14,13 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
     const task = await Task.create(req.body);
     const taskId = task.id;
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
 
     const taskList = await TaskList.findOne({ where: { id: task.taskListId } });
     //despite the name, it returns multiple. getShifts doesnt exist.
     const shifts: Model<any, any>[] = await taskList!.getShift();
-    for (let shift of shifts) {
+    const futureShifts = shifts.filter((shift) => shift.dataValues.date >= today);
+    for (let shift of futureShifts) {
         const taskCompletion = {
             "checkedOff": "false",
             "taskId": taskId,
