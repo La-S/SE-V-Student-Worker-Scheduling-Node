@@ -92,16 +92,21 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
                 date: dateFormatted
             }
         });
-        let shifts = shiftsForDay.map((shift) => {return shift.dataValues})
         //maintain startTime, endTime, businessUnitId, employeeId, positionId
-        shifts.forEach(async (shift) => {
-            shift.id = undefined;
-            shift.date = null;
-            shift.dailyScheduleTemplateId = dailyScheduleTemplateId;
-            shift.createdAt = undefined;
-            shift.updatedAt = undefined;
-            shift.published = false;
-            await Shift.create(shift);
+        shiftsForDay.forEach(async (shift) => {
+            const shiftValues = {...shift.dataValues};
+            shiftValues.id = undefined;
+            shiftValues.date = null;
+            shiftValues.dailyScheduleTemplateId = dailyScheduleTemplateId;
+            shiftValues.createdAt = undefined;
+            shiftValues.updatedAt = undefined;
+            shiftValues.published = false;
+            const newShift = await Shift.create(shiftValues);
+            //despite the name it returns multiple. Sequelize-made, cannot change
+            const taskLists = await shift.getTaskList();
+            taskLists.forEach((taskList) =>{
+                taskList.addShift(newShift);
+            })
         })
         //increment day by one, full week
         currentDay.setDate(currentDay.getDate() +1 );
