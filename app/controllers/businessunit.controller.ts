@@ -80,7 +80,7 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Employee.findAll({ 
+    const data = await Employee.findAll({
         where: { businessUnitId: id },
         include: User
     });
@@ -91,7 +91,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Position.findAll({ where: { businessUnitId: id },});
+    const data = await Position.findAll({ where: { businessUnitId: id }, });
     res.send(data);
 }
 
@@ -100,7 +100,7 @@ exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
     await getOneForId(BusinessUnit, id);
 
     //I dont think this should include dailyschedules and shifts when getting all but lmk if you disagree
-    const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id },});
+    const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id }, });
     res.send(data);
 }
 
@@ -128,12 +128,13 @@ exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) =>
     const dayOfWeek = req.query.dayofweek; //maybe required?
     const startTime = req.query.start; //required
     const endTime = req.query.end; //required
+    const acceptablePreferences = ["available", "preferred"];
 
     const allEmployees = await Employee.findAll({
         where: { businessUnitId: id },
         include: User
     });
-    const unavailableEmployees = await Employee.findAll({
+const availableEmployees = await Employee.findAll({
         where: { businessUnitId: id },
         include: {
             model: User,
@@ -142,27 +143,45 @@ exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) =>
                 model: AvailabilityTemplate,
                 where: {
                     dayOfWeek: dayOfWeek,
-                    [Op.or]: {
+                    [Op.and]: {
                         startTime: {[Op.lte]: startTime},
                         endTime: {[Op.gte]: endTime}
                     },
-                    preference: "unavailable"
+                    //only users where their availability is "available" or "preferred". Unavailable assumed
+                    preference: {[Op.in]: acceptablePreferences} 
                 }
             }]
         }
     });
 
-    const unavailableEmployeeIds = unavailableEmployees.map((employee) => {
-        return employee.dataValues.id;
-    })
-    //get all employees that aren't unavailable
-    let availableEmployees = allEmployees.map((employee) => {
-        if (!unavailableEmployeeIds.includes(employee.dataValues.id))
-            return employee;
-    });
-    availableEmployees = availableEmployees.filter((employee) => employee !== undefined);
-
     res.send(availableEmployees);
+}
+
+async function getUnavailableEmployees(employees: Model<any, any>[]) {
+    // const unavailableEmployees = await Employee.findAll({
+    //     where: { businessUnitId: id },
+    //     include: {
+    //         model: User,
+    //         required: true,
+    //         include: [{
+    //             model: AvailabilityTemplate,
+    //             where: {
+    //                 dayOfWeek: dayOfWeek,
+    //                //TODO: fix inner bound exception (starttime > and endtime <)
+    //                 [Op.or]: {
+    //                     startTime: {[Op.lte]: startTime},
+    //                     endTime: {[Op.gte]: endTime}
+    //                 },
+    //                 //only users where their availability is "available" or "preferred". Unavailable assumed
+    //                 preference: {[Op.in]: acceptablePreferences} 
+    //             }
+    //         }]
+    //     }
+    // });
+
+    // const unavailableEmployeeIds = unavailableEmployees.map((employee) => {
+    //     return employee.dataValues.id;
+    // })
 }
 
 export default exports;
