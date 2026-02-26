@@ -13,7 +13,7 @@ const Position = SequelizeInstance.define("position", {
         allowNull: false
     },
     payRate: {
-        type: Sequelize.DECIMAL,
+        type: Sequelize.DECIMAL(10,2),
         allowNull: true,
         defaultValue: 20
     }
