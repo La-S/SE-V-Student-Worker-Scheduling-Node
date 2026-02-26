@@ -14,6 +14,7 @@ import Task from "../models/task.model.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
+import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -144,6 +145,13 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
     }]
   });
   res.send(data);
+}
+
+exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(User, id);
+    const data = await AvailabilityTemplate.findAll({where: {userId: id}});
+    res.send(data);
 }
 
 

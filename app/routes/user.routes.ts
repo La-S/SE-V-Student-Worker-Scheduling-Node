@@ -30,5 +30,7 @@ router.get("/:id/employees", [auth.authenticate], users.findEmployeesForUser)
 
 router.get("/:id/shiftstoday", [auth.authenticate], users.findShiftsForToday)
 
+router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabilityTemplates);
+
 export default router;
 

@@ -15,6 +15,7 @@ import WeeklyScheduleTemplate from "./weeklyscheduletemplate.model.ts";
 import TaskList from "./tasklist.model.ts";
 import Task from "./task.model.ts";
 import TaskCompletion from "./taskcompletion.model.ts";
+import AvailabilityTemplate from "./availabilitytemplate.model.ts";
 
 const db = {
     Sequelize,
@@ -29,7 +30,8 @@ const db = {
     WeeklyScheduleTemplate,
     TaskList,
     Task,
-    TaskCompletion
+    TaskCompletion,
+    AvailabilityTemplate
 };
 
 //User-owned FKs
@@ -40,6 +42,10 @@ db.Session.belongsTo(db.User,
 db.User.hasMany(db.Employee,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 db.Employee.belongsTo(db.User,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.User.hasMany(db.AvailabilityTemplate,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.AvailabilityTemplate.belongsTo(db.User,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 
 //BusinessUnit-owned FKs
