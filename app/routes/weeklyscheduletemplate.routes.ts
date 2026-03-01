@@ -23,6 +23,9 @@ router.delete("/:id", [auth.authenticate], generalcontroller.delete(WeeklySchedu
 
 router.post("/fromshifts", [auth.authenticate], weeklyscheduletemplates.createFromShifts)
 
+router.post("/loadshifts", [auth.authenticate], weeklyscheduletemplates.loadShifts)
+
+
 
 export default router;
 

@@ -94,4 +94,17 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
     }
 }
 
+
+export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number){
+    const endDate : Date = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 7);
+    const endDateFormatted: string = endDate.toLocaleDateString("en-CA");
+    const startDateFormatted: string = startDate.toLocaleDateString("en-CA");
+
+    await Shift.destroy({where:{
+        businessUnitId: businessUnitId,
+        date: {[Op.between]: [startDateFormatted, endDateFormatted]}
+    }})
+}
+
 export default exports;
