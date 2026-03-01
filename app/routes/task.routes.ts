@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new Task
-router.post("/", [auth.authenticate], generalcontroller.create(TaskModel));
+router.post("/", [auth.authenticate], tasks.create);
 
 // Retrieve all Tasks
 router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskModel));
