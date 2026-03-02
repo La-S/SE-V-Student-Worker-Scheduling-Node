@@ -80,7 +80,7 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Employee.findAll({ 
+    const data = await Employee.findAll({
         where: { businessUnitId: id },
         include: User
     });
@@ -91,7 +91,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Position.findAll({ where: { businessUnitId: id },});
+    const data = await Position.findAll({ where: { businessUnitId: id }, });
     res.send(data);
 }
 
@@ -100,25 +100,20 @@ exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
     await getOneForId(BusinessUnit, id);
 
     //I dont think this should include dailyschedules and shifts when getting all but lmk if you disagree
-    const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id },});
+    const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id }, });
     res.send(data);
 }
 
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const businessUnit = await getOneForId(BusinessUnit, id);
-    const employees = await businessUnit.getEmployees();
-    console.log(employees);
-    const employeeIds = employees.map((employee : Model<any, any>) => {
-        return employee.dataValues.id;
-    })
     const data = await AvailabilityTemplate.findAll({
-        include:[{
+        include: [{
             model: User,
             required: true, //REQUIRED. DO NOT REMOVE
             include: [{
                 model: Employee,
-                where: {id: { [Op.in]: employeeIds }},
+                where: { businessUnitId: id },
             }]
         }]
     })
@@ -129,11 +124,64 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
 exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const businessUnit = await getOneForId(BusinessUnit, id);
-    console.log(Object.getOwnPropertyNames(businessUnit.__proto__));
-    const date = req.query.date;
-    const dayOfWeek = req.query.dayofweek;
+    const date = req.query.date; //not required
+    const dayOfWeek = req.query.dayofweek; //maybe required?
+    const startTime = req.query.start; //required
+    const endTime = req.query.end; //required
+    const acceptablePreferences = ["available", "preferred"];
 
+    const allEmployees = await Employee.findAll({
+        where: { businessUnitId: id },
+        include: User
+    });
+const availableEmployees = await Employee.findAll({
+        where: { businessUnitId: id },
+        include: {
+            model: User,
+            required: true,
+            include: [{
+                model: AvailabilityTemplate,
+                where: {
+                    dayOfWeek: dayOfWeek,
+                    [Op.and]: {
+                        startTime: {[Op.lte]: startTime},
+                        endTime: {[Op.gte]: endTime}
+                    },
+                    //only users where their availability is "available" or "preferred". Unavailable assumed
+                    preference: {[Op.in]: acceptablePreferences} 
+                }
+            }]
+        }
+    });
 
+    res.send(availableEmployees);
+}
+
+async function getUnavailableEmployees(employees: Model<any, any>[]) {
+    // const unavailableEmployees = await Employee.findAll({
+    //     where: { businessUnitId: id },
+    //     include: {
+    //         model: User,
+    //         required: true,
+    //         include: [{
+    //             model: AvailabilityTemplate,
+    //             where: {
+    //                 dayOfWeek: dayOfWeek,
+    //                //TODO: fix inner bound exception (starttime > and endtime <)
+    //                 [Op.or]: {
+    //                     startTime: {[Op.lte]: startTime},
+    //                     endTime: {[Op.gte]: endTime}
+    //                 },
+    //                 //only users where their availability is "available" or "preferred". Unavailable assumed
+    //                 preference: {[Op.in]: acceptablePreferences} 
+    //             }
+    //         }]
+    //     }
+    // });
+
+    // const unavailableEmployeeIds = unavailableEmployees.map((employee) => {
+    //     return employee.dataValues.id;
+    // })
 }
 
 export default exports;

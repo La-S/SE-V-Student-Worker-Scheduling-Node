@@ -36,7 +36,7 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
                 model: Task,
                 include: [{
                     model: TaskCompletion,
-                    where: { shiftId: id }, 
+                    where: { shiftId: id },
                     required: false,
                     include: [
                         {
@@ -70,11 +70,20 @@ exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
     //@ts-ignore
     const data = await shift.addTaskList(taskList);
     if (!data) {
-        res.status(400).send({message: "Something went wrong adding task list"})
+        res.status(400).send({ message: "Something went wrong adding task list" });
+        return;
     }
-    else {
-        res.send({ message: "Task List added successfully" });
+    const tasks = await taskList.getTasks();
+    for (let task of tasks) {
+        const taskCompletion = {
+            "checkedOff": "false",
+            "taskId": task.id,
+            "shiftId": shift.dataValues.id
+        }
+        await TaskCompletion.create(taskCompletion);
     }
+    res.send({ message: "Task List added successfully" });
+
 }
 
 

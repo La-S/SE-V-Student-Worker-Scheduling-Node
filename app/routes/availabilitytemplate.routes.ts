@@ -1,3 +1,5 @@
+// note as of now, any preferred request should be within an already existing available request.
+
 import auth from "../authorization/authorization.ts";
 import availabilityTemplates from "../controllers/availabilitytemplate.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"

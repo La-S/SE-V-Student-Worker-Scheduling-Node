@@ -104,10 +104,12 @@ exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 };
 
-exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
+exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   //should provide date foe central time. CA format is YYYY-mm-dd
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+  let startDate: string = req.query.start ?? today;
+  let endDate: string = req.query.end ?? today;
 
   await getOneForId(User, id);
 
@@ -120,10 +122,12 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
     return employee.dataValues.id
   })
 
+
   const data = await Shift.findAll({
+    logging: console.log,
     where: {
       employeeId: { [Op.in]: employeeIds },
-      date: { [Op.eq]: today }
+      date: { [Op.between]: [startDate, endDate] }
     },
     include: [{
       model: Position
@@ -136,10 +140,11 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
       as: "taskList",
       include: [{
         model: Task,
+        required: false,
         include: [{
           model: TaskCompletion,
-          required: false,
-          where: { shiftId: id }
+          where: { shiftId: { [Op.col]: 'shift.id' } },
+          required: false
         }]
       }]
     }]

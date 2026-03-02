@@ -28,7 +28,7 @@ router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserModel));
 
 router.get("/:id/employees", [auth.authenticate], users.findEmployeesForUser)
 
-router.get("/:id/shiftstoday", [auth.authenticate], users.findShiftsForToday)
+router.get("/:id/shifts", [auth.authenticate], users.findShiftsForDateRange)
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabilityTemplates);
 
