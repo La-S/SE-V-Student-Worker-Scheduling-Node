@@ -195,5 +195,5 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
 export default exports;
 
 function isSunday(date: Date){
-    return date.getDay() == 0 ? true : false
+    return date.getDay() == 0;
 }
