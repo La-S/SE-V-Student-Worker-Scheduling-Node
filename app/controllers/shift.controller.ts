@@ -37,7 +37,13 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
                 include: [{
                     model: TaskCompletion,
                     where: { shiftId: id }, 
-                    required: false
+                    required: false,
+                    include: [
+                        {
+                            model: Employee,
+                            include: [User]
+                        }
+                    ]
                 }]
             }]
         }

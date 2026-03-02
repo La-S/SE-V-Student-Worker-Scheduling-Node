@@ -8,6 +8,7 @@ import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
 import { getOneForId } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
+import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -71,7 +72,35 @@ exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await TaskList.findAll({where:{businessUnitId: id}});
+    const data = await TaskList.findAll({ where: { businessUnitId: id } });
+    res.send(data);
+}
+
+exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const data = await Employee.findAll({ 
+        where: { businessUnitId: id },
+        include: User
+    });
+    res.send(data);
+}
+
+exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const data = await Position.findAll({ where: { businessUnitId: id },});
+    res.send(data);
+}
+
+exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    //I dont think this should include dailyschedules and shifts when getting all but lmk if you disagree
+    const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id },});
     res.send(data);
 }
 

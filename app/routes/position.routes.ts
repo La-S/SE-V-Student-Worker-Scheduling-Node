@@ -21,5 +21,7 @@ router.put("/:id", [auth.authenticate], positions.update);
 // Delete a Position by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(PositionModel));
 
+router.get("/:id/employees", [auth.authenticate], positions.findEmployees)
+
 export default router;
 

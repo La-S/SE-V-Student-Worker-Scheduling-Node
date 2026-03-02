@@ -25,17 +25,8 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
   }
 
-  // Create a User
-  const user: UserType = {
-    id: undefined,
-    firstName: req.body.firstName,
-    lastName: req.body.lastName,
-    email: req.body.email,
-    isAdmin: req.body.isAdmin ?? false,
-  };
-
   // Save User in the database
-  const data = await User.create(user as any);
+  const data = await User.create(req.body);
   res.send(data);
 };
 
