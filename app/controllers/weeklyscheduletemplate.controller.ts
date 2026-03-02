@@ -39,7 +39,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
                 }]
         });
     if (!data){
-        throw new NotFoundError(WeeklyScheduleTemplate, id)
+        throw new NotFoundError("Weekly Schedule Template", id)
     }
     res.send(data);
 };
