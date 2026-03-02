@@ -141,6 +141,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     if (deleteShifts) {
         deleteShiftsForWeek(new Date(startDate), businessUnitId)
     }
+
     //sunday-sat
     for (let i = 1; i <= 7; i++) {
         const shiftsForDay = await getShiftsFromDailyScheduleTemplate(id, i);
