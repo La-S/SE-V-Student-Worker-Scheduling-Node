@@ -3,6 +3,7 @@ const Employee = db.Employee;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
+import { NotFoundError } from "../error/notfound.error.ts";
 import WeeklyScheduleTemplate from "../models/weeklyscheduletemplate.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
