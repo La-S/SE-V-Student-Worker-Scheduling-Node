@@ -113,14 +113,14 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
 
 export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number){
     const endDate : Date = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 7);
+    endDate.setDate(endDate.getDate() + 6);
     const endDateFormatted: string = getStringFromDate(endDate);
     const startDateFormatted: string = getStringFromDate(startDate);
 
     await Shift.destroy({where:{
         businessUnitId: businessUnitId,
         date: {[Op.between]: [startDateFormatted, endDateFormatted]}
-    }})
+    }});
 }
 
 export default exports;
