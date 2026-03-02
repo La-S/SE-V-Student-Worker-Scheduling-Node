@@ -39,7 +39,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
                     },]
                 }]
         });
-    if (!data){
+    if (!data) {
         throw new NotFoundError("Weekly Schedule Template", id)
     }
     res.send(data);
@@ -67,12 +67,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnitId: number = req.body.businessUnitId;
+    await getOneForId(BusinessUnit, businessUnitId);
     const startDate: string = req.body.startDate;
     const name: String = req.body.name;
 
     const shiftsForWeek: Model<any, any>[][] = []
-    let currentDay: Date = new Date(startDate + 'T00:00:00' );
-    if (!isSunday(currentDay)){
+    let currentDay: Date = new Date(startDate + 'T00:00:00');
+    if (!isSunday(currentDay)) {
         throw new AppError(400, "startDate must be a Sunday")
     }
 
@@ -132,11 +133,12 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     //HAS TO BE A SUNDAY!
     const startDate = req.body.startDate;
     let currentDate: Date = new Date(startDate + 'T00:00:00');
-    if (!isSunday(currentDate)){
+    if (!isSunday(currentDate)) {
         throw new AppError(400, "startDate must be a Sunday")
     }
     const deleteShifts: boolean = req.body.delete;
     const businessUnitId = req.body.businessUnitId;
+    await getOneForId(BusinessUnit, businessUnitId);
     if (deleteShifts) {
         deleteShiftsForWeek(new Date(startDate), businessUnitId)
     }
@@ -156,7 +158,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
         })
         currentDate.setDate(currentDate.getDate() + 1);
     }
-    res.send({message: "shifts created"});
+    res.send({ message: "shifts created" });
 }
 
 async function copyTaskListsToNewShift(taskLists: Model<any, any>[], shift: Model<any, any>) {
@@ -194,7 +196,7 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
 }
 export default exports;
 
-function isSunday(date: Date){
+function isSunday(date: Date) {
     const dayOfWeek = date.getDay();
     return (dayOfWeek == 0)
 }
