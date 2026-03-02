@@ -77,7 +77,6 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, "startDate must be a Sunday")
     }
 
-    await getOneForId(BusinessUnit, businessUnitId);
     const weeklyScheduleBody = {
         "name": name,
         "businessUnitId": businessUnitId
