@@ -12,3 +12,16 @@ export async function getOneForId(model: ModelStatic<Model>, id: number) {
     }
     return data;
 }
+
+export function isSunday(date: Date) {
+    const dayOfWeek = date.getDay();
+    return (dayOfWeek == 0)
+}
+
+export function createDateFromString(date: string){
+    return new Date(date + 'T00:00:00');
+}
+
+export function getStringFromDate(date: Date){
+    return date.toLocaleDateString("en-CA");
+}

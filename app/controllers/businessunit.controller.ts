@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { getOneForId } from '../services/services.ts';
+import { createDateFromString, getOneForId } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 const exports: any = {}
@@ -155,6 +155,16 @@ const availableEmployees = await Employee.findAll({
     });
 
     res.send(availableEmployees);
+}
+
+exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const date = req.params.date;
+    getOneForId(BusinessUnit, id);
+    const startDate = createDateFromString(date);
+    const endDate = new Date(startDate.getDate() + 7);
+    console.log("blah");
+
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
