@@ -71,7 +71,7 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
     const name: String = req.body.name;
 
     const shiftsForWeek: Model<any, any>[][] = []
-    let currentDay: Date = new Date(startDate);
+    let currentDay: Date = new Date(startDate + 'T00:00:00' );
     if (!isSunday(currentDay)){
         throw new AppError(400, "startDate must be a Sunday")
     }
@@ -131,7 +131,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     const weeklyScheduleTemplate = await getOneForId(WeeklyScheduleTemplate, id);
     //HAS TO BE A SUNDAY!
     const startDate = req.body.startDate;
-    let currentDate: Date = new Date(startDate);
+    let currentDate: Date = new Date(startDate + 'T00:00:00');
     if (!isSunday(currentDate)){
         throw new AppError(400, "startDate must be a Sunday")
     }
@@ -195,5 +195,6 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
 export default exports;
 
 function isSunday(date: Date){
-    return date.getDay() == 0;
+    const dayOfWeek = date.getDay();
+    return (dayOfWeek == 0)
 }
