@@ -36,7 +36,7 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
                 model: Task,
                 include: [{
                     model: TaskCompletion,
-                    where: { shiftId: id }, 
+                    where: { shiftId: id },
                     required: false,
                     include: [
                         {
@@ -70,11 +70,20 @@ exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
     //@ts-ignore
     const data = await shift.addTaskList(taskList);
     if (!data) {
-        res.status(400).send({message: "Something went wrong adding task list"})
+        res.status(400).send({ message: "Something went wrong adding task list" });
+        return;
     }
-    else {
-        res.send({ message: "Task List added successfully" });
+    const tasks = await taskList.getTasks();
+    for (let task of tasks) {
+        const taskCompletion = {
+            "checkedOff": "false",
+            "taskId": task.id,
+            "shiftId": shift.dataValues.id
+        }
+        await TaskCompletion.create(taskCompletion);
     }
+    res.send({ message: "Task List added successfully" });
+
 }
 
 
@@ -98,6 +107,19 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
     else {
         res.send({ message: "Task List removed successfully" });
     }
+}
+
+
+export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number){
+    const endDate : Date = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 7);
+    const endDateFormatted: string = endDate.toLocaleDateString("en-CA");
+    const startDateFormatted: string = startDate.toLocaleDateString("en-CA");
+
+    await Shift.destroy({where:{
+        businessUnitId: businessUnitId,
+        date: {[Op.between]: [startDateFormatted, endDateFormatted]}
+    }})
 }
 
 export default exports;

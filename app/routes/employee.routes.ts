@@ -23,7 +23,9 @@ router.put("/:id", [auth.authenticate], employees.update);
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(EmployeeModel));
 
 //Get shifts for employee
-router.get("/:id/shifts", [auth.authenticate], employees.getShiftsForEmployee);
+router.get("/:id/shifts", [auth.authenticate], employees.findShifts);
+
+router.get("/:id/availabilitytemplates", [auth.authenticate], employees.findAvailabilityTemplates)
 
 router.post("/:id/position/:positionid", [auth.authenticate], employees.addPosition)
 

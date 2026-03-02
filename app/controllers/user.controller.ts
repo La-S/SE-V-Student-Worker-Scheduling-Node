@@ -14,6 +14,7 @@ import Task from "../models/task.model.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
+import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -103,10 +104,12 @@ exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 };
 
-exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
+exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
   //should provide date foe central time. CA format is YYYY-mm-dd
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+  let startDate: string = req.query.start ?? today;
+  let endDate: string = req.query.end ?? today;
 
   await getOneForId(User, id);
 
@@ -119,10 +122,12 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
     return employee.dataValues.id
   })
 
+
   const data = await Shift.findAll({
+    logging: console.log,
     where: {
       employeeId: { [Op.in]: employeeIds },
-      date: { [Op.eq]: today }
+      date: { [Op.between]: [startDate, endDate] }
     },
     include: [{
       model: Position
@@ -135,15 +140,23 @@ exports.findShiftsForToday = async (req: pkg.Request, res: pkg.Response) => {
       as: "taskList",
       include: [{
         model: Task,
+        required: false,
         include: [{
           model: TaskCompletion,
-          required: false,
-          where: { shiftId: id }
+          where: { shiftId: { [Op.col]: 'shift.id' } },
+          required: false
         }]
       }]
     }]
   });
   res.send(data);
+}
+
+exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(User, id);
+    const data = await AvailabilityTemplate.findAll({where: {userId: id}});
+    res.send(data);
 }
 
 
