@@ -20,7 +20,7 @@ export function isSunday(date: Date) {
 
 export function createDateFromString(dateString: string) {
     const date = new Date(dateString + 'T00:00:00');
-    if (!date) {
+    if (!date || (date as any) == "Invalid Date") {
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format");
     }
     return date;
