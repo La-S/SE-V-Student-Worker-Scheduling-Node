@@ -21,9 +21,12 @@ export async function sendNotificationToBusinessUnit(businessUnitId: number, for
         include: [
             {
                 model: Employee,
-                include: [User]
+                include: [User],
+                where: {
+                    currentlyEmployed: true,
+                }
             }
-        ]
+        ],
     });
     for (let employee of (data as any).dataValues.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
