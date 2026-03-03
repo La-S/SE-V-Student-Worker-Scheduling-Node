@@ -16,7 +16,7 @@ router.get("/all", [auth.authenticate], generalcontroller.findAll(ShiftModel));
 router.get("/:id", [auth.authenticate], shifts.findOne);
 
 // Update a Shift by id
-router.put("/:id", [auth.authenticate], generalcontroller.update(ShiftModel));
+router.put("/:id", [auth.authenticate], shifts.update);
 
 // Delete a Shift by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(ShiftModel));
