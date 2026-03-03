@@ -4,9 +4,7 @@ import User from "../models/user.model.ts";
 
 export async function sendNotificationToEmployee(employeeId: number, title: string, body: string) {
     const data = await Employee.findByPk(employeeId, {
-        include: [{
-            model: User
-        }]
+        include: [User]
     });
     const pushToken: string | undefined = (data as any).dataValues.user.dataValues.pushToken;
     if (!pushToken) {
