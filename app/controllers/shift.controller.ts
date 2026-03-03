@@ -3,7 +3,7 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
-import { getOneForId } from '../services/services.ts';
+import { getStringFromDate, getOneForId } from "../services/services.ts";
 const { Shift, TaskList, User, Position, TaskCompletion, Task, Employee } = db;
 import type { ShiftType } from "../types/shift.type.ts";
 import { sendNotificationToEmployee } from "../services/notifications.ts";
@@ -143,14 +143,14 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
 
 export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number){
     const endDate : Date = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 7);
-    const endDateFormatted: string = endDate.toLocaleDateString("en-CA");
-    const startDateFormatted: string = startDate.toLocaleDateString("en-CA");
+    endDate.setDate(endDate.getDate() + 6);
+    const endDateFormatted: string = getStringFromDate(endDate);
+    const startDateFormatted: string = getStringFromDate(startDate);
 
     await Shift.destroy({where:{
         businessUnitId: businessUnitId,
         date: {[Op.between]: [startDateFormatted, endDateFormatted]}
-    }})
+    }});
 }
 
 export default exports;

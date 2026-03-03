@@ -5,7 +5,7 @@ import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import WeeklyScheduleTemplate from "../models/weeklyscheduletemplate.model.ts";
-import { getOneForId } from "../services/services.ts";
+import { createDateFromString, getOneForId, getStringFromDate, isSunday } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
 import User from "../models/user.model.ts";
 import Position from "../models/position.model.ts";
@@ -72,7 +72,7 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
     const name: String = req.body.name;
 
     const shiftsForWeek: Model<any, any>[][] = []
-    let currentDay: Date = new Date(startDate + 'T00:00:00');
+    let currentDay: Date = createDateFromString(startDate);
     if (!isSunday(currentDay)) {
         throw new AppError(400, "startDate must be a Sunday")
     }
@@ -131,7 +131,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     const weeklyScheduleTemplate = await getOneForId(WeeklyScheduleTemplate, id);
     //HAS TO BE A SUNDAY!
     const startDate = req.body.startDate;
-    let currentDate: Date = new Date(startDate + 'T00:00:00');
+    let currentDate: Date = createDateFromString(startDate);
     if (!isSunday(currentDate)) {
         throw new AppError(400, "startDate must be a Sunday")
     }
@@ -148,7 +148,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
         shiftsForDay.forEach(async (shift: Model<any, any>) => {
             const shiftValues = { ...shift.dataValues };
             shiftValues.id = undefined;
-            shiftValues.date = currentDate.toLocaleDateString("en-CA");
+            shiftValues.date = getStringFromDate(currentDate);
             shiftValues.dailyScheduleTemplateId = null;
             const newShift = await Shift.create(shiftValues);
             //despite the name it returns multiple. Sequelize-made, cannot change
@@ -196,7 +196,4 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
 }
 export default exports;
 
-function isSunday(date: Date) {
-    const dayOfWeek = date.getDay();
-    return (dayOfWeek == 0)
-}
+

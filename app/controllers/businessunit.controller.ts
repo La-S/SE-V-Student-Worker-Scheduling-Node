@@ -6,9 +6,11 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { getOneForId } from '../services/services.ts';
+import { createDateFromString, getOneForId, getStringFromDate } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
+import { deleteShiftsForWeek } from './shift.controller.ts';
+import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -155,6 +157,27 @@ const availableEmployees = await Employee.findAll({
     });
 
     res.send(availableEmployees);
+}
+
+exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const startDate = req.params.date as string;
+    getOneForId(BusinessUnit, id);
+    const startDateObject = createDateFromString(startDate);
+    const endDateObject = new Date(startDateObject);
+    endDateObject.setDate(endDateObject.getDate() +  6);
+    const endDate = getStringFromDate(endDateObject);
+
+    Shift.update({"published": true}, {where: 
+        {
+            businessUnitId: id,
+            date: {[Op.between]: [startDate, endDate]}
+        }
+    });
+
+    sendNotificationToBusinessUnit(id, startDate);
+
+    res.send({message: "shifts published!"});
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {

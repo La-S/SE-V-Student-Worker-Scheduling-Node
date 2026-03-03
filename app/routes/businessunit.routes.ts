@@ -36,6 +36,8 @@ router.get("/:id/positions", [auth.authenticate], businessunits.findPositions)
 
 router.get("/:id/weeklyscheduletemplates", [auth.authenticate], businessunits.findWeeklySchedules)
 
+router.put("/:id/shifts/:date/publish", [auth.authenticate], businessunits.publishShiftsForWeek);
+
 
 export default router;
 

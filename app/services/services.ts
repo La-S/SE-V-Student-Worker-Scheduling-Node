@@ -12,3 +12,23 @@ export async function getOneForId(model: ModelStatic<Model>, id: number) {
     }
     return data;
 }
+
+export function isSunday(date: Date) {
+    const dayOfWeek = date.getDay();
+    return (dayOfWeek == 0)
+}
+
+export function createDateFromString(dateString: string) {
+    const date = new Date(dateString + 'T00:00:00');
+    if (!date || (date as any) == "Invalid Date") {
+        throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format");
+    }
+    return date;
+}
+
+export function getStringFromDate(dateObject: Date) {
+    if (!dateObject){
+        throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format")
+    }
+    return dateObject.toLocaleDateString("en-CA");
+}
