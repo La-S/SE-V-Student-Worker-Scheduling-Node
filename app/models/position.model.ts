@@ -16,6 +16,11 @@ const Position = SequelizeInstance.define("position", {
         type: Sequelize.DECIMAL(10,2),
         allowNull: true,
         defaultValue: 20
+    },
+    color: {
+        type: Sequelize.STRING(),
+        allowNull: true,
+        defaultValue: "#78acff" //neutral light blue
     }
 });
 

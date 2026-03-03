@@ -3,8 +3,10 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
-import { getStringFromDate } from "../services/services.ts";
+import { getStringFromDate, getOneForId } from "../services/services.ts";
 const { Shift, TaskList, User, Position, TaskCompletion, Task, Employee } = db;
+import type { ShiftType } from "../types/shift.type.ts";
+import { sendNotificationToEmployee } from "../services/notifications.ts";
 
 
 const exports: any = {};
@@ -16,6 +18,34 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const data = await getShiftForId(id);
     res.send(data);
 };
+
+exports.update = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+
+    //throws error if not found
+    let originalShift = await getOneForId(Shift, id) as any as ShiftType;
+    let isPublishedOriginally = originalShift.published;
+
+    req.body.id = undefined;
+    const numUpdated = await Shift.update(req.body, {
+        where: { id: id },
+    });
+    if (numUpdated[0] <= 0) {
+        throw new AppError(400, `Update Shift for id ${id} did not update. Check request body.`);
+    }
+
+    let employeeId = req.body.employeeId ?? originalShift.employeeId;
+    if (req.body.published === true && isPublishedOriginally === false && employeeId) {
+        // don't wait for this response.
+        sendNotificationToEmployee(employeeId, "New Shift", "A new shift has now become published.");
+    }
+    let updatedObject = await getOneForId(Shift, id);
+
+    res.send(updatedObject);
+};
+
+
+
 
 
 async function getShiftForId(id: number): Promise<Model<any, any> | null> {
