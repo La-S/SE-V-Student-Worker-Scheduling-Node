@@ -10,6 +10,7 @@ import { createDateFromString, getOneForId, getStringFromDate } from '../service
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import { deleteShiftsForWeek } from './shift.controller.ts';
+import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -160,7 +161,7 @@ const availableEmployees = await Employee.findAll({
 
 exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
-    const startDate = req.params.date;
+    const startDate = req.params.date as string;
     getOneForId(BusinessUnit, id);
     const startDateObject = createDateFromString(startDate);
     const endDateObject = new Date(startDateObject);
@@ -173,6 +174,9 @@ exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
             date: {[Op.between]: [startDate, endDate]}
         }
     });
+
+    sendNotificationToBusinessUnit(id, startDate);
+
     res.send({message: "shifts published!"});
 }
 
