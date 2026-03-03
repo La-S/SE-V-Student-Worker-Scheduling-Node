@@ -18,17 +18,17 @@ export function isSunday(date: Date) {
     return (dayOfWeek == 0)
 }
 
-export function createDateFromString(date: string) {
-    const date = new Date(date + 'T00:00:00');
+export function createDateFromString(dateString: string) {
+    const date = new Date(dateString + 'T00:00:00');
     if (!date) {
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format");
     }
     return date;
 }
 
-export function getStringFromDate(date: Date) {
-    if (!date){
+export function getStringFromDate(dateObject: Date) {
+    if (!dateObject){
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format")
     }
-    return date.toLocaleDateString("en-CA");
+    return dateObject.toLocaleDateString("en-CA");
 }
