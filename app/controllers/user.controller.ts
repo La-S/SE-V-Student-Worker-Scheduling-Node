@@ -159,5 +159,15 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 }
 
+exports.findLikeEmail= async (req: pkg.Request, res: pkg.Response) => {
+  const email = req.params.email;
+  const data = await User.findAll({
+    where: {
+      email: {[Op.like]: `%${email}%`}
+    },
+    include: [Employee]
+  });
+  res.send(data);
+}
 
 export default exports;
