@@ -32,5 +32,7 @@ router.get("/:id/shifts", [auth.authenticate], users.findShiftsForDateRange)
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabilityTemplates);
 
+router.get("/emaillike/:email", [auth.authenticate], users.findLikeEmail)
+
 export default router;
 
