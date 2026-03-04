@@ -34,7 +34,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 // Find a single User with an email
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
-  const email = req.body.email;
+  const email = req.params.email;
   const data = await getUserForEmail(email);
   if (!data) {
     throw new AppError(404, `User for email: ${email} not found`);
