@@ -8,8 +8,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 load_dotenv()
 
 IS_PROD = False
-YOUR_WORKER_EMAIL = "l.skinner@eagles.oc.edu"  # can be None...
-YOUR_MANAGER_EMAIL = "okcbroncoshomeschool@gmail.com" # can also be None
+YOUR_WORKER_EMAIL = "j.every@eagles.oc.edu"  # can be None...
+YOUR_MANAGER_EMAIL = "jrevery03@gmail.com" # can also be None
 
 
 ENDPOINT = "https://127.0.0.1:3133/workerscheduling-t3"
@@ -35,9 +35,8 @@ weekly_schedule_templates_loaded = 0
 
 
 def get_existing_user(email):
-    r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email', data = {
-        "email": email,
-        "password": SECRET_PASSWORD,
+    r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email/{email}', data = {
+        "password": SECRET_PASSWORD
     }, verify=False)
     if r.status_code != 200:
         print("Error, couldn't get existing user...", r.text)
@@ -47,9 +46,8 @@ def create_user(first_name, last_name, email, isAdmin):
     global users_generated
     
     # first see if the user exists, and if so, delete him.
-    r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email', data = {
-        "email": email,
-        "password": SECRET_PASSWORD,
+    r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email/{email}', data = {
+        "password": SECRET_PASSWORD
     }, verify=False)
     if r.status_code == 200 and CLEANUP_OLD_ARTIFACTS:
         r = requests.delete(f'{ENDPOINT}/debug/bdiohjaiofjas/user/{r.json()["id"]}', data={"password": SECRET_PASSWORD}, verify=False)
