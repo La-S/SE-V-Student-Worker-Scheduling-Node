@@ -9,7 +9,7 @@ load_dotenv()
 
 IS_PROD = False
 YOUR_WORKER_EMAIL = "j.every@eagles.oc.edu"  # can be None...
-YOUR_MANAGER_EMAIL = "jrevery03@gmail.com" # can also be None
+YOUR_MANAGER_EMAIL = "okcbroncoshomeschool@gmail.com" # can also be None
 
 
 ENDPOINT = "https://127.0.0.1:3133/workerscheduling-t3"
@@ -34,12 +34,22 @@ weekly_schedule_templates_created = 0
 weekly_schedule_templates_loaded = 0
 
 
+
+def create_or_get_existing_user(email):
+    your_user = get_existing_user(email)
+    if your_user.get('id'):
+        return your_user
+    # user doesn't exist yet.abs
+    your_user = create_user("your", "user", email, False)
+    return your_user
+
+
 def get_existing_user(email):
     r = requests.get(f'{ENDPOINT}/debug/bdiohjaiofjas/user/email/{email}', data = {
         "password": SECRET_PASSWORD
     }, verify=False)
     if r.status_code != 200:
-        print("Error, couldn't get existing user...", r.text)
+        print("Warning, couldn't find existing user...", r.text)
     return r.json()
 
 def create_user(first_name, last_name, email, isAdmin):
@@ -380,7 +390,7 @@ shift10 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'],
 
 if (YOUR_WORKER_EMAIL):
     # add your user to some of these in order to have good dummy data for easy FE testing.
-    your_user = get_existing_user(YOUR_WORKER_EMAIL)
+    your_user = create_or_get_existing_user(YOUR_WORKER_EMAIL)
     if not your_user.get('id'):
         print("WARNING, we couldn't add data to your user. Log in on the FE once first!")
     else:
@@ -403,7 +413,7 @@ if (YOUR_WORKER_EMAIL):
 
 if (YOUR_MANAGER_EMAIL and not IS_PROD):
     # make him a manager
-    your_user = get_existing_user(YOUR_MANAGER_EMAIL);
+    your_user = create_or_get_existing_user(YOUR_MANAGER_EMAIL);
     if not your_user.get('id'):
         print(f"WARNING, we couldn't add data to your manager user {YOUR_MANAGER_EMAIL}. Log in on the FE once first!")
     else:
@@ -417,7 +427,7 @@ tmp_loaded = load_weekly_schedule_template_from_existing_shifts(template['id'], 
 # For prod dummy data...
 
 if (IS_PROD):
-    your_user = get_existing_user("emily.forster@eagles.oc.edu");
+    your_user = create_or_get_existing_user("emily.forster@eagles.oc.edu");
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
 
     give_employee_a_position(your_user['id'], gate_keeper['id'])
@@ -430,11 +440,11 @@ if (IS_PROD):
     shift5 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "6:00", "7:30", TOMORROWS_DATE, True)
 
     # # make him a manager on prod.
-    your_user = get_existing_user("gusify@gmail.com")
+    your_user = create_or_get_existing_user("gusify@gmail.com")
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True) # you work at the fitness center
 
     # make him a manager
-    your_user = get_existing_user("okcbroncoshomeschool@gmail.com");
+    your_user = create_or_get_existing_user("okcbroncoshomeschool@gmail.com");
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True) # you work at the fitness center
 
 
