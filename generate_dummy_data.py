@@ -267,6 +267,12 @@ def load_weekly_schedule_template_from_existing_shifts(template_id, business_uni
         print('Hmm, we got an error loading a weekly schedule template', r.text)
     return r.json()
 
+def give_employee_a_position(employee_id, position_id):
+    r = requests.post(f'{ENDPOINT}/employee/{employee_id}/position/{position_id}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error giving an employee a position', r.text)
+    return r.json()
+
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
@@ -346,11 +352,14 @@ create_availability_template(jabba['id'], "Wednesday", "05:00", "06:00", "prefer
 
 create_availability_template(jabba['id'], "Thursday", "06:00", "20:00", "available")
 create_availability_template(jabba['id'], "Friday", "06:00", "20:00", "available")
+give_employee_a_position(jaba_working_fitness_center['id'], conditioning_specialist['id'])
+give_employee_a_position(jabba_working_for_dex['id'], nerf_steak_chef['id'])
 shift3 = create_shift(jaba_working_fitness_center['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "8:00", "13:00", TODAYS_DATE, True)
 shift4 = create_shift(jabba_working_for_dex['id'], dexs_diner['id'], nerf_steak_chef['id'], "14:00", "19:00", TODAYS_DATE, True)
 
 
 # anakin works a lot
+give_employee_a_position(anakin_fitness_employee['id'], gate_keeper['id'])
 shift5 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "11:00", TODAYS_DATE, True)
 shift6 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "12:00", "14:00", TODAYS_DATE, True)
 shift7 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "16:00", "19:00", TODAYS_DATE, True)
@@ -364,6 +373,7 @@ create_availability_template(ahsoka['id'], "Wednesday", "12:00", "3:30", "unavai
 create_availability_template(ahsoka['id'], "Thursday", "8:00", "12:09", "unavailable")
 create_availability_template(ahsoka['id'], "Friday", "09:00", "11:00", "unavailable")
 create_availability_template(ahsoka['id'], "Friday", "12:00", "3:30", "unavailable")
+give_employee_a_position(ahsoka_fitness_employee['id'], conditioning_specialist['id'])
 shift8 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "7:30", "10:00", TODAYS_DATE, True)
 shift9 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "11:00", "15:00", TODAYS_DATE, True)
 shift10 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "20:00", "21:00", TODAYS_DATE, True)
@@ -375,6 +385,9 @@ if (YOUR_WORKER_EMAIL):
         print("WARNING, we couldn't add data to your user. Log in on the FE once first!")
     else:
         your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
+        give_employee_a_position(your_users_employee['id'], gate_keeper['id'])
+        give_employee_a_position(your_users_employee['id'], physical_form_coach['id'])
+        give_employee_a_position(your_users_employee['id'], conditioning_specialist['id'])
         shift0 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "1:00", "3:00", YESTERDAYS_DATE, True)
         shift1 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TODAYS_DATE, True)
         shift2 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "15:00", "17:00", TODAYS_DATE, True)
@@ -383,7 +396,6 @@ if (YOUR_WORKER_EMAIL):
         shift5 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "13:00", TOMORROWS_DATE, True)
 
         add_tasklist_to_shift(shift0['id'], wipe_equipment['id'])
-
         add_tasklist_to_shift(shift1['id'], wipe_equipment['id'])
         add_task_completion(shift1['id'], wipe_force_weights_task['id'], anakin_fitness_employee['id'], True, "14:00") # Anakin is going to complete one task for you. 
         add_tasklist_to_shift(shift5['id'], wipe_equipment['id'])
@@ -407,6 +419,10 @@ tmp_loaded = load_weekly_schedule_template_from_existing_shifts(template['id'], 
 if (IS_PROD):
     your_user = get_existing_user("emily.forster@eagles.oc.edu");
     your_users_employee = create_employee(your_user['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
+
+    give_employee_a_position(your_user['id'], gate_keeper['id'])
+    give_employee_a_position(your_user['id'], physical_form_coach['id'])
+    give_employee_a_position(your_user['id'], conditioning_specialist['id'])
     shift1 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "6:00", "7:30", TODAYS_DATE, True)
     shift2 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], physical_form_coach['id'], "12:00", "14:00", TODAYS_DATE, True)
     shift3 = create_shift(your_users_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "22:00", "22:59", TODAYS_DATE, True)
