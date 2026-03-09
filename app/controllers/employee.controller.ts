@@ -15,6 +15,20 @@ import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 const exports: any = {};
 const errorClassName = "Employee";
 
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const existingEmployee = await Employee.findOne({
+        where: {
+            userId: req.body.userId,
+            businessUnitId: req.body.businessUnitId
+        }
+    });
+    if (existingEmployee) {
+        throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
+    }
+    const data = await Employee.create(req.body)
+    res.send(data);
+}
 
 // Retrieve all Employees from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
@@ -57,43 +71,37 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const startDate = req.query.start;
     const endDate = req.query.end;
-    let data = {};
-    let includeCondition = [Position, BusinessUnit]
-    let whereCondition = {}
-    //no date range, get all
-    if (!startDate && !endDate) {
-        whereCondition = {
-            employeeId: id
+    let dateCondition = {}
+    //no startDate, get all up to end
+    if (!startDate && !endDate){
+        dateCondition = {
+            [Op.gt]: '1000-01-01'
         }
     }
-    //no startDate, get all up to end
     else if (!startDate) {
-        whereCondition = {
-            employeeId: id,
-            date: {
-                [Op.lte]: endDate
-            }
+        dateCondition =
+        {
+            [Op.lte]: endDate
         }
     }
     //no end date, get all after start
     else if (!endDate) {
-        whereCondition = {
-            employeeId: id,
-            date: {
-                [Op.gte]: startDate
-            }
+        dateCondition = {
+            [Op.gte]: startDate
         }
     }
     //both dates, get between them
     else {
-        whereCondition = {
-            employeeId: id,
-            date: {
-                [Op.between]: [startDate, endDate]
-            }
+        dateCondition = {
+            [Op.between]: [startDate, endDate]
         }
     }
-    data = await Shift.findAll({ where: whereCondition, include: includeCondition });
+    const data = await Shift.findAll({
+        where: {
+            employeeId: id,
+            date: dateCondition
+        }, include: [Position, BusinessUnit]
+    });
     res.send(data);
 }
 
