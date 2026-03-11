@@ -8,7 +8,7 @@ var router = Router()
 //Employee contains user on return, so any return route cannot be put to the general controller
 
 // Create a new Employee
-router.post("/", [auth.authenticate], generalcontroller.create(EmployeeModel));
+router.post("/", [auth.authenticate], employees.create);
 
 // Retrieve all Employees
 router.get("/all", [auth.authenticate], employees.findAll);
