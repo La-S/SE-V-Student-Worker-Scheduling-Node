@@ -143,8 +143,8 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     //sunday-sat
-    for (let i = 1; i <= 7; i++) {
-        const shiftsForDay = await getShiftsFromDailyScheduleTemplate(id, i);
+    for (const dayOfWeek of daysOfWeek) {
+        const shiftsForDay = await getShiftsFromDailyScheduleTemplate(id, dayOfWeek);
         shiftsForDay.forEach(async (shift: Model<any, any>) => {
             const shiftValues = { ...shift.dataValues };
             shiftValues.id = undefined;
@@ -181,7 +181,7 @@ async function makeTaskCompletionsForNewShift(taskLists: Model<any, any>[], shif
     })
 }
 
-async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: number, dayOfWeek: number) {
+async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: number, dayOfWeek: string) {
     const dailyScheduleTemplate: Model<any, any> | null = await DailyScheduleTemplate.findOne({
         where: {
             weeklyScheduleTemplateId: weeklyScheduleTemplateId,
@@ -195,5 +195,4 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
     return shifts;
 }
 export default exports;
-
 
