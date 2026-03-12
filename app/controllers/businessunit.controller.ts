@@ -13,6 +13,7 @@ import OpenHours from '../models/openhours.model.ts';
 import { deleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 import { AppError } from "../error/app.error.ts";
+import { daysOfWeek } from "../types/dayofweek.enum.ts";
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -123,9 +124,9 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const dayOfWeek = Number(req.params.dayOfWeek);
-    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
-        throw new AppError(400, "dayOfWeek must be an integer between 0 and 6");
+    const dayOfWeek = req.params.dayOfWeek as string;
+    if (!daysOfWeek.includes(dayOfWeek as typeof daysOfWeek[number])) {
+        throw new AppError(400, `dayOfWeek must be one of: ${daysOfWeek.join(", ")}`);
     }
 
     const data = await OpenHours.findAll({

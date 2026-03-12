@@ -1,8 +1,8 @@
 import pkg from 'express';
-import { Op } from 'sequelize';
 import { AppError } from "../error/app.error.ts";
 import OpenHours from "../models/openhours.model.ts";
 import { getOneForId } from "../services/services.ts";
+import { daysOfWeek } from "../types/dayofweek.enum.ts";
 
 const exports: any = {};
 const errorClassName = "Open Hours";
@@ -18,11 +18,11 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.businessUnitId = undefined;
 
     if (req.body.dayOfWeek !== undefined) {
-        const dayIndex = Number(req.body.dayOfWeek);
-        if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex > 6) {
-            throw new AppError(400, "dayOfWeek must be an integer between 0 and 6");
+        const dayOfWeek = req.body.dayOfWeek as string;
+        if (!daysOfWeek.includes(dayOfWeek as typeof daysOfWeek[number])) {
+            throw new AppError(400, `dayOfWeek must be one of: ${daysOfWeek.join(", ")}`);
         }
-        req.body.dayOfWeek = dayIndex;
+        req.body.dayOfWeek = dayOfWeek;
     }
 
     const numUpdated = await OpenHours.update(req.body, {

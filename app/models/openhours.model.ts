@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
+import { daysOfWeek } from "../types/dayofweek.enum.ts";
 
 
 // OpenHours for business unit
@@ -14,13 +15,8 @@ const OpenHours = SequelizeInstance.define("openhours", {
         allowNull: false
     },
     dayOfWeek: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        validate: {
-            min: 0,
-            max: 6,
-            isInt: true
-        }
+     type: Sequelize.ENUM(...Object.values(daysOfWeek))
+        
     },
     startTime: {
         type: Sequelize.TIME
