@@ -18,7 +18,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.businessUnitId = undefined;
 
     if (req.body.dayOfWeek !== undefined) {
-        const dayOfWeek = req.body.dayOfWeek as string;
+        const dayInput = req.body.dayOfWeek;
+        const dayIndex = Number(dayInput);
+        const dayOfWeek = Number.isInteger(dayIndex) && dayIndex >= 1 && dayIndex <= daysOfWeek.length
+            ? daysOfWeek[dayIndex - 1]
+            : dayInput as string;
+
         if (!daysOfWeek.includes(dayOfWeek as typeof daysOfWeek[number])) {
             throw new AppError(400, `dayOfWeek must be one of: ${daysOfWeek.join(", ")}`);
         }

@@ -124,7 +124,12 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const dayOfWeek = req.params.dayOfWeek as string;
+    const dayInput = req.params.dayOfWeek;
+    const dayIndex = Number(dayInput);
+    const dayOfWeek = Number.isInteger(dayIndex) && dayIndex >= 1 && dayIndex <= daysOfWeek.length
+        ? daysOfWeek[dayIndex - 1]
+        : dayInput as string;
+
     if (!daysOfWeek.includes(dayOfWeek as typeof daysOfWeek[number])) {
         throw new AppError(400, `dayOfWeek must be one of: ${daysOfWeek.join(", ")}`);
     }
