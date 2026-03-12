@@ -84,13 +84,19 @@ db.TaskCompletion.belongsTo(db.Employee,
 db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
 db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
 db.Employee.hasMany(db.CoverRequest,
-    { foreignKey: { name: "requesterId", allowNull: true }, onDelete: "CASCADE" });
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
-    { foreignKey: { name: "requesterId", allowNull: true }, onDelete: "CASCADE" });
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requester" });
+
+db.Employee.hasMany(db.CoverRequest,
+    { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
-    { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE" });
+    { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepter" });
+
+db.Employee.hasMany(db.CoverRequest,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
-    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE" });
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewer" });
 
 //Position-owned FK
 db.Position.hasMany(db.Shift,
