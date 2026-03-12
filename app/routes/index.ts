@@ -13,6 +13,7 @@ import TaskListRoutes from "./tasklist.routes.ts"
 import TaskRoutes from "./task.routes.ts"
 import TaskCompletionRoutes from "./taskcompletion.routes.ts"
 import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
+import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
 
 const router = Router();
@@ -30,6 +31,7 @@ router.use("/tasklist", TaskListRoutes);
 router.use("/task", TaskRoutes)
 router.use("/taskcompletion", TaskCompletionRoutes)
 router.use("/availabilitytemplate", AvailabilityTemplateRoutes);
+router.use("/openhours", OpenHoursRoutes);
 router.use("/debug", DebugRoutes);
 
 export default router;

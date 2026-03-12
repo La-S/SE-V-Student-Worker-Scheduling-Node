@@ -9,8 +9,10 @@ import TaskList from '../models/tasklist.model.ts';
 import { createDateFromString, getOneForId, getStringFromDate } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
+import OpenHours from '../models/openhours.model.ts';
 import { deleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
+import { AppError } from "../error/app.error.ts";
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -103,6 +105,33 @@ exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
 
     //I dont think this should include dailyschedules and shifts when getting all but lmk if you disagree
     const data = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id }, });
+    res.send(data);
+}
+
+exports.findOpenHours = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const data = await OpenHours.findAll({
+        where: { businessUnitId: id },
+        order: [["dayOfWeek", "ASC"], ["startTime", "ASC"]]
+    });
+    res.send(data);
+}
+
+exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const dayOfWeek = Number(req.params.dayOfWeek);
+    if (!Number.isInteger(dayOfWeek) || dayOfWeek < 0 || dayOfWeek > 6) {
+        throw new AppError(400, "dayOfWeek must be an integer between 0 and 6");
+    }
+
+    const data = await OpenHours.findAll({
+        where: { businessUnitId: id, dayOfWeek },
+        order: [["startTime", "ASC"]]
+    });
     res.send(data);
 }
 
