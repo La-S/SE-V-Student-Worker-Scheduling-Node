@@ -25,16 +25,6 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         req.body.dayOfWeek = dayIndex;
     }
 
-    const nextDay = req.body.dayOfWeek ?? originalOpenHours.get("dayOfWeek");
-
-    await OpenHours.findOne({
-        where: {
-            businessUnitId: originalOpenHours.get("businessUnitId"),
-            dayOfWeek: nextDay,
-            id: { [Op.ne]: id }
-        }
-    });
-
     const numUpdated = await OpenHours.update(req.body, {
         where: { id: id },
     });
