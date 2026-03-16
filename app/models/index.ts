@@ -17,6 +17,7 @@ import Task from "./task.model.ts";
 import TaskCompletion from "./taskcompletion.model.ts";
 import AvailabilityTemplate from "./availabilitytemplate.model.ts";
 import OpenHours from "./openhours.model.ts";
+import Settings from "./settings.model.ts";
 
 const db = {
     Sequelize,
@@ -33,7 +34,8 @@ const db = {
     Task,
     TaskCompletion,
     AvailabilityTemplate,
-    OpenHours
+    OpenHours,
+    Settings
 };
 
 //User-owned FKs

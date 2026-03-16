@@ -19,7 +19,8 @@ const Settings = SequelizeInstance.define("settings", {
     },
     code: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
+        unique: true
     },
     type: {
         type: Sequelize.ENUM(...Object.values(settingTypes)),
