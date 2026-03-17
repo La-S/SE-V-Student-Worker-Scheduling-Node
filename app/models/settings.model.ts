@@ -4,11 +4,6 @@ import { settingTypes } from "../types/settings.enum.ts";
 
 //settings
 const Settings = SequelizeInstance.define("settings", {
-    id: {
-        type: Sequelize.INTEGER,
-        autoIncrement: true,
-        primaryKey: true,
-    },
     name: {
         type: Sequelize.STRING,
         allowNull: false
