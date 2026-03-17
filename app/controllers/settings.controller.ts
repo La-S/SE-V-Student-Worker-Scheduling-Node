@@ -3,11 +3,9 @@ const Settings = db.Settings;
 
 import { Model } from "sequelize";
 import pkg from "express";
-import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 
 const exports: any = {};
-const errorClassName = "Settings";
 
 // Create a new setting
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
