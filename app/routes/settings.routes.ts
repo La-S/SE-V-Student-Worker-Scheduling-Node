@@ -1,6 +1,7 @@
 import auth from "../authorization/authorization.ts";
 import settings from "../controllers/settings.controller.ts";
 import generalcontroller from "../controllers/general.controller.ts";
+import SettingsModel from "../models/settings.model.ts";
 
 import { Router } from "express";
 
@@ -10,7 +11,7 @@ var router = Router();
 router.post("/", [auth.authenticate], settings.create);
 
 // Retrieve all Settings
-router.get("/all", [auth.authenticate], generalcontroller.findAll);
+router.get("/all", [auth.authenticate], generalcontroller.findAll(SettingsModel));
 
 // Retrieve a single Setting by code
 router.get("/:code", [auth.authenticate], settings.findOne);
