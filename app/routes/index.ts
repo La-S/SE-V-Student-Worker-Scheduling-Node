@@ -15,6 +15,7 @@ import TaskCompletionRoutes from "./taskcompletion.routes.ts"
 import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
 import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
+import SettingsRoutes from "./settings.routes.ts";
 
 const router = Router();
 
@@ -33,5 +34,6 @@ router.use("/taskcompletion", TaskCompletionRoutes)
 router.use("/availabilitytemplate", AvailabilityTemplateRoutes);
 router.use("/openhours", OpenHoursRoutes);
 router.use("/debug", DebugRoutes);
+router.use("/settings", SettingsRoutes);
 
 export default router;
