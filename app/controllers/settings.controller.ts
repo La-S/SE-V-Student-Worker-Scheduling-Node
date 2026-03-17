@@ -24,14 +24,6 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 };
 
-// Retrieve all settings
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-
-    const data = await Settings.findAll();
-    res.send(data);
-
-};
-
 // Find a single setting by code
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
