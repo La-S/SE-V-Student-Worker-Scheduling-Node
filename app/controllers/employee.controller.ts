@@ -168,15 +168,16 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+
     const employee = await Employee.findOne({
         where: { id },
-        include: [{ model: Position }]
+        include: [{ model: Position, as: "positions", through: { attributes: [] } }]
     });
-    if (!employee) {
-        throw new NotFoundError("Employee", id);
-    }
     const positions = employee.positions;
     const positionIds = positions.map((position) => position.id);
+
     const includeCondition = [
         { model: Employee, as: "requester", include: [User] },
         { model: Employee, as: "accepter", include: [User] },
@@ -185,16 +186,17 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
             model: Shift,
             required: true,
             where: {
-                date: { [Op.gte]: new Date() },
+                date: { [Op.gt]: today },
+                startTime: { [Op.gte]: currentTime },
                 positionId: { [Op.in]: positionIds }
             },
         }
     ];
-    const data = CoverRequest.findAll({
+    const data = await CoverRequest.findAll({
         where: { accepterId: null },
         include: includeCondition
     });
-    return data;
+    res.send(data);
 }
 
 //cannot be replaced with service because of user in return
