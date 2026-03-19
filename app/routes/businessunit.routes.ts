@@ -43,4 +43,6 @@ router.get("/:id/openhours", [auth.authenticate], businessunits.findOpenHours)
 
 router.get("/:id/openhours/:dayOfWeek", [auth.authenticate], businessunits.findOpenHoursForDay)
 
+router.get("/:id/coverrequests", [auth.authenticate], businessunits.getCoverRequests)
+
 export default router;
