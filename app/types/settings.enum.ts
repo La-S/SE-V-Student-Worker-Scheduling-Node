@@ -1,0 +1,1 @@
+export const settingTypes = ["int", "boolean", "string"] as const;

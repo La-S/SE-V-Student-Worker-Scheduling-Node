@@ -38,6 +38,9 @@ router.get("/:id/weeklyscheduletemplates", [auth.authenticate], businessunits.fi
 
 router.put("/:id/shifts/:date/publish", [auth.authenticate], businessunits.publishShiftsForWeek);
 
+// get open hours for businessunit
+router.get("/:id/openhours", [auth.authenticate], businessunits.findOpenHours)
+
+router.get("/:id/openhours/:dayOfWeek", [auth.authenticate], businessunits.findOpenHoursForDay)
 
 export default router;
-
