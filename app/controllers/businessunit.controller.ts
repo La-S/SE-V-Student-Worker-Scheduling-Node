@@ -197,6 +197,30 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         include: includeCondition
     });
     res.send(data);
+};
+
+exports.getUpcomingCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const includeCondition = [
+        { model: Employee, as: "requester", include: [User] },
+        { model: Employee, as: "accepter", include: [User] },
+        { model: Employee, as: "reviewer", include: [User] },
+        {
+            model: Shift,
+            as: 'shift',
+            required: true,
+            where: {
+                date: { [Op.gt]: today },
+                startTime: { [Op.gte]: currentTime }
+            }
+        }
+    ];
+    const data = await CoverRequest.findAll({
+        where: { approval: null },
+        include: includeCondition
+    });
+    res.send(data);
 }
 
 function determineDateRange(startDate: String, endDate: String, businessUnitId: number) {
