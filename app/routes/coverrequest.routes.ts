@@ -21,6 +21,10 @@ router.put("/:id", [auth.authenticate], coverrequests.update);
 // Delete a Position by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(CoverRequestModel));
 
+router.put("/:id/accept/:employeeId", [auth.authenticate], coverrequests.acceptCoverRequest);
+
+router.put("/:id/approve/:approverId", [auth.authenticate], coverrequests.approveCoverRequest);
+
 
 export default router;
 

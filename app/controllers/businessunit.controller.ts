@@ -27,9 +27,9 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         { model: Position },
         { model: TaskList, as: "taskList" }
     ];
-    const data = await Shift.findAll({ 
+    const data = await Shift.findAll({
         where: { businessUnitId: id, ...getDateRange(startDate, endDate) },
-        include: includeCondition 
+        include: includeCondition
     });
     res.send(data);
 };
@@ -187,12 +187,16 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, as: "requester", include: [User] },
         { model: Employee, as: "accepter", include: [User] },
         { model: Employee, as: "reviewer", include: [User] },
+        {
+            model: Shift,
+            required: true,
+            where: { businessUnitId: id, ...dateRange },
+        }
     ];
-    const data = CoverRequest.findAll({ 
-        where: { businessUnitId: id, ...dateRange },
-        include: includeCondition 
+    const data = await CoverRequest.findAll({
+        include: includeCondition
     });
-    return data;
+    res.send(data);
 }
 
 function determineDateRange(startDate: String, endDate: String, businessUnitId: number) {

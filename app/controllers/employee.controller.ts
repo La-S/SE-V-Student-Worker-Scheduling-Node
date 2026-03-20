@@ -154,16 +154,26 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
+    const requester = req.query.requester;
+    let whereCondition = {};
+    if (requester === 'true') {
+        whereCondition = { requesterId: id };
+    } else if (requester === 'false') {
+        whereCondition = { accepterId: id };
+    } else {
+        whereCondition = { [Op.or]: [{ requesterId: id }, { accepterId: id }] };
+    }
     const includeCondition = [
         { model: Employee, as: "requester", include: [User] },
         { model: Employee, as: "accepter", include: [User] },
         { model: Employee, as: "reviewer", include: [User] },
+        { model: Shift }
     ];
-    const data = CoverRequest.findAll({
-        where: { [Op.or]: [{ requesterId: id }, { accepterId: id }] },
+    const data = await CoverRequest.findAll({
+        where: whereCondition,
         include: includeCondition
     });
-    return data;
+    res.send(data);
 }
 
 exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
@@ -176,6 +186,8 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
         include: [{ model: Position, as: "positions", through: { attributes: [] } }]
     });
     const positions = employee.positions;
+    if (positions.length == 0)
+        res.status(400).send({message: "No positions for employee. No requests available"});
     const positionIds = positions.map((position) => position.id);
 
     const includeCondition = [
@@ -188,7 +200,8 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
             where: {
                 date: { [Op.gt]: today },
                 startTime: { [Op.gte]: currentTime },
-                positionId: { [Op.in]: positionIds }
+                positionId: { [Op.in]: positionIds },
+                employeeId: {[Op.not]: id}
             },
         }
     ];

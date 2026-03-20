@@ -5,6 +5,8 @@ import CoverRequest from "../models/coverrequest.model.ts";
 import Employee from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
+import { getOneForId } from "../services/services.ts";
+import Shift from "../models/shift.model.ts";
 
 const errorClassName: string = "Cover Request";
 const exports: any = {};
@@ -52,6 +54,47 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedEmployee);
 };
 
+exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const coverRequest = await getOneForId(CoverRequest, id);
+    if (coverRequest!.dataValues.accepterId !== null) {
+        throw new AppError(400, "This cover request has already been accepted.")
+    }
+    const employeeId = parseInt(req.params.employeeId as string, 10);
+    await getOneForId(Employee, employeeId);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+
+    await coverRequest.update({
+        accepterId: employeeId,
+        acceptDate: today,
+        acceptTime: currentTime
+    });
+    res.send(coverRequest);
+}
+
+exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const approverId = parseInt(req.params.approverId as string, 10);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+
+    const coverRequest = await getOneForId(CoverRequest, id);
+        if (coverRequest.dataValues.accepterId == null) {
+        throw new AppError(400, "This cover request has not been accepted yet.")
+    }
+    const shift = await getOneForId(Shift, coverRequest.dataValues.shiftId)
+
+
+    await shift.update({ employeeId: coverRequest!.dataValues.accepterId });
+    await coverRequest.update({
+        approval: true,
+        reviewedBy: approverId,
+        reviewedDate: today,
+        reviewedTime: currentTime
+    });
+    res.send(coverRequest);
+}
 
 //cannot be replaced with service because of user in return
 async function getCoverRequestForId(id: number): Promise<Model<any, any> | null> {
