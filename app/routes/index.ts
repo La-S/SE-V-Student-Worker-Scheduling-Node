@@ -17,6 +17,7 @@ import CoverRequestRoutes from "../routes/coverrequest.routes.ts";
 import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
 import SettingsRoutes from "./settings.routes.ts";
+import DropRequestRoutes from "./droprequest.routes.ts"
 
 const router = Router();
 
@@ -34,6 +35,7 @@ router.use("/task", TaskRoutes)
 router.use("/taskcompletion", TaskCompletionRoutes)
 router.use("/availabilitytemplate", AvailabilityTemplateRoutes);
 router.use("/coverrequest", CoverRequestRoutes);
+router.use("/droprequest", DropRequestRoutes);
 router.use("/openhours", OpenHoursRoutes);
 router.use("/debug", DebugRoutes);
 router.use("/settings", SettingsRoutes);
