@@ -13,7 +13,7 @@ import TaskListRoutes from "./tasklist.routes.ts"
 import TaskRoutes from "./task.routes.ts"
 import TaskCompletionRoutes from "./taskcompletion.routes.ts"
 import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
-import CoverRequestRoutes from "../routes/coverrequest.routes.ts";
+import CoverRequestRoutes from "./coverrequest.routes.ts";
 import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
 import SettingsRoutes from "./settings.routes.ts";
