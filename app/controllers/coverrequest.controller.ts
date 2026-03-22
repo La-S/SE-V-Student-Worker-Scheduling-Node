@@ -76,19 +76,22 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
 exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const approverId = parseInt(req.params.approverId as string, 10);
+    const approve: Boolean = req.query.approve === "true"; //converts to boolean
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
 
     const coverRequest = await getOneForId(CoverRequest, id);
-        if (coverRequest.dataValues.accepterId == null) {
-        throw new AppError(400, "This cover request has not been accepted yet.")
+    if (coverRequest.dataValues.accepterId == null) {
+        throw new AppError(400, "This cover request has not been accepted yet.");
     }
-    const shift = await getOneForId(Shift, coverRequest.dataValues.shiftId)
 
+    if (approve == true) {
+        const shift = await getOneForId(Shift, coverRequest.dataValues.shiftId);
+        await shift.update({ employeeId: coverRequest.dataValues.accepterId });
+    }
 
-    await shift.update({ employeeId: coverRequest!.dataValues.accepterId });
     await coverRequest.update({
-        approval: true,
+        approval: approve,
         reviewedBy: approverId,
         reviewedDate: today,
         reviewedTime: currentTime
