@@ -17,6 +17,7 @@ import Task from "./task.model.ts";
 import TaskCompletion from "./taskcompletion.model.ts";
 import AvailabilityTemplate from "./availabilitytemplate.model.ts";
 import CoverRequest from "./coverrequest.model.ts"
+import DropRequest from "./droprequest.model.ts"
 import OpenHours from "./openhours.model.ts";
 import Settings from "./settings.model.ts";
 
@@ -36,6 +37,7 @@ const db = {
     TaskCompletion,
     AvailabilityTemplate,
     CoverRequest,
+    DropRequest,
     OpenHours,
     Settings
 };
@@ -91,19 +93,27 @@ db.TaskCompletion.belongsTo(db.Employee,
     { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
 db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
 db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
+
 db.Employee.hasMany(db.CoverRequest,
     { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
     { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requester" });
-
 db.Employee.hasMany(db.CoverRequest,
     { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
     { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepter" });
-
 db.Employee.hasMany(db.CoverRequest,
     { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewer" });
+
+db.Employee.hasMany(db.DropRequest,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterDropRequests" });
+db.DropRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requester" });
+db.Employee.hasMany(db.DropRequest,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerCoverRequests" });
+db.DropRequest.belongsTo(db.Employee,
     { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewer" });
 
 //Position-owned FK
