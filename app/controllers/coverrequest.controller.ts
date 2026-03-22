@@ -50,8 +50,8 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedEmployee = await getCoverRequestForId(id);
-    res.send(updatedEmployee);
+    let updatedRequest = await getCoverRequestForId(id);
+    res.send(updatedRequest);
 };
 
 exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {

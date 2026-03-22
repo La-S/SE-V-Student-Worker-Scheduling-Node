@@ -10,5 +10,6 @@ export interface CoverRequestType {
     approval?: boolean,
     reviewedBy?: number,
     reviewedTime?: string,
-    reviewedDate?: string
+    reviewedDate?: string,
+    note?: string
 }

@@ -28,6 +28,9 @@ const CoverRequest = SequelizeInstance.define("coverrequest", {
     },
     reviewedDate: {
         type: Sequelize.DATEONLY
+    },
+    note: {
+        type: Sequelize.STRING
     }
 
 });
