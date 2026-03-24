@@ -3,6 +3,8 @@ import urllib3
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 import os
+from tabulate import tabulate
+
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 load_dotenv()
@@ -32,6 +34,9 @@ task_completions_generated = 0
 avilability_templates_created = 0
 weekly_schedule_templates_created = 0
 weekly_schedule_templates_loaded = 0
+
+employees = []
+business_units = []
 
 
 
@@ -110,6 +115,7 @@ def create_business_unit(name):
 
 def create_employee(userId, businessUnitId, semester, currentlyEmployed, maxWeeklyHours, minWeeklyHours, isManager):
     global employees_generated
+    global employees
 
     r = requests.post(f'{ENDPOINT}/employee', data = {
         "userId": userId,
@@ -125,6 +131,7 @@ def create_employee(userId, businessUnitId, semester, currentlyEmployed, maxWeek
     else:
         print('Hmm, we got an error creating employee', r.text)
 
+    employees.append(r.json())
     return r.json()
 
 def create_position(businessUnitId, name, payRate):
@@ -283,6 +290,39 @@ def give_employee_a_position(employee_id, position_id):
         print('Hmm, we got an error giving an employee a position', r.text)
     return r.json()
 
+def create_cover_request(shift_id, requester_emp_id, request_posted_time, request_posted_date):
+    r = requests.post(f'{ENDPOINT}/coverrequest', data = {
+        "shiftId": shift_id,
+        "requesterId": requester_emp_id,
+        "requestPostedTime": request_posted_time,
+        "requestPostedDate": request_posted_date
+    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+
+    if r.status_code != 200:
+        print('Hmm, we got an error creating a cover request', r.text)
+    return r.json()
+
+
+def accept_cover_request(cover_req_id, accepter_emp_id):
+    """
+    EG: when another employee decides to work your shift for you.
+    """
+    r = requests.put(f'{ENDPOINT}/coverrequest/{cover_req_id}/accept/{accepter_emp_id}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+
+    if r.status_code != 200:
+        print('Hmm, we got an error accepting a cover request', r.text)
+    return r.json()
+
+def approve_cover_request(cover_req_id, approver_emp_id, does_approve):
+    """
+    EG: when a manager approves your request
+    """
+    r = requests.put(f'{ENDPOINT}/coverrequest/{cover_req_id}/approve/{approver_emp_id}?approve={"true" if does_approve else "false"}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+
+    if r.status_code != 200:
+        print('Hmm, we got an error approving a cover request', r.text)
+    return r.json()
+
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
@@ -292,6 +332,7 @@ ahsoka = create_user("Ahsoka", "Tano", "ahsoka.t@padawan.com", False)
 
 # neutral
 jabba =create_user("Jabba", "TheHutt", "jabba@hutt.com", False)
+mando = create_user("Mando", "Lorian", "mando@thisistheway.org", False)
 
 # dark side
 darth_vader = create_user("Darth", "Vader", "darthvader@empire.gov", False)
@@ -319,7 +360,7 @@ counters_task = create_task(clean_up_cafe['id'], 'Wipe down counters', 2)
 
 
 jedi_fitness_center = create_business_unit("Jedi Fitness Center")
-create_employee(obi_wan['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True)
+obi_wan_fitness_manager = create_employee(obi_wan['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, True)
 jaba_working_fitness_center = create_employee(jabba['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False)
 ahsoka_fitness_employee = create_employee(ahsoka['id'], jedi_fitness_center['id'], 'SP26', True, 32, 0, False)
 anakin_fitness_employee = create_employee(anakin['id'], jedi_fitness_center['id'], 'SP26', True, 40, 0, False)
@@ -334,6 +375,8 @@ wipe_saber_trainer_task = create_task(wipe_equipment['id'], 'Wipe down saber tra
 
 dexs_diner = create_business_unit("Dex's Diner") #https://starwars.fandom.com/wiki/Dex%27s_Diner/Legends
 jabba_working_for_dex = create_employee(jabba['id'], dexs_diner['id'], 'SP26', True, 40, 0, False)
+mando_working_for_dex = create_employee(mando['id'], dexs_diner['id'], 'SP26', True, 40, 0, False)
+
 nerf_steak_chef = create_position(dexs_diner['id'], "Nerf Steak Chef", 10.00)
 
 
@@ -352,6 +395,10 @@ shift2 = create_shift(darth_vader_employee_id['id'], sith_blue_milk_cafe['id'], 
 add_tasklist_to_shift(shift1['id'], clean_up_cafe['id'])
 add_tasklist_to_shift(shift2['id'], clean_up_cafe['id'])
 
+# mando just is here to pick up odd jobs when jabba's out...
+give_employee_a_position(mando_working_for_dex['id'], nerf_steak_chef['id'])
+
+
 # jabba's gotta make all that wealth somehow. Working crazy hours...
 create_availability_template(jabba['id'], "Monday", "06:00", "20:00", "available")
 create_availability_template(jabba['id'], "Tuesday", "06:00", "20:00", "available")
@@ -366,6 +413,8 @@ give_employee_a_position(jaba_working_fitness_center['id'], conditioning_special
 give_employee_a_position(jabba_working_for_dex['id'], nerf_steak_chef['id'])
 shift3 = create_shift(jaba_working_fitness_center['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "8:00", "13:00", TODAYS_DATE, True)
 shift4 = create_shift(jabba_working_for_dex['id'], dexs_diner['id'], nerf_steak_chef['id'], "14:00", "19:00", TODAYS_DATE, True)
+# jabba wants off, but he's not going to get it, sorry bub
+create_cover_request(shift4["id"], jabba_working_for_dex['id'], "12:00", TODAYS_DATE)
 
 
 # anakin works a lot
@@ -373,6 +422,17 @@ give_employee_a_position(anakin_fitness_employee['id'], gate_keeper['id'])
 shift5 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "8:00", "11:00", TODAYS_DATE, True)
 shift6 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "12:00", "14:00", TODAYS_DATE, True)
 shift7 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "16:00", "19:00", TODAYS_DATE, True)
+# whoops, anakin can't work this shift cause he's off chasing general grevious.
+anakin_cover_request = create_cover_request(shift7["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE)
+accept_cover_request(anakin_cover_request["id"], ahsoka_fitness_employee['id'])
+approve_cover_request(anakin_cover_request["id"], obi_wan_fitness_manager['id'], True)
+
+# whoops, a planning mishap occurred. Anakin can't work another shift...
+anakin_cover_request_2 = create_cover_request(shift6["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE)
+accept_cover_request(anakin_cover_request_2["id"], ahsoka_fitness_employee['id'])
+approve_cover_request(anakin_cover_request_2["id"], obi_wan_fitness_manager['id'], True)
+# yikes, Ahsoka can't work it either...
+ahsoka_cover_request = create_cover_request(shift6["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE)
 
 # ahsoka likes to work but has classes
 create_availability_template(ahsoka['id'], "Monday", "09:00", "11:00", "unavailable")
@@ -462,7 +522,24 @@ print("Generated",weekly_schedule_templates_created,"Weekly Schedule Templates")
 print("Loaded",weekly_schedule_templates_loaded,"Weekly Schedule Templates")
 
 print("Thank you for using Dummy Data! Now, work quickly, you must. To bring balance to the schedule.")
-print("Important Info:")
-print("Sith Blue Milk Cafe Id:\t", sith_blue_milk_cafe['id'])
-print("Jedi Fitness Center Id:\t", jedi_fitness_center['id'])
-print("Dex's Diner Id:\t\t", dexs_diner['id'])
+print("Important Info:\n")
+# print("Sith Blue Milk Cafe Id:\t", sith_blue_milk_cafe['id'])
+# print("Jedi Fitness Center Id:\t", jedi_fitness_center['id'])
+# print("Dex's Diner Id:\t\t", dexs_diner['id'])
+
+print(tabulate([["Sith Blue Milk Cafe", sith_blue_milk_cafe['id']], ["Jedi Fitness Center", jedi_fitness_center['id']], ["Dex's Diner", dexs_diner['id']]], headers=["business_unit", "id"]))
+print()
+print(tabulate([
+    ["Obi Wan", obi_wan_fitness_manager['id'], obi_wan_fitness_manager["isManager"] == "1"], 
+    ["Ahsoka", ahsoka_fitness_employee['id'], ahsoka_fitness_employee['isManager'] == "1"], 
+    ["Anakin", anakin_fitness_employee['id'], anakin_fitness_employee['isManager'] == "1"],
+    ["Jabba for dex", jabba_working_for_dex['id'], jabba_working_for_dex['isManager'] == "1"],
+    ["Jabba for jedi fitness", jaba_working_fitness_center['id'], jaba_working_fitness_center['isManager'] == "1"],
+    ["Mando", mando_working_for_dex['id'], mando_working_for_dex['isManager'] == "1"],
+
+], headers=["employee", "id", "is_manager"]))
+
+# print("Employees")
+# print("Sith Blue Milk Cafe Id:\t", sith_blue_milk_cafe['id'])
+# print("Jedi Fitness Center Id:\t", jedi_fitness_center['id'])
+# print("Dex's Diner Id:\t\t", dexs_diner['id'])
