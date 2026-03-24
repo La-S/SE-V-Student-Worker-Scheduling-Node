@@ -18,7 +18,7 @@ const EMPLOYEE_INCLUDES = [
 ];
 
 
-// Retrieve all Employees from the database.
+// Retrieve all Cover Requests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await CoverRequest.findAll({ include: EMPLOYEE_INCLUDES })
