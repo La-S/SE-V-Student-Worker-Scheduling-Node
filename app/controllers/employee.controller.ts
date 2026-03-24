@@ -154,6 +154,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
     const requester = req.query.requester;
     let whereCondition = {};
     if (requester === 'true') {
@@ -178,6 +179,7 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
 
@@ -198,7 +200,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
             model: Shift,
             required: true,
             where: {
-                date: { [Op.gt]: today },
+                date: { [Op.gte]: today },
                 startTime: { [Op.gte]: currentTime },
                 positionId: { [Op.in]: positionIds },
                 employeeId: {[Op.not]: id}
