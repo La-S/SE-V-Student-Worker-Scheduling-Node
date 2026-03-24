@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getOneForId, getStringFromDate } from '../services/services.ts';
+import { createDateFromString, getDateRange, getOneForId, getStringFromDate } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -14,61 +14,23 @@ import { deleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 import { AppError } from "../error/app.error.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
+import CoverRequest from '../models/coverrequest.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
-
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
     const endDate = req.query.end;
-    let data = {};
-    let includeCondition = [{
-        model: Employee,
-        include: [User]
-    },
-    {
-        model: Position
-    },
-    {
-        model: TaskList,
-        as: "taskList"
-    }]
-    let whereCondition = {}
-    //no date range, get all
-    if (!startDate && !endDate) {
-        whereCondition = {
-            businessUnitId: id
-        }
-    }
-    //no startDate, get all up to end
-    else if (!startDate) {
-        whereCondition = {
-            businessUnitId: id,
-            date: {
-                [Op.lte]: endDate
-            }
-        }
-    }
-    //no end date, get all after start
-    else if (!endDate) {
-        whereCondition = {
-            businessUnitId: id,
-            date: {
-                [Op.gte]: startDate
-            }
-        }
-    }
-    //both dates, get between them
-    else {
-        whereCondition = {
-            businessUnitId: id,
-            date: {
-                [Op.between]: [startDate, endDate]
-            }
-        }
-    }
-    data = await Shift.findAll({ where: whereCondition, include: includeCondition });
+    const includeCondition = [
+        { model: Employee, include: [User] },
+        { model: Position },
+        { model: TaskList, as: "taskList" }
+    ];
+    const data = await Shift.findAll({
+        where: { businessUnitId: id, ...getDateRange(startDate, endDate) },
+        include: includeCondition
+    });
     res.send(data);
 };
 
@@ -171,7 +133,7 @@ exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) =>
         where: { businessUnitId: id },
         include: User
     });
-const availableEmployees = await Employee.findAll({
+    const availableEmployees = await Employee.findAll({
         where: { businessUnitId: id },
         include: {
             model: User,
@@ -181,11 +143,11 @@ const availableEmployees = await Employee.findAll({
                 where: {
                     dayOfWeek: dayOfWeek,
                     [Op.and]: {
-                        startTime: {[Op.lte]: startTime},
-                        endTime: {[Op.gte]: endTime}
+                        startTime: { [Op.lte]: startTime },
+                        endTime: { [Op.gte]: endTime }
                     },
                     //only users where their availability is "available" or "preferred". Unavailable assumed
-                    preference: {[Op.in]: acceptablePreferences} 
+                    preference: { [Op.in]: acceptablePreferences }
                 }
             }]
         }
@@ -197,22 +159,72 @@ const availableEmployees = await Employee.findAll({
 exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const startDate = req.params.date as string;
-    getOneForId(BusinessUnit, id);
+    await getOneForId(BusinessUnit, id);
     const startDateObject = createDateFromString(startDate);
     const endDateObject = new Date(startDateObject);
-    endDateObject.setDate(endDateObject.getDate() +  6);
+    endDateObject.setDate(endDateObject.getDate() + 6);
     const endDate = getStringFromDate(endDateObject);
 
-    Shift.update({"published": true}, {where: 
+    Shift.update({ "published": true }, {
+        where:
         {
             businessUnitId: id,
-            date: {[Op.between]: [startDate, endDate]}
+            date: { [Op.between]: [startDate, endDate] }
         }
     });
 
     sendNotificationToBusinessUnit(id, startDate);
 
-    res.send({message: "shifts published!"});
+    res.send({ message: "shifts published!" });
+}
+
+exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const dateRange = getDateRange(startDate, endDate);
+    const includeCondition = [
+        { model: Employee, as: "requester", include: [User] },
+        { model: Employee, as: "accepter", include: [User] },
+        { model: Employee, as: "reviewer", include: [User] },
+        {
+            model: Shift,
+            required: true,
+            where: { businessUnitId: id, ...dateRange },
+        }
+    ];
+    const data = await CoverRequest.findAll({
+        include: includeCondition
+    });
+    res.send(data);
+};
+
+exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const includeCondition = [
+        { model: Employee, as: "requester", include: [User] },
+        { model: Employee, as: "accepter", include: [User] },
+        { model: Employee, as: "reviewer", include: [User] },
+        {
+            model: Shift,
+            as: 'shift',
+            required: true,
+            where: {
+                date: { [Op.gte]: today },
+                startTime: { [Op.gte]: currentTime },
+                businessUnitId: id,
+            }
+        }
+    ];
+    const data = await CoverRequest.findAll({
+        where: { approval: null },
+        include: includeCondition
+    });
+    res.send(data);
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {

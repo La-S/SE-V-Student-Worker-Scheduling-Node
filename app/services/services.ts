@@ -1,4 +1,4 @@
-import { Model, type ModelStatic } from "sequelize";
+import { Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
@@ -31,4 +31,21 @@ export function getStringFromDate(dateObject: Date) {
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format")
     }
     return dateObject.toLocaleDateString("en-CA");
+}
+
+
+export function getDateRange(startDate: String, endDate: String) {
+    if (!startDate && !endDate) {
+        return {};
+    }
+
+    if (!startDate) {
+        return { date: { [Op.lte]: endDate } };
+    }
+
+    if (!endDate) {
+        return { date: { [Op.gte]: startDate } };
+    }
+
+    return { date: { [Op.between]: [startDate, endDate] } };
 }

@@ -33,5 +33,9 @@ router.delete("/:id/position/:positionid", [auth.authenticate], employees.remove
 
 router.get("/:id/positions", [auth.authenticate], employees.findPositions)
 
+router.get("/:id/coverrequests", [auth.authenticate], employees.getCoverRequests);
+
+router.get("/:id/availablecoverrequests", [auth.authenticate], employees.getAvailableCoverRequests)
+
 export default router;
 

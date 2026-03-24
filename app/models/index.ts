@@ -16,6 +16,7 @@ import TaskList from "./tasklist.model.ts";
 import Task from "./task.model.ts";
 import TaskCompletion from "./taskcompletion.model.ts";
 import AvailabilityTemplate from "./availabilitytemplate.model.ts";
+import CoverRequest from "./coverrequest.model.ts"
 import OpenHours from "./openhours.model.ts";
 import Settings from "./settings.model.ts";
 
@@ -34,6 +35,7 @@ const db = {
     Task,
     TaskCompletion,
     AvailabilityTemplate,
+    CoverRequest,
     OpenHours,
     Settings
 };
@@ -89,6 +91,20 @@ db.TaskCompletion.belongsTo(db.Employee,
     { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
 db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
 db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
+db.Employee.hasMany(db.CoverRequest,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterCoverRequests" });
+db.CoverRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requester" });
+
+db.Employee.hasMany(db.CoverRequest,
+    { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepterCoverRequests" });
+db.CoverRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepter" });
+
+db.Employee.hasMany(db.CoverRequest,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerCoverRequests" });
+db.CoverRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewer" });
 
 //Position-owned FK
 db.Position.hasMany(db.Shift,
@@ -101,8 +117,13 @@ db.Shift.hasMany(db.TaskCompletion,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.TaskCompletion.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
-db.Shift.belongsToMany(db.TaskList, {through: "shifts-tasklists", as: "taskList"});
-db.TaskList.belongsToMany(db.Shift, {through: "shifts-tasklists", as: "shift"})
+db.Shift.belongsToMany(db.TaskList, { through: "shifts-tasklists", as: "taskList" });
+db.TaskList.belongsToMany(db.Shift, { through: "shifts-tasklists", as: "shift" });
+db.Shift.hasMany(db.CoverRequest,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+db.CoverRequest.belongsTo(db.Shift,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+
 
 //TaskList FK
 db.TaskList.hasMany(db.Task,

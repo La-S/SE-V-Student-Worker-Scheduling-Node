@@ -9,8 +9,9 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { getOneForId } from "../services/services.ts";
+import { getDateRange, getOneForId } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
+import CoverRequest from "../models/coverrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -67,40 +68,14 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
-
     const id = parseInt(req.params.id, 10);
     const startDate = req.query.start;
     const endDate = req.query.end;
-    let dateCondition = {}
-    //no startDate, get all up to end
-    if (!startDate && !endDate){
-        dateCondition = {
-            [Op.gt]: '1000-01-01'
-        }
-    }
-    else if (!startDate) {
-        dateCondition =
-        {
-            [Op.lte]: endDate
-        }
-    }
-    //no end date, get all after start
-    else if (!endDate) {
-        dateCondition = {
-            [Op.gte]: startDate
-        }
-    }
-    //both dates, get between them
-    else {
-        dateCondition = {
-            [Op.between]: [startDate, endDate]
-        }
-    }
     const data = await Shift.findAll({
         where: {
-            employeeId: id,
-            date: dateCondition
-        }, include: [Position, BusinessUnit]
+            employeeId: id, ...getDateRange(startDate, endDate)
+        },
+        include: [Position, BusinessUnit]
     });
     res.send(data);
 }
@@ -108,7 +83,6 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
-    console.log(Object.getOwnPropertyNames(employee.__proto__));
 
     //@ts-ignore
     const userId = employee.userId
@@ -178,6 +152,67 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
+exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const requester = req.query.requester;
+    let whereCondition = {};
+    if (requester === 'true') {
+        whereCondition = { requesterId: id };
+    } else if (requester === 'false') {
+        whereCondition = { accepterId: id };
+    } else {
+        whereCondition = { [Op.or]: [{ requesterId: id }, { accepterId: id }] };
+    }
+    const includeCondition = [
+        { model: Employee, as: "requester", include: [User] },
+        { model: Employee, as: "accepter", include: [User] },
+        { model: Employee, as: "reviewer", include: [User] },
+        { model: Shift }
+    ];
+    const data = await CoverRequest.findAll({
+        where: whereCondition,
+        include: includeCondition
+    });
+    res.send(data);
+}
+
+exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+
+    const employee = await Employee.findOne({
+        where: { id },
+        include: [{ model: Position, as: "positions", through: { attributes: [] } }]
+    });
+    const positions = employee.positions;
+    if (positions.length == 0)
+        res.status(400).send({message: "No positions for employee. No requests available"});
+    const positionIds = positions.map((position) => position.id);
+
+    const includeCondition = [
+        { model: Employee, as: "requester", include: [User] },
+        { model: Employee, as: "accepter", include: [User] },
+        { model: Employee, as: "reviewer", include: [User] },
+        {
+            model: Shift,
+            required: true,
+            where: {
+                date: { [Op.gte]: today },
+                startTime: { [Op.gte]: currentTime },
+                positionId: { [Op.in]: positionIds },
+                employeeId: {[Op.not]: id}
+            },
+        }
+    ];
+    const data = await CoverRequest.findAll({
+        where: { accepterId: null },
+        include: includeCondition
+    });
+    res.send(data);
+}
 
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
