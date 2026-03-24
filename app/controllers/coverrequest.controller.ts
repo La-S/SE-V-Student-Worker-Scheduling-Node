@@ -18,14 +18,14 @@ const EMPLOYEE_INCLUDES = [
 ];
 
 
-// Retrieve all Employees from the database.
+// Retrieve all Cover Requests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await CoverRequest.findAll({ include: EMPLOYEE_INCLUDES })
     res.send(data);
 };
 
-// Find a single User with an id
+// Find a single Cover Request with an id
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
@@ -39,7 +39,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     await getCoverRequestForId(id);
 
-    //an employee should refer to a userId and businessUnitId, these should not change
+    //a cover request should refer to a requesterId and shiftId, these should not change
     req.body.requesterId = undefined;
     req.body.shiftId = undefined;
     req.body.id = undefined;
@@ -50,8 +50,8 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedEmployee = await getCoverRequestForId(id);
-    res.send(updatedEmployee);
+    let updatedRequest = await getCoverRequestForId(id);
+    res.send(updatedRequest);
 };
 
 exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {

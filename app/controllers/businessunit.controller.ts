@@ -159,7 +159,7 @@ exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) =>
 exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const startDate = req.params.date as string;
-    getOneForId(BusinessUnit, id);
+    await getOneForId(BusinessUnit, id);
     const startDateObject = createDateFromString(startDate);
     const endDateObject = new Date(startDateObject);
     endDateObject.setDate(endDateObject.getDate() + 6);
@@ -180,6 +180,7 @@ exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
     const endDate = req.query.end;
     const dateRange = getDateRange(startDate, endDate);
@@ -199,7 +200,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 };
 
-exports.getUpcomingCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
     const includeCondition = [
@@ -211,8 +214,9 @@ exports.getUpcomingCoverRequests = async (req: pkg.Request, res: pkg.Response) =
             as: 'shift',
             required: true,
             where: {
-                date: { [Op.gt]: today },
-                startTime: { [Op.gte]: currentTime }
+                date: { [Op.gte]: today },
+                startTime: { [Op.gte]: currentTime },
+                businessUnitId: id,
             }
         }
     ];
@@ -221,43 +225,6 @@ exports.getUpcomingCoverRequests = async (req: pkg.Request, res: pkg.Response) =
         include: includeCondition
     });
     res.send(data);
-}
-
-function determineDateRange(startDate: String, endDate: String, businessUnitId: number) {
-    let whereCondition = {};
-    if (!startDate && !endDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId
-        }
-    }
-    //no startDate, get all up to end
-    else if (!startDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.lte]: endDate
-            }
-        }
-    }
-    //no end date, get all after start
-    else if (!endDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.gte]: startDate
-            }
-        }
-    }
-    //both dates, get between them
-    else {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.between]: [startDate, endDate]
-            }
-        }
-    }
-    return whereCondition;
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
