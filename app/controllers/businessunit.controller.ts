@@ -227,43 +227,6 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     res.send(data);
 }
 
-function determineDateRange(startDate: String, endDate: String, businessUnitId: number) {
-    let whereCondition = {};
-    if (!startDate && !endDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId
-        }
-    }
-    //no startDate, get all up to end
-    else if (!startDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.lte]: endDate
-            }
-        }
-    }
-    //no end date, get all after start
-    else if (!endDate) {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.gte]: startDate
-            }
-        }
-    }
-    //both dates, get between them
-    else {
-        whereCondition = {
-            businessUnitId: businessUnitId,
-            date: {
-                [Op.between]: [startDate, endDate]
-            }
-        }
-    }
-    return whereCondition;
-}
-
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({
     //     where: { businessUnitId: id },
