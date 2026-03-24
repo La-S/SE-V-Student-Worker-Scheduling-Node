@@ -39,7 +39,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     await getCoverRequestForId(id);
 
-    //an employee should refer to a userId and businessUnitId, these should not change
+    //a cover request should refer to a requesterId and shiftId, these should not change
     req.body.requesterId = undefined;
     req.body.shiftId = undefined;
     req.body.id = undefined;
