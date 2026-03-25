@@ -227,7 +227,6 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
         }
     ];
     const data = await CoverRequest.findAll({
-        logging: console.log,
         where: { approval: null },
         include: includeCondition
     });
