@@ -47,5 +47,9 @@ router.get("/:id/coverrequests", [auth.authenticate], businessunits.getCoverRequ
 
 router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenCoverRequests)
 
+router.get("/:id/droprequests", [auth.authenticate], businessunits.getDropRequests)
+
+router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
+
 
 export default router;

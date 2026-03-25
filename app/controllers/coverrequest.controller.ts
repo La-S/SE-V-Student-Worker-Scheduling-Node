@@ -12,9 +12,9 @@ const errorClassName: string = "Cover Request";
 const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
-    { model: Employee, as: "requester", include: [User] },
-    { model: Employee, as: "accepter", include: [User] },
-    { model: Employee, as: "reviewer", include: [User] },
+    { model: Employee, as: "coverRequester", include: [User] },
+    { model: Employee, as: "coverAccepter", include: [User] },
+    { model: Employee, as: "coverReviewer", include: [User] },
 ];
 
 

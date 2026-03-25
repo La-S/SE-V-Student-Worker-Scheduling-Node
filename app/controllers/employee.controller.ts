@@ -12,6 +12,7 @@ import BusinessUnit from "../models/businessunit.model.ts";
 import { getDateRange, getOneForId } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
+import DropRequest from "../models/droprequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -165,9 +166,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         whereCondition = { [Op.or]: [{ requesterId: id }, { accepterId: id }] };
     }
     const includeCondition = [
-        { model: Employee, as: "requester", include: [User] },
-        { model: Employee, as: "accepter", include: [User] },
-        { model: Employee, as: "reviewer", include: [User] },
+        { model: Employee, as: "coverRequester", include: [User] },
+        { model: Employee, as: "coverAccepter", include: [User] },
+        { model: Employee, as: "coverReviewer", include: [User] },
         { model: Shift }
     ];
     const data = await CoverRequest.findAll({
@@ -193,9 +194,9 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     const positionIds = positions.map((position) => position.id);
 
     const includeCondition = [
-        { model: Employee, as: "requester", include: [User] },
-        { model: Employee, as: "accepter", include: [User] },
-        { model: Employee, as: "reviewer", include: [User] },
+        { model: Employee, as: "coverRequester", include: [User] },
+        { model: Employee, as: "coverAccepter", include: [User] },
+        { model: Employee, as: "coverReviewer", include: [User] },
         {
             model: Shift,
             required: true,
@@ -209,6 +210,21 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     ];
     const data = await CoverRequest.findAll({
         where: { accepterId: null },
+        include: includeCondition
+    });
+    res.send(data);
+}
+
+exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const requester = req.query.requester;
+    const includeCondition = [
+        { model: Employee, as: "dropRequester", include: [User] },
+        { model: Employee, as: "dropReviewer", include: [User] },
+        { model: Shift }
+    ];
+    const data = await DropRequest.findAll({
         include: includeCondition
     });
     res.send(data);
