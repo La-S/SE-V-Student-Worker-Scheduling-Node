@@ -12,8 +12,8 @@ const errorClassName: string = "Drop Request";
 const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
-    { model: Employee, as: "requester", include: [User] },
-    { model: Employee, as: "reviewer", include: [User] },
+    { model: Employee, as: "dropRequester", include: [User] },
+    { model: Employee, as: "dropReviewer", include: [User] },
 ];
 
 
