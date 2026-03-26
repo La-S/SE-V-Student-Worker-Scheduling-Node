@@ -37,8 +37,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getDropRequestForId(id);
-
-    //an employee should refer to a userId and businessUnitId, these should not change
+    
     req.body.requesterId = undefined;
     req.body.shiftId = undefined;
     req.body.id = undefined;
@@ -76,7 +75,7 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
     res.send(dropRequest);
 }
 
-//cannot be replaced with service because of user in return
+//cannot be replaced with service because of Employee Returns
 async function getDropRequestForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
