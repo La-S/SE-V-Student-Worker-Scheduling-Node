@@ -6,19 +6,19 @@ import { Router } from "express";
 var router = Router()
 
 
-// Create a new Position
+// Create a new Drop Request
 router.post("/", [auth.authenticate], generalcontroller.create(DropRequestModel));
 
-// Retrieve all Positions
+// Retrieve all Drop Request
 router.get("/all", [auth.authenticate], droprequests.findAll);
 
-// Retrieve a single Position by id
+// Retrieve a single Drop Request by id
 router.get("/:id", [auth.authenticate], droprequests.findOne);
 
-// Update a Position by id
+// Update a Drop Request by id
 router.put("/:id", [auth.authenticate], droprequests.update);
 
-// Delete a Position by id
+// Delete a Drop Request by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(DropRequestModel));
 
 router.put("/:id/approve/:approverId", [auth.authenticate], droprequests.approveDropRequest);
