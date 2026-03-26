@@ -12,6 +12,18 @@ import { sendNotificationToEmployee } from "../services/notifications.ts";
 const exports: any = {};
 const errorClassName = "Shift";
 
+// Create and Save a new Shift
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    // Save Shift in the database
+    if (req.body.published === true && req.body.employeeId) {
+        // don't wait for this response.
+        sendNotificationToEmployee(req.body.employeeId, "New Shift", "A new shift has now become published.");
+    }
+    const data = await Shift.create(req.body);
+    res.send(data);
+};
+
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
