@@ -37,6 +37,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     let originalShift = await getOneForId(Shift, id) as any as ShiftType;
     let isPublishedOriginally = originalShift.published;
+    let originalEmployeeId = originalShift.employeeId;
 
     req.body.id = undefined;
     const numUpdated = await Shift.update(req.body, {
@@ -47,9 +48,11 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     let employeeId = req.body.employeeId ?? originalShift.employeeId;
-    if (req.body.published === true && isPublishedOriginally === false && employeeId) {
+    if ((req.body.published === true && isPublishedOriginally === false && employeeId)) {
         // don't wait for this response.
         sendNotificationToEmployee(employeeId, "New Shift", "A new shift has now become published.");
+    } else if (req.body.employeeId !== originalEmployeeId) {
+        sendNotificationToEmployee(employeeId, "New Shift", "A shift has been assigned to you.");
     }
     let updatedObject = await getOneForId(Shift, id);
 
