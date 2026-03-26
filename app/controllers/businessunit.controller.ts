@@ -15,6 +15,7 @@ import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 import { AppError } from "../error/app.error.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
+import DropRequest from '../models/droprequest.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -185,9 +186,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const endDate = req.query.end;
     const dateRange = getDateRange(startDate, endDate);
     const includeCondition = [
-        { model: Employee, as: "requester", include: [User] },
-        { model: Employee, as: "accepter", include: [User] },
-        { model: Employee, as: "reviewer", include: [User] },
+        { model: Employee, as: "coverRequester", include: [User] },
+        { model: Employee, as: "coverAccepter", include: [User] },
+        { model: Employee, as: "coverReviewer", include: [User] },
         {
             model: Shift,
             required: true,
@@ -206,21 +207,78 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
     const includeCondition = [
-        { model: Employee, as: "requester", include: [User] },
-        { model: Employee, as: "accepter", include: [User] },
-        { model: Employee, as: "reviewer", include: [User] },
+        { model: Employee, as: "coverRequester", include: [User] },
+        { model: Employee, as: "coverAccepter", include: [User] },
+        { model: Employee, as: "coverReviewer", include: [User] },
         {
             model: Shift,
             as: 'shift',
             required: true,
             where: {
-                date: { [Op.gte]: today },
-                startTime: { [Op.gte]: currentTime },
                 businessUnitId: id,
+                [Op.or]: [
+                    { date: { [Op.gt]: today } },
+                    {
+                        date: { [Op.eq]: today },
+                        startTime: { [Op.gte]: currentTime }
+                    }
+                ]
             }
         }
     ];
     const data = await CoverRequest.findAll({
+        where: { approval: null },
+        include: includeCondition
+    });
+    res.send(data);
+}
+
+exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const dateRange = getDateRange(startDate, endDate);
+    const includeCondition = [
+        { model: Employee, as: "dropRequester", include: [User] },
+        { model: Employee, as: "dropReviewer", include: [User] },
+        {
+            model: Shift,
+            required: true,
+            where: { businessUnitId: id, ...dateRange },
+        }
+    ];
+    const data = await DropRequest.findAll({
+        include: includeCondition
+    });
+    res.send(data);
+};
+
+exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const includeCondition = [
+        { model: Employee, as: "dropRequester", include: [User] },
+        { model: Employee, as: "dropReviewer", include: [User] },
+        {
+            model: Shift,
+            as: 'shift',
+            required: true,
+            where: {
+                businessUnitId: id,
+                [Op.or]: [
+                    { date: { [Op.gt]: today } },
+                    {
+                        date: { [Op.eq]: today },
+                        startTime: { [Op.gte]: currentTime }
+                    }
+                ]
+            }
+        }
+    ];
+    const data = await DropRequest.findAll({
         where: { approval: null },
         include: includeCondition
     });

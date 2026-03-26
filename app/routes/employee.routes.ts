@@ -37,5 +37,8 @@ router.get("/:id/coverrequests", [auth.authenticate], employees.getCoverRequests
 
 router.get("/:id/availablecoverrequests", [auth.authenticate], employees.getAvailableCoverRequests)
 
+router.get("/:id/droprequests", [auth.authenticate], employees.getDropRequests);
+
+
 export default router;
 

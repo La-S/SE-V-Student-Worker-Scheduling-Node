@@ -124,7 +124,6 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
 
 
   const data = await Shift.findAll({
-    logging: console.log,
     where: {
       employeeId: { [Op.in]: employeeIds },
       date: { [Op.between]: [startDate, endDate] }
