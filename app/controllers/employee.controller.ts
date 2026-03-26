@@ -9,7 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { getDateRange, getOneForId } from "../services/services.ts";
+import { convertDayOfWeek, convertTime, getDateRange, getOneForId } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
@@ -234,10 +234,71 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
 exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
+    deleteEmployeeAvailabilityTemplates(employee)
+    res.send({ message: "Availability Templates cleared!" });
+}
+
+exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
+    const clear: Boolean = req.query.clear === "true";
+    const id = parseInt(req.params.id as string, 10);
+    const employee = await getOneForId(Employee, id);
+    const user = await employee.getUser();
+    let availabilities: Model<any, any>[] = [];
+    if (clear) {
+        deleteEmployeeAvailabilityTemplates(employee);
+    }
+    const classData = await getClassData(employee);
+    for (const course of classData.Courses) {
+        for (const day of course.meeting_days) {
+            const fullDay = convertDayOfWeek(day);
+            const startTime = convertTime(course.meeting_times[0].start_time);
+            const endTime = convertTime(course.meeting_times[0].end_time);
+            const userId = user.dataValues.id;
+            const preference = "unavailable";
+
+            const reqBody = {
+                "dayOfWeek": fullDay,
+                "startTime": startTime,
+                "endTime": endTime,
+                "preference": preference,
+                "userId": userId
+            };
+
+            const newAvailability = await AvailabilityTemplate.create(reqBody);
+            availabilities.push(newAvailability);
+        }
+    }
+    res.send(availabilities);
+}
+
+async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
     const user = await employee.getUser();
     const userId = user.dataValues.id;
-    const data = await AvailabilityTemplate.destroy({where: {userId: userId}});
-    res.send({message: "Availability Templates cleared!"});
+    const data = await AvailabilityTemplate.destroy({ where: { userId: userId } });
+}
+
+async function getClassData(employee: Model<any, any>) {
+    const user = await employee.getUser();
+    //i.e. SP26
+    const unformattedSemester: String = employee.dataValues.semester;
+    //i.e. SP2026, will not work at year 2100.
+    const semester = unformattedSemester.slice(0, 2) + "20" + unformattedSemester.slice(2, 4);
+    const email = user.dataValues.email;
+    const ocId = user.dataValues.ocId;
+    //email first
+
+    let classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${email}/${semester}`);
+    classData = await classData.json();
+    //try id
+    if (classData.Success === "False") {
+        classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${ocId}/${semester}`);
+        classData = await classData.json();
+        //nothing, no class data
+        if (classData.Success === "False") {
+            throw new AppError(404, "No classes for employee. Make sure the user has a correct email or ocId");
+        }
+    }
+    return classData;
 }
 
 //cannot be replaced with service because of user in return

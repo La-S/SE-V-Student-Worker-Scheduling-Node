@@ -1,4 +1,4 @@
-import { Model, Op, type ModelStatic } from "sequelize";
+import { INTEGER, Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
@@ -27,7 +27,7 @@ export function createDateFromString(dateString: string) {
 }
 
 export function getStringFromDate(dateObject: Date) {
-    if (!dateObject){
+    if (!dateObject) {
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format")
     }
     return dateObject.toLocaleDateString("en-CA");
@@ -48,4 +48,31 @@ export function getDateRange(startDate: String, endDate: String) {
     }
 
     return { date: { [Op.between]: [startDate, endDate] } };
+}
+
+export function convertTime(time: String) {
+    //answer modified from https://stackoverflow.com/questions/15083548/convert-12-hour-hhmm-am-pm-to-24-hour-hhmm
+    const hoursMins: string = time.slice(0, 5);
+    const modifier: string = time.slice(5, 7);
+    let hours : string = hoursMins.slice(0, 2);
+    let mins: string = hoursMins.slice(2, 5);
+    if (hours === "12") {
+        hours = "0";
+    }
+    if (modifier === "PM") {
+        hours = (parseInt(hours, 10) + 12).toString();
+    }
+    return hours + mins
+}
+
+export function convertDayOfWeek(dayOfWeek: String) {
+    switch (dayOfWeek) {
+        case "M": return "Monday";
+        case "T": return "Tuesday";
+        case "W": return "Wednesday";
+        case "TH": return "Thursday";
+        case "F": return "Friday";
+        case "S": return "Saturday";
+        case "SU": return "Sunday";
+    }
 }
