@@ -49,7 +49,7 @@ router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunit
 
 router.get("/:id/droprequests", [auth.authenticate], businessunits.getDropRequests)
 
-router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
+router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
 
 
 export default router;
