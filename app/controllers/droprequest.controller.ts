@@ -24,7 +24,7 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 };
 
-// Find a single User with an id
+// Find a single DropRequest with an id
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
