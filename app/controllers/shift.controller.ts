@@ -38,6 +38,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let originalShift = await getOneForId(Shift, id) as any as ShiftType;
     let isPublishedOriginally = originalShift.published;
     let originalEmployeeId = originalShift.employeeId;
+    let originalStartTime = originalShift.startTime;
+    let originalEndTime = originalShift.endTime;
+    let originalDate = originalShift.date;
 
     req.body.id = undefined;
     const numUpdated = await Shift.update(req.body, {
@@ -53,6 +56,8 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         sendNotificationToEmployee(employeeId, "New Shift", "A new shift has now become published.");
     } else if (req.body.employeeId !== originalEmployeeId) {
         sendNotificationToEmployee(employeeId, "New Shift", "A shift has been assigned to you.");
+    } else if (req.body.date !== originalDate || req.body.startTime !== originalStartTime || req.body.endTime !== originalEndTime) {
+        sendNotificationToEmployee(employeeId, "Shift Updated", "Your shift's time has been changed.");
     }
     let updatedObject = await getOneForId(Shift, id);
 
