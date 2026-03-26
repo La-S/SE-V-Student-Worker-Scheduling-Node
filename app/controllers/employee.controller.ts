@@ -222,7 +222,9 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
         { model: Employee, as: "dropReviewer", include: [User] },
-        { model: Shift }
+        { model: Shift,
+          where: {employeeId: id}
+        }
     ];
     const data = await DropRequest.findAll({
         include: includeCondition
