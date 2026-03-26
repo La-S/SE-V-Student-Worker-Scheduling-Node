@@ -39,6 +39,8 @@ router.get("/:id/availablecoverrequests", [auth.authenticate], employees.getAvai
 
 router.get("/:id/droprequests", [auth.authenticate], employees.getDropRequests);
 
+router.delete("/:id/clearavailability", [auth.authenticate], employees.clearAvailabilityTemplates);
+
 
 export default router;
 

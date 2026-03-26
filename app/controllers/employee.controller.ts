@@ -190,7 +190,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     });
     const positions = employee.positions;
     if (positions.length == 0)
-        res.status(400).send({message: "No positions for employee. No requests available"});
+        res.status(400).send({ message: "No positions for employee. No requests available" });
     const positionIds = positions.map((position) => position.id);
 
     const includeCondition = [
@@ -204,7 +204,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
                 date: { [Op.gte]: today },
                 startTime: { [Op.gte]: currentTime },
                 positionId: { [Op.in]: positionIds },
-                employeeId: {[Op.not]: id}
+                employeeId: { [Op.not]: id }
             },
         }
     ];
@@ -222,13 +222,22 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
         { model: Employee, as: "dropReviewer", include: [User] },
-        { model: Shift } 
+        { model: Shift }
     ];
     const data = await DropRequest.findAll({
-        where: {requesterId: id},
+        where: { requesterId: id },
         include: includeCondition
     });
     res.send(data);
+}
+
+exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const employee = await getOneForId(Employee, id);
+    const user = await employee.getUser();
+    const userId = user.dataValues.id;
+    const data = await AvailabilityTemplate.destroy({where: {userId: userId}});
+    res.send({message: "Availability Templates cleared!"});
 }
 
 //cannot be replaced with service because of user in return
