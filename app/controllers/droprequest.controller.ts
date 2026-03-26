@@ -17,7 +17,7 @@ const EMPLOYEE_INCLUDES = [
 ];
 
 
-// Retrieve all Employees from the database.
+// Retrieve all DropRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
