@@ -7,7 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
-import { sendNotificationToManagers } from "../services/notifications.ts";
+import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
 
 const errorClassName: string = "Drop Request";
 const exports: any = {};
@@ -93,6 +93,8 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
         reviewedDate: today,
         reviewedTime: currentTime
     });
+
+    sendNotificationToEmployee(dropRequest.dataValues.requesterId, `Drop Request ${approve ? "Approved" : "Denied"}`, `A manager has reviewed and ${approve ? "approved" : "denied"} your drop request`);
     res.send(dropRequest);
 }
 
