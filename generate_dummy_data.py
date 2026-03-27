@@ -323,6 +323,30 @@ def approve_cover_request(cover_req_id, approver_emp_id, does_approve):
         print('Hmm, we got an error approving a cover request', r.text)
     return r.json()
 
+def create_drop_request(shift_id, requester_emp_id, request_posted_time, request_posted_date):
+    r = requests.post(f'{ENDPOINT}/droprequest', data = {
+        "shiftId": shift_id,
+        "requesterId": requester_emp_id,
+        "requestPostedTime": request_posted_time,
+        "requestPostedDate": request_posted_date
+    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+
+    if r.status_code != 200:
+        print('Hmm, we got an error creating a drop request', r.text)
+    return r.json()
+
+def approve_drop_request(drop_req_id, approver_emp_id, does_approve):
+    """
+    EG: when a manager approves your request
+    """
+    r = requests.put(f'{ENDPOINT}/droprequest/{drop_req_id}/approve/{approver_emp_id}?approve={"true" if does_approve else "false"}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+
+    if r.status_code != 200:
+        print('Hmm, we got an error approving a drop request', r.text)
+    return r.json()
+
+
+
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
@@ -445,8 +469,16 @@ create_availability_template(ahsoka['id'], "Friday", "09:00", "11:00", "unavaila
 create_availability_template(ahsoka['id'], "Friday", "12:00", "3:30", "unavailable")
 give_employee_a_position(ahsoka_fitness_employee['id'], conditioning_specialist['id'])
 shift8 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "7:30", "10:00", TODAYS_DATE, True)
-shift9 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "11:00", "15:00", TODAYS_DATE, True)
+shift9 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "13:00", "15:00", TODAYS_DATE, True)
 shift10 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "20:00", "21:00", TODAYS_DATE, True)
+shift11 = create_shift(ahsoka_fitness_employee['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "21:30", "22:00", TODAYS_DATE, True)
+# ahsoka has jedi training during shifts 9, 10, and 11 and has to drop them.
+dr_1 = create_drop_request(shift9["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE)
+dr_2 = create_drop_request(shift10["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE)
+dr_3 = create_drop_request(shift11["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE)
+# obi wan approves 9, disapproves 10, and ignores 11
+approve_drop_request(dr_1["id"], obi_wan_fitness_manager["id"], True)
+approve_drop_request(dr_2["id"], obi_wan_fitness_manager["id"], False)
 
 if (YOUR_WORKER_EMAIL):
     # add your user to some of these in order to have good dummy data for easy FE testing.
