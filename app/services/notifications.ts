@@ -17,6 +17,30 @@ export async function sendNotificationToEmployee(employeeId: number, title: stri
     return await sendNotificationToToken(pushToken, title, body);
 }
 
+export async function sendNotificationToManagers(businessUnitId: number, title: string, body: string) {
+    const data = await BusinessUnit.findByPk(businessUnitId, {
+        include: [
+            {
+                model: Employee,
+                include: [User],
+                where: {
+                    currentlyEmployed: true,
+                    isManager: true,
+                }
+            }
+        ],
+    });
+    for (let employee of (data as any).dataValues.employees) {
+        let pushToken = employee.dataValues.user.dataValues.pushToken;
+         if (!pushToken) {
+            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+            continue;
+        }
+        sendNotificationToToken(pushToken, title, body);
+    }
+    return;
+}
+
 export async function sendNotificationToBusinessUnit(businessUnitId: number, forWeekOf: string) {
     const data = await BusinessUnit.findByPk(businessUnitId, {
         include: [

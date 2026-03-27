@@ -7,7 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
-import { sendNotificationToEmployee, sendNotificationToOtherEmployees } from "../services/notifications.ts";
+import { sendNotificationToEmployee, sendNotificationToManagers, sendNotificationToOtherEmployees } from "../services/notifications.ts";
 
 const errorClassName: string = "Cover Request";
 const exports: any = {};
@@ -82,7 +82,8 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, "This cover request has already been accepted.")
     }
     const employeeId = parseInt(req.params.employeeId as string, 10);
-    await getOneForId(Employee, employeeId);
+    const employee = await getOneForId(Employee, employeeId);
+    const businessUnitId = employee.dataValues.businessUnitId; // a little sketchy getting businessUnitId from employee, but it should work.
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
 
@@ -93,7 +94,7 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     });
 
     sendNotificationToEmployee(coverRequest.dataValues.requesterId, "Shift picked up", "Pending approval from your manager.")
-    sendNotificationToEmployee(coverRequest.dataValues.requesterId, "New cover request", "A cover requests needs your review")
+    sendNotificationToManagers(businessUnitId, "New cover request", "A cover requests needs your review")
     res.send(coverRequest);
 }
 
