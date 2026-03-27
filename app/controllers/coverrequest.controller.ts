@@ -7,7 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
-import { sendNotificationToOtherEmployees } from "../services/notifications.ts";
+import { sendNotificationToEmployee, sendNotificationToOtherEmployees } from "../services/notifications.ts";
 
 const errorClassName: string = "Cover Request";
 const exports: any = {};
@@ -91,6 +91,9 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
         acceptDate: today,
         acceptTime: currentTime
     });
+
+    sendNotificationToEmployee(coverRequest.dataValues.requesterId, "Shift picked up", "Pending approval from your manager.")
+    sendNotificationToEmployee(coverRequest.dataValues.requesterId, "New cover request", "A cover requests needs your review")
     res.send(coverRequest);
 }
 
