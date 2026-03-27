@@ -7,6 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
+import { sendNotificationToManagers } from "../services/notifications.ts";
 
 const errorClassName: string = "Drop Request";
 const exports: any = {};
@@ -16,6 +17,26 @@ const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "dropReviewer", include: [User] },
 ];
 
+
+// Create and Save a new DropRequest
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const data = await DropRequest.create(req.body);
+
+    // send notification to managers.
+    if (req.body.requesterId) {
+        const employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const businessUnitId = employee?.dataValues.businessUnitId;
+        const firstName = employee?.dataValues.user.firstName;
+        const lastName = employee?.dataValues.user?.lastName ?? "";
+        if (businessUnitId) {
+            sendNotificationToManagers(businessUnitId, "New Drop Request", `${firstName} ${lastName} wants to drop an upcoming shift.`);
+        } else {
+            console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+        }
+    }
+    res.send(data);
+};
 
 // Retrieve all DropRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {

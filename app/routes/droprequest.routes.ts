@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new Drop Request
-router.post("/", [auth.authenticate], generalcontroller.create(DropRequestModel));
+router.post("/", [auth.authenticate], droprequests.create);
 
 // Retrieve all Drop Request
 router.get("/all", [auth.authenticate], droprequests.findAll);
