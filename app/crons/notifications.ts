@@ -6,6 +6,7 @@ import { sendNotificationToEmployee } from '../services/notifications';
 
 
 // every 5 minutes
+// note, behavior is undefined during daylight savings times
 cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().add(1, 'hours');
     const date = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
