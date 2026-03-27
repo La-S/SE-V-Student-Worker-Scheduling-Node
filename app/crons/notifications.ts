@@ -7,10 +7,10 @@ import { sendNotificationToEmployee } from '../services/notifications.ts';
 
 // every 5 minutes
 // note, behavior is undefined during daylight savings times
-cron.schedule("*/5 * * * * *", async () => {
+cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().add(1, 'hours');
     const date = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const time = momentInOneHour.toDate().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5);
+    const time = momentInOneHour.toDate().toLocaleTimeString("en-US", { hour12: false }) .substring(0, 5)+":00";
     console.log(date)
     console.log(time)
 
