@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new Position
-router.post("/", [auth.authenticate], generalcontroller.create(CoverRequestModel));
+router.post("/", [auth.authenticate], coverrequests.create);
 
 // Retrieve all Positions
 router.get("/all", [auth.authenticate], coverrequests.findAll);

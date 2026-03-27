@@ -7,6 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
+import { sendNotificationToOtherEmployees } from "../services/notifications.ts";
 
 const errorClassName: string = "Cover Request";
 const exports: any = {};
@@ -17,6 +18,26 @@ const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "reviewer", include: [User] },
 ];
 
+// Create and Save a new CoverRequest
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const data = await CoverRequest.create(req.body);
+
+    // send notification to required parties.
+    if (req.body.requesterId) {
+        // don't wait for this response.
+        const employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const businessUnitId = employee?.dataValues.businessUnitId;
+        const firstName = employee?.dataValues.user.firstName;
+        const lastName = employee?.dataValues.user?.lastName ?? "";
+        if (businessUnitId) {
+            sendNotificationToOtherEmployees(req.body.requesterId, businessUnitId, "New Cover Request", `${firstName} ${lastName} needs someone to cover an upcoming shift.`);
+        } else {
+            console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+        }
+    }
+    res.send(data);
+};
 
 // Retrieve all Cover Requests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {

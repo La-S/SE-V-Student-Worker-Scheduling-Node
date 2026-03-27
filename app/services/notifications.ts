@@ -2,6 +2,7 @@ import { getMessaging, type Message } from "firebase-admin/messaging";
 import Employee from "../models/employee.model.ts";
 import User from "../models/user.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
+import { Op } from "sequelize";
 
 export async function sendNotificationToEmployee(employeeId: number, title: string, body: string) {
     const data = await Employee.findByPk(employeeId, {
@@ -35,6 +36,30 @@ export async function sendNotificationToBusinessUnit(businessUnitId: number, for
             continue;
         }
         sendNotificationToToken(pushToken, "Shifts Published", `Shifts have been published for the week of ${forWeekOf}`);
+    }
+    return;
+}
+
+export async function sendNotificationToOtherEmployees(employeeId: number, businessUnitId: number, title: string, body: string) {
+    const data = await BusinessUnit.findByPk(businessUnitId, {
+        include: [
+            {
+                model: Employee,
+                include: [User],
+                where: {
+                    currentlyEmployed: true,
+                    id: { [Op.ne]: employeeId },
+                }
+            }
+        ],
+    });
+    for (let employee of (data as any).dataValues.employees) {
+        let pushToken = employee.dataValues.user.dataValues.pushToken;
+         if (!pushToken) {
+            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+            continue;
+        }
+        sendNotificationToToken(pushToken, title, body);
     }
     return;
 }
