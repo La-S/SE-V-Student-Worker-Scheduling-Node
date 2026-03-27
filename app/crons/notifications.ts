@@ -16,6 +16,11 @@ cron.schedule("*/5 * * * *", async () => {
         date: {[Op.eq]: date},
         startTime: { [Op.eq]: time },
     }});
+    
+    console.log("5 min cron");
+    console.log("all shifts...");
+    console.log(allShifts);
+    console.log("all shifts done");
 
     for (let shift of allShifts) {
         if (!shift.dataValues.employeeId) {
