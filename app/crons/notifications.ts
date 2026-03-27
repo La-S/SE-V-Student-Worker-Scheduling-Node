@@ -1,8 +1,8 @@
 import cron from 'node-cron';
-import Shift from '../models/shift.model';
+import Shift from '../models/shift.model.ts';
 import { Op } from 'sequelize';
 import moment from 'moment';
-import { sendNotificationToEmployee } from '../services/notifications';
+import { sendNotificationToEmployee } from '../services/notifications.ts';
 
 
 // every 5 minutes
