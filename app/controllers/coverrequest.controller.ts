@@ -121,6 +121,12 @@ exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
         reviewedDate: today,
         reviewedTime: currentTime
     });
+
+    sendNotificationToEmployee(coverRequest.dataValues.requesterId, `Cover Request ${approve ? "Approved" : "Denied"}`, `A manager has reviewed and ${approve ? "approved" : "denied"} your cover request`);
+    if (coverRequest.dataValues.accepterId) {
+        sendNotificationToEmployee(coverRequest.dataValues.accepterId, `Cover Request ${approve ? "Approved" : "Denied"}`, `A shift you wanted to pick up has been ${approve ? "approved" : "denied"}.`);
+    }
+
     res.send(coverRequest);
 }
 
