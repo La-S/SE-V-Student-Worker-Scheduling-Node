@@ -85,7 +85,7 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     const employee = await getOneForId(Employee, employeeId);
     const businessUnitId = employee.dataValues.businessUnitId; // a little sketchy getting businessUnitId from employee, but it should work.
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     await coverRequest.update({
         accepterId: employeeId,
@@ -103,7 +103,7 @@ exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     const approverId = parseInt(req.params.approverId as string, 10);
     const approve: Boolean = req.query.approve === "true"; //converts to boolean
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const coverRequest = await getOneForId(CoverRequest, id);
     if (coverRequest.dataValues.accepterId == null) {

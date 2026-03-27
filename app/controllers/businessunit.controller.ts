@@ -205,7 +205,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const includeCondition = [
         { model: Employee, as: "coverRequester", include: [User] },
         { model: Employee, as: "coverAccepter", include: [User] },
@@ -258,7 +258,7 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
         { model: Employee, as: "dropReviewer", include: [User] },

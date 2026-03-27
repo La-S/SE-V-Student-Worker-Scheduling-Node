@@ -11,7 +11,7 @@ import { sendNotificationToEmployee } from '../services/notifications.ts';
 cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().tz("America/Chicago").add(1, 'hours');
     const date = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const time = momentInOneHour.toDate().toLocaleTimeString("en-US", { hour12: false }).substring(0, 5)+":00";
+    const time = momentInOneHour.toDate().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false }).substring(0, 5)+":00";
     console.log(date)
     console.log(time)
 
