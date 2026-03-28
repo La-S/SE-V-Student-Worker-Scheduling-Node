@@ -1,4 +1,4 @@
-import { INTEGER, Model, Op, type ModelStatic } from "sequelize";
+import { Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
