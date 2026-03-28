@@ -57,7 +57,7 @@ export function convertTime(time: String) {
     let hours : string = hoursMins.slice(0, 2);
     let mins: string = hoursMins.slice(2, 5);
     if (hours === "12") {
-        hours = "0";
+        hours = "00";
     }
     if (modifier === "PM") {
         hours = (parseInt(hours, 10) + 12).toString();
