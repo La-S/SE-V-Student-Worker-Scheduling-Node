@@ -256,7 +256,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             const userId = user.dataValues.id;
             const preference = "unavailable";
 
-            const reqBody = {
+            const availabilityTemplateBody = {
                 "dayOfWeek": fullDay,
                 "startTime": startTime,
                 "endTime": endTime,
@@ -264,7 +264,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
                 "userId": userId
             };
 
-            const newAvailability = await AvailabilityTemplate.create(reqBody);
+            const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
             availabilities.push(newAvailability);
         }
     }
