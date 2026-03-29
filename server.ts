@@ -2,6 +2,7 @@
 import routes from "./app/routes/index.ts";
 import express from "express"
 import cors from "cors";
+import "./app/crons/notifications.ts";
 
 
 import https from 'https';
