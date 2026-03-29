@@ -7,6 +7,8 @@ import { getStringFromDate, getOneForId } from "../services/services.ts";
 const { Shift, TaskList, User, Position, TaskCompletion, Task, Employee } = db;
 import type { ShiftType } from "../types/shift.type.ts";
 import { sendNotificationToEmployee } from "../services/notifications.ts";
+import DropRequest from "../models/droprequest.model.ts";
+import CoverRequest from "../models/coverrequest.model.ts";
 
 
 const exports: any = {};
@@ -77,6 +79,12 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
                     ]
                 }]
             }]
+        },
+        {
+            model: DropRequest
+        },
+        {
+            model: CoverRequest
         }
         ]
     });
