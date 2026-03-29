@@ -1,4 +1,4 @@
-import { INTEGER, Model, Op, type ModelStatic } from "sequelize";
+import { Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
@@ -57,7 +57,7 @@ export function convertTime(time: String) {
     let hours : string = hoursMins.slice(0, 2);
     let mins: string = hoursMins.slice(2, 5);
     if (hours === "12") {
-        hours = "0";
+        hours = "00";
     }
     if (modifier === "PM") {
         hours = (parseInt(hours, 10) + 12).toString();
