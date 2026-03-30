@@ -15,6 +15,8 @@ import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
+import CoverRequest from '../models/coverrequest.model.ts';
+import DropRequest from '../models/droprequest.model.ts';
 
 const exports: any = {};
 const errorClassName = "User";
@@ -133,6 +135,12 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
     },
     {
       model: BusinessUnit
+    },
+    {
+      model: CoverRequest          
+    },
+    {
+      model: DropRequest
     },
     {
       model: TaskList,
