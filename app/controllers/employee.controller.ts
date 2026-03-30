@@ -76,7 +76,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
         },
-        include: [Position, BusinessUnit]
+        include: [Position, BusinessUnit, DropRequest, CoverRequest]
     });
     res.send(data);
 }
