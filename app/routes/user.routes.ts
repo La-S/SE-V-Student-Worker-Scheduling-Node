@@ -34,5 +34,7 @@ router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabi
 
 router.get("/emaillike/:email", [auth.authenticate], users.findLikeEmail)
 
+router.get("/:id/coverrequests/upcoming", [auth.authenticate], users.getUpcomingOpenCoverRequests);
+
 export default router;
 
