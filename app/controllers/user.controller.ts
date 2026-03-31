@@ -211,7 +211,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     }
   ];
   const data = await CoverRequest.findAll({
-    where: { approval: null },
+    where: { accepterId: null },
     include: includeCondition
   });
   res.send(data);
