@@ -212,6 +212,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
         { model: Employee, as: "coverReviewer", include: [User] },
         {
             model: Shift,
+            include: [Position, BusinessUnit],
             as: 'shift',
             required: true,
             where: {

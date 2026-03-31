@@ -15,6 +15,7 @@ import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
+import CoverRequest from "../models/coverrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -152,19 +153,66 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
 }
 
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    await getOneForId(User, id);
-    const data = await AvailabilityTemplate.findAll({where: {userId: id}});
-    res.send(data);
+  const id = parseInt(req.params.id, 10);
+  await getOneForId(User, id);
+  const data = await AvailabilityTemplate.findAll({ where: { userId: id } });
+  res.send(data);
 }
 
-exports.findLikeEmail= async (req: pkg.Request, res: pkg.Response) => {
+exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
   const data = await User.findAll({
     where: {
-      email: {[Op.like]: `%${email}%`}
+      email: { [Op.like]: `%${email}%` }
     },
     include: [Employee]
+  });
+  res.send(data);
+}
+
+
+exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const employeesForUser = await user.getEmployees();
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+  const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+  const businessUnitIds = employeesForUser.map((employee) => { return employee.dataValues.businessUnitId });
+
+  const combinedPositions = [];
+  for (const employee of employeesForUser) {
+    const positions = await employee.getPositions();
+    for (const position of positions) {
+      combinedPositions.push(position.dataValues.id);
+    }
+  }
+
+  const includeCondition = [
+    { model: Employee, as: "coverRequester", include: [User] },
+    { model: Employee, as: "coverAccepter", include: [User] },
+    { model: Employee, as: "coverReviewer", include: [User] },
+    {
+      model: Shift,
+      include: [Position, BusinessUnit],
+      as: 'shift',
+      required: true,
+      where: {
+        businessUnitId: { [Op.in]: businessUnitIds },
+        positionId: { [Op.in]: combinedPositions },
+        [Op.or]: [
+          { date: { [Op.gt]: today } },
+          {
+            date: { [Op.eq]: today },
+            startTime: { [Op.gte]: currentTime }
+          }
+        ],
+
+      }
+    }
+  ];
+  const data = await CoverRequest.findAll({
+    where: { approval: null },
+    include: includeCondition
   });
   res.send(data);
 }
