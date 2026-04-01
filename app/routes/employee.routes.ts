@@ -43,6 +43,10 @@ router.delete("/:id/clearavailability", [auth.authenticate], employees.clearAvai
 
 router.post("/:id/loadclasses", [auth.authenticate], employees.importEmployeeClasses);
 
+router.get("/:id/announcementreceipts", [auth.authenticate], employees.getAvailableAnnouncementReceipts);
+
+router.get("/:id/announcements/author", [auth.authenticate], employees.findAuthoredAnnouncements);
+
 
 export default router;
 

@@ -5,25 +5,27 @@ import AnnouncementModel from "../models/announcement.model.ts"
 import { Router } from "express";
 var router = Router()
 
+//most of these shouldn't be used but I thought it'd be nice to have CRUD still just in case
 
-// Create a new Announcement
+// Create a new Announcement Receipt
 router.post("/", [auth.authenticate], announcementreceipts.create);
 
-// Retrieve all Announcements
+// Retrieve all Announcement Receipts
 router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
 
-// Retrieve a single Announcement by id
+// Retrieve a single Announcement Receipt by id
 router.get("/:id", [auth.authenticate], announcementreceipts.findOne);
 
-// Update a Announcement by id
+// Update a Announcement Receipt by id
 router.put("/:id", [auth.authenticate], announcementreceipts.update);
 
-// Delete a Announcement by id
+// Delete a Announcement Receipt by id - DO NOT USE
 router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(AnnouncementModel));
 
 //actually just sets deleted to true, use most of the time
 router.delete("/:id", [auth.authenticate], announcementreceipts.setDeleted);
 
+//sets announcement receipt to read
 router.put("/:id/read", [auth.authenticate], announcementreceipts.setRead);
 
 export default router;
