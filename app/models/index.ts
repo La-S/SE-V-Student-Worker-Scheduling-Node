@@ -20,6 +20,8 @@ import CoverRequest from "./coverrequest.model.ts"
 import DropRequest from "./droprequest.model.ts"
 import OpenHours from "./openhours.model.ts";
 import Settings from "./settings.model.ts";
+import Announcement from "./announcement.model.ts";
+import AnnouncementReceipt from "./announcementreceipt.model.ts";
 
 const db = {
     Sequelize,
@@ -39,6 +41,8 @@ const db = {
     CoverRequest,
     DropRequest,
     OpenHours,
+    Announcement,
+    AnnouncementReceipt,
     Settings
 };
 
@@ -81,6 +85,10 @@ db.BusinessUnit.hasMany(db.OpenHours,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.OpenHours.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnit.hasMany(db.Announcement,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.Announcement.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 //Employee-owned FKs
 db.Employee.hasMany(db.Shift,
@@ -93,6 +101,14 @@ db.TaskCompletion.belongsTo(db.Employee,
     { foreignKey: { name: "checkedOffEmployeeId", allowNull: true }, onDelete: "CASCADE" });
 db.Employee.belongsToMany(db.Position, { through: "employees-positions" });
 db.Position.belongsToMany(db.Employee, { through: "employees-positions" });
+db.Employee.hasMany(db.AnnouncementReceipt,
+    { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
+db.AnnouncementReceipt.belongsTo(db.Employee,
+    { foreignKey: { name: "employeeId", allowNull: false }, onDelete: "CASCADE" });
+db.Employee.hasMany(db.Announcement,
+    { foreignKey: { name: "authorId", allowNull: false }, onDelete: "CASCADE" });
+db.Announcement.belongsTo(db.Employee,
+    { foreignKey: { name: "authorId", allowNull: false }, onDelete: "CASCADE" });
 
 db.Employee.hasMany(db.CoverRequest,
     { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterCoverRequests" });
@@ -162,6 +178,11 @@ db.DailyScheduleTemplate.hasMany(db.Shift,
 db.Shift.belongsTo(db.DailyScheduleTemplate,
     { foreignKey: { name: "dailyScheduleTemplateId", allowNull: true }, onDelete: "CASCADE" });
 
+//Announcement FK
+db.Announcement.hasMany(db.AnnouncementReceipt,
+    { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
+db.AnnouncementReceipt.belongsTo(db.Announcement,
+    { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
 // db.sequelize.sync({force: true});
 db.sequelize.sync({ alter: true });
 
