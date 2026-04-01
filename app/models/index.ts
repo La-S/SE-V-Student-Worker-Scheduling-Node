@@ -22,6 +22,7 @@ import OpenHours from "./openhours.model.ts";
 import Settings from "./settings.model.ts";
 import Announcement from "./announcement.model.ts";
 import AnnouncementReceipt from "./announcementreceipt.model.ts";
+import Attachment from "./attachment.model.ts";
 
 const db = {
     Sequelize,
@@ -43,6 +44,7 @@ const db = {
     OpenHours,
     Announcement,
     AnnouncementReceipt,
+    Attachment,
     Settings
 };
 
@@ -183,6 +185,11 @@ db.Announcement.hasMany(db.AnnouncementReceipt,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
 db.AnnouncementReceipt.belongsTo(db.Announcement,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
+db.Announcement.hasMany(db.Attachment,
+    { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
+db.Attachment.belongsTo(db.Announcement,
+    { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
+
 // db.sequelize.sync({force: true});
 db.sequelize.sync({ alter: true });
 

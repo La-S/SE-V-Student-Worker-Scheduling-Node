@@ -9,6 +9,7 @@ import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { Model } from "sequelize";
+import Attachment from "../models/attachment.model.ts";
 
 const exports: any = {};
 const errorClassName = "AnnouncementReceipt";
@@ -80,7 +81,7 @@ async function getReceiptForId(id: number) {
     }
     const data = await AnnouncementReceipt.findByPk(id, {
         include: [
-            { model: Announcement, include: [{ model: Employee, include: [User] } ]},
+            { model: Announcement, include: [{ model: Employee, include: [User] }, {model: Attachment} ]},
             BusinessUnit
         ]
     });
