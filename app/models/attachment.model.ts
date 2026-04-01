@@ -10,7 +10,7 @@ const Attachment = SequelizeInstance.define("attachment", {
         primaryKey: true,
     },
     image: {
-        type: Sequelize.BLOB
+        type: Sequelize.BLOB('long')
     }
 });
 
