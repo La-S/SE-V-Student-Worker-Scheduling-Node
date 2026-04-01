@@ -53,3 +53,5 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const updatedAnnouncement = getOneForId(Announcement, id);
     res.send(updatedAnnouncement);
 }
+
+export default exports;
