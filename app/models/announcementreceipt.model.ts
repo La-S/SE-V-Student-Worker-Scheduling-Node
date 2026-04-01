@@ -9,7 +9,10 @@ const AnnouncementReceipt = SequelizeInstance.define("announcementreceipt", {
         autoIncrement: true,
         primaryKey: true,
     },
-    //notified
+    notified: {
+        type: Sequelize.BOOLEAN,
+        allowNull: true
+    },
     read: {
         type: Sequelize.BOOLEAN
     },
