@@ -22,7 +22,8 @@ const Announcement = SequelizeInstance.define("announcement", {
         type: Sequelize.DATEONLY
     },
     priority: {
-        type: Sequelize.ENUM(...Object.values(announcementPriorities))
+        type: Sequelize.ENUM(...Object.values(announcementPriorities)),
+        defaultValue: "low"
     }
 
 });
