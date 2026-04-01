@@ -1,5 +1,4 @@
 import auth from "../authorization/authorization.ts";
-import attachments from "../controllers/attachment.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"
 import AttachmentModel from "../models/attachment.model.ts"
 import { Router } from "express";
@@ -7,7 +6,7 @@ var router = Router()
 
 
 // Create a new Attachment
-router.post("/", [auth.authenticate], generalcontroller(AttachmentModel));
+router.post("/", [auth.authenticate], generalcontroller.create(AttachmentModel));
 
 // Retrieve all Attachments
 router.get("/all", [auth.authenticate], generalcontroller.findAll(AttachmentModel));
