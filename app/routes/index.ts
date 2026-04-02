@@ -20,7 +20,7 @@ import SettingsRoutes from "./settings.routes.ts";
 import DropRequestRoutes from "./droprequest.routes.ts";
 import AnnouncementRoutes from "./announcement.routes.ts";
 import AnnouncementReceiptRoutes from "./announcementreceipt.routes.ts";
-import AttachmentRoutes from "./attachment.routes.ts"
+import AnnouncementFileRoutes from "./announcementfile.routes.ts"
 
 
 const router = Router();
@@ -43,7 +43,7 @@ router.use("/droprequest", DropRequestRoutes);
 router.use("/openhours", OpenHoursRoutes);
 router.use("/announcement", AnnouncementRoutes);
 router.use("/announcementreceipt", AnnouncementReceiptRoutes);
-router.use("/attachment", AttachmentRoutes)
+router.use("/announcementFile", AnnouncementFileRoutes)
 router.use("/debug", DebugRoutes);
 router.use("/settings", SettingsRoutes);
 

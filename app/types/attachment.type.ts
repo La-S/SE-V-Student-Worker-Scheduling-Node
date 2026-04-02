@@ -1,5 +1,5 @@
-export interface attachment {
+export interface announcementFile {
     id?: number,
     announcementId: number,
-    image: Blob
+    image: string
 }

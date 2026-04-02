@@ -22,7 +22,9 @@ import OpenHours from "./openhours.model.ts";
 import Settings from "./settings.model.ts";
 import Announcement from "./announcement.model.ts";
 import AnnouncementReceipt from "./announcementreceipt.model.ts";
-import Attachment from "./attachment.model.ts";
+import AnnouncementFile from "./announcementfile.model.ts";
+import UserFile from "./userfile.model.ts"
+import File from "./file.model.ts"
 
 const db = {
     Sequelize,
@@ -44,7 +46,9 @@ const db = {
     OpenHours,
     Announcement,
     AnnouncementReceipt,
-    Attachment,
+    AnnouncementFile,
+    File,
+    UserFile,
     Settings
 };
 
@@ -60,6 +64,10 @@ db.Employee.belongsTo(db.User,
 db.User.hasMany(db.AvailabilityTemplate,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 db.AvailabilityTemplate.belongsTo(db.User,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.User.hasMany(db.UserFile,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.UserFile.belongsTo(db.User,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 
 //BusinessUnit-owned FKs
@@ -185,10 +193,20 @@ db.Announcement.hasMany(db.AnnouncementReceipt,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
 db.AnnouncementReceipt.belongsTo(db.Announcement,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
-db.Announcement.hasMany(db.Attachment,
+db.Announcement.hasMany(db.AnnouncementFile,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
-db.Attachment.belongsTo(db.Announcement,
+db.AnnouncementFile.belongsTo(db.Announcement,
     { foreignKey: { name: "announcementId", allowNull: false }, onDelete: "CASCADE" });
+
+//File FKs
+db.File.hasMany(db.UserFile,
+    { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
+db.UserFile.belongsTo(db.File,
+    { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
+db.File.hasMany(db.AnnouncementFile,
+    { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
+db.AnnouncementFile.belongsTo(db.File,
+    { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
 
 // db.sequelize.sync({force: true});
 db.sequelize.sync({ alter: true });
