@@ -7,6 +7,7 @@ import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
+import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
 
 const errorClassName: string = "Drop Request";
 const exports: any = {};
@@ -16,6 +17,26 @@ const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "dropReviewer", include: [User] },
 ];
 
+
+// Create and Save a new DropRequest
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const data = await DropRequest.create(req.body);
+
+    // send notification to managers.
+    if (req.body.requesterId) {
+        const employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const businessUnitId = employee?.dataValues.businessUnitId;
+        const firstName = employee?.dataValues.user.firstName;
+        const lastName = employee?.dataValues.user?.lastName ?? "";
+        if (businessUnitId) {
+            sendNotificationToManagers(businessUnitId, "New Drop Request", `${firstName} ${lastName} wants to drop an upcoming shift.`);
+        } else {
+            console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+        }
+    }
+    res.send(data);
+};
 
 // Retrieve all DropRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
@@ -57,7 +78,7 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
     const approverId = parseInt(req.params.approverId as string, 10);
     const approve: Boolean = req.query.approve === "true"; //converts to boolean
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const dropRequest = await getOneForId(DropRequest, id);
 
@@ -72,6 +93,8 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
         reviewedDate: today,
         reviewedTime: currentTime
     });
+
+    sendNotificationToEmployee(dropRequest.dataValues.requesterId, `Drop Request ${approve ? "Approved" : "Denied"}`, `A manager has reviewed and ${approve ? "approved" : "denied"} your drop request`);
     res.send(dropRequest);
 }
 

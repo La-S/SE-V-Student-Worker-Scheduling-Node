@@ -14,6 +14,18 @@ import CoverRequest from "../models/coverrequest.model.ts";
 const exports: any = {};
 const errorClassName = "Shift";
 
+// Create and Save a new Shift
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    // Save Shift in the database
+    if (req.body.published === true && req.body.employeeId) {
+        // don't wait for this response.
+        sendNotificationToEmployee(req.body.employeeId, "New Shift", "A new shift has now become published.");
+    }
+    const data = await Shift.create(req.body);
+    res.send(data);
+};
+
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
@@ -27,6 +39,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     let originalShift = await getOneForId(Shift, id) as any as ShiftType;
     let isPublishedOriginally = originalShift.published;
+    let originalEmployeeId = originalShift.employeeId;
+    let originalStartTime = originalShift.startTime;
+    let originalEndTime = originalShift.endTime;
+    let originalDate = originalShift.date;
 
     req.body.id = undefined;
     const numUpdated = await Shift.update(req.body, {
@@ -37,9 +53,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     let employeeId = req.body.employeeId ?? originalShift.employeeId;
-    if (req.body.published === true && isPublishedOriginally === false && employeeId) {
+    if ((req.body.published === true && isPublishedOriginally === false && employeeId)) {
         // don't wait for this response.
         sendNotificationToEmployee(employeeId, "New Shift", "A new shift has now become published.");
+    } else if (req.body.employeeId !== originalEmployeeId) {
+        sendNotificationToEmployee(employeeId, "New Shift", "A shift has been assigned to you.");
+    } else if (req.body.date !== originalDate || req.body.startTime !== originalStartTime || req.body.endTime !== originalEndTime) {
+        sendNotificationToEmployee(employeeId, "Shift Updated", "Your shift's time has been changed.");
     }
     let updatedObject = await getOneForId(Shift, id);
 

@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new Shift
-router.post("/", [auth.authenticate], generalcontroller.create(ShiftModel));
+router.post("/", [auth.authenticate], shifts.create);
 
 // Retrieve all Shifts
 router.get("/all", [auth.authenticate], generalcontroller.findAll(ShiftModel));
