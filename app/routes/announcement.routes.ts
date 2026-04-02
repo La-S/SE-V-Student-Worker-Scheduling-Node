@@ -13,7 +13,7 @@ router.post("/", [auth.authenticate], announcements.create);
 router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
 
 // Retrieve a single Announcement by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(AnnouncementModel));
+router.get("/:id", [auth.authenticate], announcements.findOne);
 
 // Update a Announcement by id
 router.put("/:id", [auth.authenticate], announcements.update);

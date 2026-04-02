@@ -16,7 +16,7 @@ router.get("/all", [auth.authenticate], generalcontroller.findAll(UserModel));
 router.get("/email/:email", [auth.authenticate], users.findByEmail);
 
 // Retrieve a single User with id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(UserModel));
+router.get("/:id", [auth.authenticate], users.findOne);
 
 // Update a User with idF
 router.put("/:id", [auth.authenticate], users.update);
@@ -35,6 +35,8 @@ router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabi
 router.get("/emaillike/:email", [auth.authenticate], users.findLikeEmail)
 
 router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], users.getUpcomingOpenCoverRequests);
+
+router.get("/:id/announcementreceipts", [auth.authenticate], users.getAnnouncementReceipts);
 
 export default router;
 

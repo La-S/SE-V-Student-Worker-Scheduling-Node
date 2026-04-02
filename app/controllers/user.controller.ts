@@ -17,6 +17,9 @@ import BusinessUnit from "../models/businessunit.model.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
+import Announcement from "../models/announcement.model.ts";
+import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
+import UserFile from "../models/userfile.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -32,8 +35,17 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 };
 
-
-
+exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const data = await User.findOne({
+      where: {id: id},
+      include: [UserFile]
+    });
+    if (!data){
+      throw new NotFoundError("User", id);
+    }
+    return data;
+}
 // Find a single User with an email
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
@@ -137,7 +149,7 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
       model: BusinessUnit
     },
     {
-      model: CoverRequest          
+      model: CoverRequest
     },
     {
       model: DropRequest
@@ -172,7 +184,7 @@ exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
     where: {
       email: { [Op.like]: `%${email}%` }
     },
-    include: [Employee]
+    include: [Employee],
   });
   res.send(data);
 }
@@ -220,6 +232,48 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
   const data = await CoverRequest.findAll({
     where: { accepterId: null },
     include: includeCondition
+  });
+  res.send(data);
+}
+
+exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const employeesForUser = await user.getEmployees();
+  const employeeIds: number[] = [];
+  for (const employee of employeesForUser) {
+    employeeIds.push(employee.dataValues.id);
+  }
+
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+  const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+
+  const data = await AnnouncementReceipt.findAll({
+    where: {
+      employeeId: { [Op.in]: employeeIds },
+      deleted: false
+    },
+    include: [
+      {
+        model: Announcement,
+        required: true,
+        where: {
+          [Op.or]: [
+            { postAtDate: { [Op.lt]: today } },
+            {
+              postAtDate: today,
+              postAtTime: { [Op.lte]: currentTime }
+            }
+          ]
+        },
+        include: [
+          {
+            model: Employee,
+            include: [User]
+          }
+        ]
+      }
+    ]
   });
   res.send(data);
 }

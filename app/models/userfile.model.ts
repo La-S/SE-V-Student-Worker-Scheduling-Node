@@ -8,6 +8,9 @@ const UserFile = SequelizeInstance.define("userFile", {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    description: {
+        type: Sequelize.STRING
     }
 });
 

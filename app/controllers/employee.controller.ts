@@ -15,6 +15,8 @@ import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
 import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import Announcement from "../models/announcement.model.ts";
+import AnnouncementFile from "../models/announcementfile.model.ts";
+import File from "../models/file.model.ts"
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -362,10 +364,10 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
                 required: true,
                 where: {
                     [Op.or]: [
-                        { date: { [Op.gt]: today } },
+                        { postAtDate: { [Op.lt]: today } },
                         {
-                            date: today,
-                            time: { [Op.gte]: currentTime }
+                            postAtDate: today,
+                            postAtTime: { [Op.gte]: currentTime }
                         }
                     ]
                 },
@@ -398,7 +400,11 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
                         model: Employee,
                         include: [User]
                     }
-                ]
+                ],
+            },
+            {
+                model: AnnouncementFile,
+                include: [File]
             }
         ]
     });
