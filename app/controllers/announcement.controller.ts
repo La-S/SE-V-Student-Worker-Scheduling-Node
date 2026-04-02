@@ -6,7 +6,7 @@ import Announcement from '../models/announcement.model.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, getStringFromDate } from "../services/services.ts";
 import BusinessUnit from '../models/businessunit.model.ts';
 import User from '../models/user.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
@@ -24,6 +24,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     const employeeIds: number[] = [];
     for (const employee of employees) {
         employeeIds.push(employee.dataValues.id);
+    }
+    if (!req.body.postAtDate) {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+        req.body.postAtDate = today;
+    }
+    if (!req.body.postAtTime) {
+        const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+        req.body.postAtTime = currentTime;
     }
     const announcement = await Announcement.create(req.body);
     const announcementId = announcement.dataValues.id;
@@ -46,6 +54,14 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
     const announcement = await Announcement.create(req.body);
     const announcementId = announcement.dataValues.id;
 
+    if (!req.body.postAtDate) {
+        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+        req.body.postAtDate = today;
+    }
+    if (!req.body.postAtTime) {
+        const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+        req.body.postAtTime = currentTime;
+    }
     for (const employeeId of employeeIds) {
         const announcementReceiptBody = {
             "employeeId": employeeId,
@@ -78,13 +94,14 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const data = await Announcement.findAll({where: {id: id},
-        include:[
-            {model: Employee, include: [User]},
-            {model: AnnouncementFile, include: [File]}
+    const data = await Announcement.findAll({
+        where: { id: id },
+        include: [
+            { model: Employee, include: [User] },
+            { model: AnnouncementFile, include: [File] }
         ]
     });
-    if (!data){
+    if (!data) {
         throw new NotFoundError("Announcement", id);
     }
     res.send(data);
