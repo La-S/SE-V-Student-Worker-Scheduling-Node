@@ -47,6 +47,8 @@ router.get("/:id/announcementreceipts", [auth.authenticate], employees.getAvaila
 
 router.get("/:id/announcements/author", [auth.authenticate], employees.findAuthoredAnnouncements);
 
+router.get("/:id/openshifts", [auth.authenticate], employees.getAvailableOpenShifts);
+
 
 export default router;
 
