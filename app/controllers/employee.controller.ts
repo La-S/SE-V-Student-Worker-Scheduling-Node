@@ -78,7 +78,39 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
         },
-        include: [Position, BusinessUnit]
+        include: [Position, BusinessUnit, DropRequest, CoverRequest]
+    });
+    res.send(data);
+}
+
+exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+
+    const employee = await Employee.findOne({
+        where: { id },
+        include: [{ model: Position, as: "positions" }]
+    });
+    const positions = employee.positions;
+    if (positions.length == 0)
+        res.status(400).send({ message: "No positions for employee. No requests available" });
+    const positionIds = positions.map((position) => position.id);
+
+    const data = await Shift.findAll({
+        where: {
+            employeeId: null,
+            [Op.or]: [
+                { date: { [Op.gt]: today } },
+                {
+                    date: { [Op.eq]: today },
+                    startTime: { [Op.gte]: currentTime }
+                }
+            ],
+            positionId: { [Op.in]: positionIds }
+        },
+        include: [Position]
     });
     res.send(data);
 }
@@ -171,7 +203,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, as: "coverRequester", include: [User] },
         { model: Employee, as: "coverAccepter", include: [User] },
         { model: Employee, as: "coverReviewer", include: [User] },
-        { model: Shift }
+        {
+            model: Shift, include: [Position]
+        }
     ];
     const data = await CoverRequest.findAll({
         where: whereCondition,
@@ -188,7 +222,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
 
     const employee = await Employee.findOne({
         where: { id },
-        include: [{ model: Position, as: "positions", through: { attributes: [] } }]
+        include: [{ model: Position, as: "positions" }]
     });
     const positions = employee.positions;
     if (positions.length == 0)
@@ -203,11 +237,17 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
             model: Shift,
             required: true,
             where: {
-                date: { [Op.gte]: today },
-                startTime: { [Op.gte]: currentTime },
+                [Op.or]: [
+                    { date: { [Op.gt]: today } },
+                    {
+                        date: { [Op.eq]: today },
+                        startTime: { [Op.gte]: currentTime }
+                    }
+                ],
                 positionId: { [Op.in]: positionIds },
                 employeeId: { [Op.not]: id }
             },
+            include: [Position]
         }
     ];
     const data = await CoverRequest.findAll({
@@ -217,6 +257,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 }
 
+
 exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
@@ -224,7 +265,7 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
         { model: Employee, as: "dropReviewer", include: [User] },
-        { model: Shift }
+        { model: Shift, include: [Position] }
     ];
     const data = await DropRequest.findAll({
         where: { requesterId: id },

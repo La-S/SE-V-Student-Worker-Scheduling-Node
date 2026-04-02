@@ -159,6 +159,8 @@ db.Shift.hasMany(db.CoverRequest,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.CoverRequest.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+db.Shift.hasMany(db.DropRequest,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.DropRequest.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 
