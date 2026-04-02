@@ -43,6 +43,8 @@ router.delete("/:id/clearavailability", [auth.authenticate], employees.clearAvai
 
 router.post("/:id/loadclasses", [auth.authenticate], employees.importEmployeeClasses);
 
+router.get("/:id/openshifts", [auth.authenticate], employees.getAvailableOpenShifts);
+
 
 export default router;
 

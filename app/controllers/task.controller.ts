@@ -20,7 +20,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     const taskList = await TaskList.findOne({ where: { id: task.taskListId } });
     //despite the name, it returns multiple. getShifts doesnt exist.
     const shifts: Model<any, any>[] = await taskList!.getShift();
-    const futureShifts = shifts.filter((shift) => shift.dataValues.date >= today && shift.dataValues.startTime >= currentTime);
+    const futureShifts = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
     for (let shift of futureShifts) {
         const taskCompletion = {
             "checkedOff": "false",
