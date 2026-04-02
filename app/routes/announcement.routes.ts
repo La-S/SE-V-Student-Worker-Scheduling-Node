@@ -9,6 +9,8 @@ var router = Router()
 // Create a new Announcement
 router.post("/", [auth.authenticate], announcements.create);
 
+router.post("/specific", [auth.authenticate], announcements.createSpecificEmployees);
+
 // Retrieve all Announcements
 router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
 

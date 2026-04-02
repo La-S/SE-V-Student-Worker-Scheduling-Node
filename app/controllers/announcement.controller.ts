@@ -40,6 +40,24 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(announcement);
 }
 
+exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
+    const employeeIds: number[] = req.body.employeeIds;
+    const announcement = await Announcement.create(req.body);
+    const announcementId = announcement.dataValues.id;
+
+    for (const employeeId of employeeIds) {
+        const announcementReceiptBody = {
+            "employeeId": employeeId,
+            "announcementId": announcementId,
+            "read": false,
+            "deleted": false
+        };
+        await AnnouncementReceipt.create(announcementReceiptBody);
+    }
+    res.send(announcement);
+}
+
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
