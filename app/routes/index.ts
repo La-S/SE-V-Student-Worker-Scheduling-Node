@@ -21,6 +21,8 @@ import DropRequestRoutes from "./droprequest.routes.ts";
 import AnnouncementRoutes from "./announcement.routes.ts";
 import AnnouncementReceiptRoutes from "./announcementreceipt.routes.ts";
 import AnnouncementFileRoutes from "./announcementfile.routes.ts"
+import UserFileRoutes from "./userfile.routes.ts";
+import FileRoutes from "./file.routes.ts";
 
 
 const router = Router();
@@ -43,7 +45,9 @@ router.use("/droprequest", DropRequestRoutes);
 router.use("/openhours", OpenHoursRoutes);
 router.use("/announcement", AnnouncementRoutes);
 router.use("/announcementreceipt", AnnouncementReceiptRoutes);
-router.use("/announcementFile", AnnouncementFileRoutes)
+router.use("/file", FileRoutes);
+router.use("/announcementfile", AnnouncementFileRoutes);
+router.use("/userfile", UserFileRoutes)
 router.use("/debug", DebugRoutes);
 router.use("/settings", SettingsRoutes);
 
