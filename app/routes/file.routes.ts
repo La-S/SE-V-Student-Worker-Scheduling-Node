@@ -1,6 +1,7 @@
 import auth from "../authorization/authorization.ts";
 import generalcontroller from "../controllers/general.controller.ts"
 import FileModel from "../models/file.model.ts"
+import files from "../controllers/file.controller.ts"
 import { Router } from "express";
 var router = Router()
 
@@ -12,11 +13,11 @@ router.post("/", [auth.authenticate], generalcontroller.create(FileModel));
 router.get("/all", [auth.authenticate], generalcontroller.findAll(FileModel));
 
 // Retrieve a single File by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(FileModel));
+router.get("/:id", [auth.authenticate], files.findOne);
 
 //No update
 
 // Delete a File by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(FileModel));
+router.delete("/:id", [auth.authenticate], files.delete);
 
 export default router;
