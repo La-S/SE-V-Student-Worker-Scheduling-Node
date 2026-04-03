@@ -367,7 +367,7 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
                         { postAtDate: { [Op.lt]: today } },
                         {
                             postAtDate: today,
-                            postAtTime: { [Op.gte]: currentTime }
+                            postAtTime: { [Op.lte]: currentTime }
                         }
                     ]
                 },
