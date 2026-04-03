@@ -290,12 +290,13 @@ def give_employee_a_position(employee_id, position_id):
         print('Hmm, we got an error giving an employee a position', r.text)
     return r.json()
 
-def create_cover_request(shift_id, requester_emp_id, request_posted_time, request_posted_date):
+def create_cover_request(shift_id, requester_emp_id, request_posted_time, request_posted_date, note = None):
     r = requests.post(f'{ENDPOINT}/coverrequest', data = {
         "shiftId": shift_id,
         "requesterId": requester_emp_id,
         "requestPostedTime": request_posted_time,
-        "requestPostedDate": request_posted_date
+        "requestPostedDate": request_posted_date,
+        "note": note
     }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
 
     if r.status_code != 200:
@@ -438,7 +439,7 @@ give_employee_a_position(jabba_working_for_dex['id'], nerf_steak_chef['id'])
 shift3 = create_shift(jaba_working_fitness_center['id'], jedi_fitness_center['id'], conditioning_specialist['id'], "8:00", "13:00", TODAYS_DATE, True)
 shift4 = create_shift(jabba_working_for_dex['id'], dexs_diner['id'], nerf_steak_chef['id'], "14:00", "19:00", TODAYS_DATE, True)
 # jabba wants off, but he's not going to get it, sorry bub
-create_cover_request(shift4["id"], jabba_working_for_dex['id'], "12:00", TODAYS_DATE)
+create_cover_request(shift4["id"], jabba_working_for_dex['id'], "12:00", TODAYS_DATE, "Sorry I wanted to go watch the sarlac")
 
 
 # anakin works a lot
@@ -447,16 +448,16 @@ shift5 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], 
 shift6 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "12:00", "14:00", TODAYS_DATE, True)
 shift7 = create_shift(anakin_fitness_employee['id'], jedi_fitness_center['id'], gate_keeper['id'], "16:00", "19:00", TODAYS_DATE, True)
 # whoops, anakin can't work this shift cause he's off chasing general grevious.
-anakin_cover_request = create_cover_request(shift7["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE)
+anakin_cover_request = create_cover_request(shift7["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE, "gotta chase General Grevious")
 accept_cover_request(anakin_cover_request["id"], ahsoka_fitness_employee['id'])
 approve_cover_request(anakin_cover_request["id"], obi_wan_fitness_manager['id'], True)
 
 # whoops, a planning mishap occurred. Anakin can't work another shift...
-anakin_cover_request_2 = create_cover_request(shift6["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE)
+anakin_cover_request_2 = create_cover_request(shift6["id"], anakin_fitness_employee['id'], "12:00", TODAYS_DATE, "planning mishap, sorry")
 accept_cover_request(anakin_cover_request_2["id"], ahsoka_fitness_employee['id'])
 approve_cover_request(anakin_cover_request_2["id"], obi_wan_fitness_manager['id'], True)
 # yikes, Ahsoka can't work it either...
-ahsoka_cover_request = create_cover_request(shift6["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE)
+ahsoka_cover_request = create_cover_request(shift6["id"], ahsoka_fitness_employee['id'], "12:05", TODAYS_DATE, "yikes, another planning mishap, I can't take this shift either.")
 
 # ahsoka likes to work but has classes
 create_availability_template(ahsoka['id'], "Monday", "09:00", "11:00", "unavailable")
