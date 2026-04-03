@@ -1,7 +1,7 @@
 import auth from "../authorization/authorization.ts";
 import announcementreceipts from "../controllers/announcementreceipt.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"
-import AnnouncementModel from "../models/announcement.model.ts"
+import AnnouncementReceiptModel from "../models/announcementreceipt.model.ts"
 import { Router } from "express";
 var router = Router()
 
@@ -11,7 +11,7 @@ var router = Router()
 router.post("/", [auth.authenticate], announcementreceipts.create);
 
 // Retrieve all Announcement Receipts
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
+router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementReceiptModel));
 
 // Retrieve a single Announcement Receipt by id
 router.get("/:id", [auth.authenticate], announcementreceipts.findOne);
@@ -20,7 +20,7 @@ router.get("/:id", [auth.authenticate], announcementreceipts.findOne);
 router.put("/:id", [auth.authenticate], announcementreceipts.update);
 
 // Delete a Announcement Receipt by id - DO NOT USE
-router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(AnnouncementModel));
+router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(AnnouncementReceiptModel));
 
 //actually just sets deleted to true, use most of the time
 router.delete("/:id", [auth.authenticate], announcementreceipts.setDeleted);
