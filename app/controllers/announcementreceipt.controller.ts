@@ -81,8 +81,8 @@ async function getReceiptForId(id: number) {
     }
     const data = await AnnouncementReceipt.findByPk(id, {
         include: [
-            { model: Announcement, include: [{ model: Employee, include: [User] }]},
-            BusinessUnit
+            { model: Announcement, include: [{ model: Employee, include: [User] }, {model: BusinessUnit}]},
+            
         ]
     });
     if (!data) {
