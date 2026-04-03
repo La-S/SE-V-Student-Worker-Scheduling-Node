@@ -88,13 +88,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         req.body.postAtTime = currentTime;
     }
     await Announcement.update(req.body, { where: { id: id } });
-    const updatedAnnouncement = getOneForId(Announcement, id);
+    const updatedAnnouncement = await getOneForId(Announcement, id);
     res.send(updatedAnnouncement);
 }
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const data = await Announcement.findAll({
+    const data = await Announcement.findOne({
         where: { id: id },
         include: [
             { model: Employee, include: [User] },
