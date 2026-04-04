@@ -139,7 +139,7 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnitId = req.body.businessUnitId;
     await getOneForId(BusinessUnit, businessUnitId);
     if (deleteShifts) {
-        deleteShiftsForWeek(new Date(startDate), businessUnitId)
+        deleteShiftsForWeek(currentDate, businessUnitId)
     }
 
     //sunday-sat

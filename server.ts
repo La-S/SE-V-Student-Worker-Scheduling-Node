@@ -25,7 +25,7 @@ if (process.env.NODE_ENV == "dev") {
 }
 
 // parse requests of content-type - application/json
-app.use(express.json());
+app.use(express.json({limit: "50mb"}));
 // parse requests of content-type - application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: true }));
 

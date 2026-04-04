@@ -193,6 +193,7 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
             model: Shift,
             required: true,
             where: { businessUnitId: id, ...dateRange },
+            include: [Position]
         }
     ];
     const data = await CoverRequest.findAll({
@@ -245,6 +246,7 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, as: "dropReviewer", include: [User] },
         {
             model: Shift,
+            include: [Position],
             required: true,
             where: { businessUnitId: id, ...dateRange },
         }
@@ -267,6 +269,7 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
             model: Shift,
             as: 'shift',
             required: true,
+            include: [Position],
             where: {
                 businessUnitId: id,
                 [Op.or]: [

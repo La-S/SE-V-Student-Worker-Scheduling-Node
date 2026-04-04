@@ -13,6 +13,10 @@ import { convertDayOfWeek, convertTime, getDateRange, getOneForId } from "../ser
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
+import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
+import Announcement from "../models/announcement.model.ts";
+import AnnouncementFile from "../models/announcementfile.model.ts";
+import File from "../models/file.model.ts"
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -341,6 +345,73 @@ async function getClassData(employee: Model<any, any>) {
     }
     return classData;
 }
+
+exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(Employee, id);
+
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+
+    const data = await AnnouncementReceipt.findAll({
+        where: {
+            employeeId: id,
+            deleted: false
+        },
+        include: [
+            {
+                model: Announcement,
+                required: true,
+                where: {
+                    [Op.or]: [
+                        { postAtDate: { [Op.lt]: today } },
+                        {
+                            postAtDate: today,
+                            postAtTime: { [Op.lte]: currentTime }
+                        }
+                    ]
+                },
+                include: [
+                    {
+                        model: Employee,
+                        include: [User]
+                    },
+                    {
+                        model: AnnouncementFile
+                    }
+                ]
+            }
+        ]
+    });
+    res.send(data);
+};
+
+exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(Employee, id);
+
+    const data = await Announcement.findAll({
+        where: {
+            authorId: id,
+        },
+        include: [
+            {
+                model: AnnouncementReceipt,
+                required: true,
+                include: [
+                    {
+                        model: Employee,
+                        include: [User]
+                    }
+                ],
+            },
+            {
+                model: AnnouncementFile
+            }
+        ]
+    });
+    res.send(data);
+};
 
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
