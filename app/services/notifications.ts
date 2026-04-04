@@ -30,7 +30,12 @@ export async function sendNotificationToManagers(businessUnitId: number, title: 
             }
         ],
     });
-    for (let employee of (data as any).dataValues.employees) {
+    let employees = (data as any)?.dataValues?.employees;
+    if (!employees) {
+        console.warn("data not found, trying to send a notification to managers.")
+        return;
+    }
+    for (let employee of (data as any)?.dataValues?.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
          if (!pushToken) {
             console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
