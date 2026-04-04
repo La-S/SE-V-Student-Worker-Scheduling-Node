@@ -375,6 +375,9 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
                     {
                         model: Employee,
                         include: [User]
+                    },
+                    {
+                        model: AnnouncementFile
                     }
                 ]
             }
@@ -403,8 +406,7 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
                 ],
             },
             {
-                model: AnnouncementFile,
-                include: [File]
+                model: AnnouncementFile
             }
         ]
     });

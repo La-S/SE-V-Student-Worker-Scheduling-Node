@@ -20,6 +20,7 @@ import DropRequest from '../models/droprequest.model.ts';
 import Announcement from "../models/announcement.model.ts";
 import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
+import AnnouncementFile from "../models/announcementfile.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -36,15 +37,15 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const data = await User.findOne({
-      where: {id: id},
-      include: [UserFile]
-    });
-    if (!data){
-      throw new NotFoundError("User", id);
-    }
-    return data;
+  const id = parseInt(req.params.id, 10);
+  const data = await User.findOne({
+    where: { id: id },
+    include: [UserFile]
+  });
+  if (!data) {
+    throw new NotFoundError("User", id);
+  }
+  return data;
 }
 // Find a single User with an email
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
@@ -270,11 +271,21 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
           {
             model: Employee,
             include: [User]
+          },
+          {
+            model: AnnouncementFile
           }
         ]
       }
     ]
   });
+  res.send(data);
+}
+
+exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const data = await UserFile.findAll({ where: { userId: id } });
   res.send(data);
 }
 
