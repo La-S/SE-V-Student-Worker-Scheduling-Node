@@ -104,7 +104,8 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
             model: DropRequest
         },
         {
-            model: CoverRequest
+            model: CoverRequest,
+            include: [ { model: Employee, as: "coverAccepter", include: [User] }]
         }
         ]
     });
