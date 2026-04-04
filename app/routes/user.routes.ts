@@ -38,5 +38,7 @@ router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], users.getUpc
 
 router.get("/:id/announcementreceipts", [auth.authenticate], users.getAnnouncementReceipts);
 
+router.get("/:id/userfiles", [auth.authenticate], users.getUserFiles);
+
 export default router;
 
