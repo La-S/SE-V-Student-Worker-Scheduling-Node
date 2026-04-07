@@ -62,7 +62,7 @@ exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.setRead = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const readValue = req.query.read === "true";
+    const readValue = !(req.query.read === "false");
     await getReceiptForId(id);
 
     const numUpdated = await AnnouncementReceipt.update(
