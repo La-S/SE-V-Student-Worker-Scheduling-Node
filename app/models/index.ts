@@ -121,9 +121,9 @@ db.Announcement.belongsTo(db.Employee,
     { foreignKey: { name: "authorId", allowNull: false }, onDelete: "CASCADE" });
 
 db.Employee.hasMany(db.CoverRequest,
-    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterCoverRequests" });
+    { foreignKey: { name: "requesterId", allowNull: true }, onDelete: "CASCADE", as: "requesterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
-    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "coverRequester" });
+    { foreignKey: { name: "requesterId", allowNull: true }, onDelete: "CASCADE", as: "coverRequester" });
 db.Employee.hasMany(db.CoverRequest,
     { foreignKey: { name: "accepterId", allowNull: true }, onDelete: "CASCADE", as: "accepterCoverRequests" });
 db.CoverRequest.belongsTo(db.Employee,
