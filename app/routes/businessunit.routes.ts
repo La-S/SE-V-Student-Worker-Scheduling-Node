@@ -51,5 +51,8 @@ router.get("/:id/droprequests", [auth.authenticate], businessunits.getDropReques
 
 router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
 
+router.get("/:id/shifts/open", [auth.authenticate], businessunits.findShifts)
+
+
 
 export default router;

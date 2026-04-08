@@ -289,6 +289,23 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
     res.send(data);
 }
 
+exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const startDate = req.query.start;
+    const endDate = req.query.end;
+    const includeCondition = [
+        { model: Employee, include: [User] },
+        { model: Position },
+        { model: TaskList, as: "taskList" }
+    ];
+    const data = await Shift.findAll({
+        where: { businessUnitId: id, ...getDateRange(startDate, endDate), employeeId: null, published: true },
+        include: includeCondition
+    });
+    res.send(data);
+};
+
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({
     //     where: { businessUnitId: id },
