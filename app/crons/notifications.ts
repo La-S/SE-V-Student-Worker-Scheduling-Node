@@ -8,7 +8,7 @@ import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import Announcement from '../models/announcement.model.ts';
 
 
-// every 5 minutes, alert of upcoming shifts
+// every 5 minutes, notify employees of their upcoming shifts
 // note, behavior is undefined during daylight savings times
 cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().tz("America/Chicago").add(1, 'hours');
@@ -35,7 +35,7 @@ cron.schedule("*/5 * * * *", async () => {
     }
 })
 
-// every 1 minute, alert of posted notifications
+// every minute, notify employees of posted announcements
 // note, behavior is undefined during daylight savings times
 cron.schedule("*/1 * * * *", async () => {
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -61,10 +61,9 @@ cron.schedule("*/1 * * * *", async () => {
         ]},
     });
     
-    console.log("all unnotified... #", allUnnotifiedInPast.length);
+    // console.log("all unnotified... #", allUnnotifiedInPast.length);
 
     for (let annRcpt of allUnnotifiedInPast) {
-        console.log("sending to: ", annRcpt.dataValues.employeeId)
         sendNotificationToEmployee(annRcpt.dataValues.employeeId, annRcpt.dataValues.announcement.subject ?? 'No subject', annRcpt.dataValues.announcement.body ?? 'No body');
         annRcpt.setDataValue("notified", true); // todo, could get return value of notification to update this intelligently...
         annRcpt.save()
