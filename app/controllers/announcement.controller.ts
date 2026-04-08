@@ -12,8 +12,10 @@ import User from '../models/user.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
 import AnnouncementFile from '../models/announcementfile.model.ts';
 import File from "../models/file.model.ts";
+import { sendNotificationToEmployee } from '../services/notifications.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    let sendNotifNow = false;
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employees = await Employee.findAll({
         where: {
@@ -25,51 +27,99 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     for (const employee of employees) {
         employeeIds.push(employee.dataValues.id);
     }
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+
     if (!req.body.postAtDate) {
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
         req.body.postAtDate = today;
     }
     if (!req.body.postAtTime) {
-        const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
         req.body.postAtTime = currentTime;
     }
     const announcement = await Announcement.create(req.body);
     const announcementId = announcement.dataValues.id;
+
+    const isRightNow = (await Announcement.findOne({
+        where: {
+            id: announcementId,
+          [Op.or]: [
+            { postAtDate: { [Op.lt]: today } },
+            {
+              postAtDate: today,
+              postAtTime: { [Op.lte]: currentTime }
+            }
+          ]
+        },
+    }))?.dataValues
+
+    if (isRightNow) {
+        sendNotifNow = true;
+    }
 
     for (const employeeId of employeeIds) {
         const announcementReceiptBody = {
             "employeeId": employeeId,
             "announcementId": announcementId,
             "read": false,
-            "deleted": false
+            "deleted": false,
+            "notified": sendNotifNow,
         };
         await AnnouncementReceipt.create(announcementReceiptBody);
+        
+        if (sendNotifNow) {
+            sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
+        }
     }
     res.send(announcement);
 }
 
 exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    let sendNotifNow = false;
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employeeIds: number[] = req.body.employeeIds;
-    const announcement = await Announcement.create(req.body);
-    const announcementId = announcement.dataValues.id;
+
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     if (!req.body.postAtDate) {
-        const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
         req.body.postAtDate = today;
     }
     if (!req.body.postAtTime) {
-        const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
         req.body.postAtTime = currentTime;
     }
+
+    const announcement = await Announcement.create(req.body);
+    const announcementId = announcement.dataValues.id;
+
+    const isRightNow = (await Announcement.findOne({
+        where: {
+            id: announcementId,
+          [Op.or]: [
+            { postAtDate: { [Op.lt]: today } },
+            {
+              postAtDate: today,
+              postAtTime: { [Op.lte]: currentTime }
+            }
+          ]
+        },
+    }))?.dataValues
+
+    if (isRightNow) {
+        sendNotifNow = true;
+    }
+
     for (const employeeId of employeeIds) {
         const announcementReceiptBody = {
             "employeeId": employeeId,
             "announcementId": announcementId,
             "read": false,
-            "deleted": false
+            "deleted": false,
+            "notified": sendNotifNow,
         };
         await AnnouncementReceipt.create(announcementReceiptBody);
+        if (sendNotifNow) {
+            sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
+        }
     }
     res.send(announcement);
 }
