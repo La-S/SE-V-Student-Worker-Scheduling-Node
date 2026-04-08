@@ -292,15 +292,24 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
 exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
-    const startDate = req.query.start;
-    const endDate = req.query.end;
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const includeCondition = [
         { model: Employee, include: [User] },
         { model: Position },
         { model: TaskList, as: "taskList" }
     ];
     const data = await Shift.findAll({
-        where: { businessUnitId: id, ...getDateRange(startDate, endDate), employeeId: null, published: true },
+        where: {
+            businessUnitId: id, employeeId: null, published: true,
+            [Op.or]: [
+                { date: { [Op.gt]: today } },
+                {
+                    date: { [Op.eq]: today },
+                    startTime: { [Op.gte]: currentTime }
+                }
+            ]
+        },
         include: includeCondition
     });
     res.send(data);
