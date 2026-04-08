@@ -4,9 +4,11 @@ import { Op } from 'sequelize';
 import moment from 'moment';
 import 'moment-timezone';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
+import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
+import Announcement from '../models/announcement.model.ts';
 
 
-// every 5 minutes
+// every 5 minutes, alert of upcoming shifts
 // note, behavior is undefined during daylight savings times
 cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().tz("America/Chicago").add(1, 'hours');
@@ -31,4 +33,41 @@ cron.schedule("*/5 * * * *", async () => {
         }
         sendNotificationToEmployee(shift.dataValues.employeeId, "Shift upcoming!", "Your shift is scheduled to start in one hour!");
     }
+})
+
+// every 1 minute, alert of posted notifications
+// note, behavior is undefined during daylight savings times
+cron.schedule("*/1 * * * *", async () => {
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+
+    const allUnnotifiedInPast = await AnnouncementReceipt.findAll(
+        { logging: console.log,
+            include: [{
+            model: Announcement,
+            where: {
+            [Op.or]: [
+                { postAtDate: { [Op.lt]: today } },
+                {
+                    postAtDate: { [Op.eq]: today },
+                    postAtTime: { [Op.lt]: currentTime }
+                }
+            ],
+        }
+        }],
+        where: {[Op.or]:[
+            {notified: {[Op.eq]: null} },
+            {notified: {[Op.eq]: false} },
+        ]},
+    });
+    
+    console.log("all unnotified... #", allUnnotifiedInPast.length);
+
+    for (let annRcpt of allUnnotifiedInPast) {
+        console.log("sending to: ", annRcpt.dataValues.employeeId)
+        sendNotificationToEmployee(annRcpt.dataValues.employeeId, annRcpt.dataValues.announcement.subject ?? 'No subject', annRcpt.dataValues.announcement.body ?? 'No body');
+        annRcpt.setDataValue("notified", true); // todo, could get return value of notification to update this intelligently...
+        annRcpt.save()
+    }
+    
 })
