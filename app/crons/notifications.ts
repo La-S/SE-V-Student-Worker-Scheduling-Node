@@ -42,7 +42,7 @@ cron.schedule("*/1 * * * *", async () => {
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const allUnnotifiedInPast = await AnnouncementReceipt.findAll(
-        { logging: console.log,
+        {
             include: [{
             model: Announcement,
             where: {
