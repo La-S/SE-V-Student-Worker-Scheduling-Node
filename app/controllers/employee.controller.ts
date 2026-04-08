@@ -89,7 +89,7 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const employee = await Employee.findOne({
         where: { id },
