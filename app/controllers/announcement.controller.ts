@@ -12,6 +12,7 @@ import User from '../models/user.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
 import AnnouncementFile from '../models/announcementfile.model.ts';
 import File from "../models/file.model.ts";
+import { sendNotificationToEmployee } from '../services/notifications.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
@@ -44,6 +45,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
             "deleted": false
         };
         await AnnouncementReceipt.create(announcementReceiptBody);
+        sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
     }
     res.send(announcement);
 }
@@ -70,6 +72,7 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
             "deleted": false
         };
         await AnnouncementReceipt.create(announcementReceiptBody);
+        sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
     }
     res.send(announcement);
 }
