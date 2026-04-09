@@ -60,7 +60,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Position.findAll({ where: { businessUnitId: id }, });
+    const data = await Position.findAll({ where: { businessUnitId: id }, order: [["name", "asc"]] });
     res.send(data);
 }
 
@@ -198,7 +198,8 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         }
     ];
     const data = await CoverRequest.findAll({
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 };
@@ -231,7 +232,8 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     ];
     const data = await CoverRequest.findAll({
         where: { approval: null },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -253,7 +255,8 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
         }
     ];
     const data = await DropRequest.findAll({
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 };
@@ -285,7 +288,8 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
     ];
     const data = await DropRequest.findAll({
         where: { approval: null },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -311,7 +315,8 @@ exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
                 }
             ]
         },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 };
