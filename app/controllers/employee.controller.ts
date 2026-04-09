@@ -381,6 +381,10 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
                     }
                 ]
             }
+        ],
+        order: [
+            [Announcement, "postAtDate", "desc"],
+            [Announcement, "postAtTime", "desc"]
         ]
     });
     res.send(data);
@@ -408,6 +412,10 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
             {
                 model: AnnouncementFile
             }
+        ],
+        order: [
+            ["postAtDate", "desc"],
+            ["postAtTime", "desc"]
         ]
     });
     res.send(data);
