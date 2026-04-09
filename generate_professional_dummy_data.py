@@ -52,7 +52,7 @@ def get_existing_user(email):
         print("Warning, couldn't find existing user...", r.text)
     return r.json()
 
-def create_user(first_name, last_name, email, isAdmin):
+def create_user(first_name, last_name, email, isAdmin, phone_number = None):
     global users_generated
     
     # first see if the user exists, and if so, delete him.
@@ -67,7 +67,8 @@ def create_user(first_name, last_name, email, isAdmin):
         "lastName": last_name,
         "email": email,
         "isAdmin": 1 if isAdmin else 0,
-        "password": SECRET_PASSWORD
+        "password": SECRET_PASSWORD,
+        "phone": phone_number
     }, verify=False)
     if r.status_code == 200:
         users_generated += 1
@@ -394,19 +395,19 @@ delete_business_unit("Jedi Fitness Center")
 
 
 # light side
-Brian = create_user("Brian", "Smith", "brian.smith@gmail.com", False)
-Ben = create_user("Ben", "Kenobi", "ben.kenobi@gmail.com", False)
-Leia = create_user("Leia", "South", "leia@gmail.com", False)
-Luke = create_user("Luke", "South", "luke@gmail.com", False)
+Brian = create_user("Brian", "Smith", "brian.smith@gmail.com", False, "1825558765")
+Ben = create_user("Ben", "Kenobi", "ben.kenobi@gmail.com", False, "1235555678")
+Leia = create_user("Leia", "South", "leia@gmail.com", False, "9235555678")
+Luke = create_user("Luke", "South", "luke@gmail.com", False, "6735555678")
 
 # neutral
-Han =create_user("Han", "Solo", "han@gmail.com", False)
+Han =create_user("Han", "Solo", "han@gmail.com", False, "5735555683")
 
 # dark side
-Cody = create_user("Cody", "Smith", "cody@gmail.com", False)
+Cody = create_user("Cody", "Smith", "cody@gmail.com", False, "3285555383")
 
-Ezra = create_user("Ezra", "Johnson", "Ezra@gmail.com", False)
-Lando = create_user("Lando", "Calrissian", "lando@gmail.com", False)
+Ezra = create_user("Ezra", "Johnson", "Ezra@gmail.com", False, "2985585383")
+Lando = create_user("Lando", "Calrissian", "lando@gmail.com", False, "4888553883")
 
 # set up sessions
 create_session("admin", Luke['email'], Luke['id'])
@@ -496,13 +497,20 @@ add_tasklist_to_shift(shift3['id'], clean_up_cafe['id'])
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", TODAYS_DATE, True)
 shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk['id'], "10:15", "16:00", TODAYS_DATE, True)
 shift3_dub = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", TODAYS_DATE, True)
+shift3_5_dub = create_shift(leia_employee_id_brew['id'], the_dub['id'], front_desk['id'], "19:45", "22:30", TODAYS_DATE, True)
+leia_cover_request = create_cover_request(shift3_5_dub["id"], leia_employee_id_brew['id'], "11:15", TODAYS_DATE, "I need someone to swap with me so I can get my nails done.")
+accept_cover_request(leia_cover_request["id"], luke_employee_id_dub['id'])
+han_cover_request = create_cover_request(shift3_dub["id"], han_employee_id_dub['id'], "12:03", TODAYS_DATE, "Would someone please take my shift?")
+
 
 # DUB - lifeguard
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TODAYS_DATE, True)
 
 # DUB - personal trainer
 shift5_dub = create_shift(cody_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "7:00", "9:00", TODAYS_DATE, True)
+create_drop_request(shift5_dub["id"], cody_employee_id_dub['id'], "9:45", TODAYS_DATE)
 shift6_dub = create_shift(ben_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "15:00", "17:30", TODAYS_DATE, True)
+create_drop_request(shift6_dub["id"], ben_employee_id_dub['id'], "12:30", TODAYS_DATE)
 
 add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
 add_tasklist_to_shift(shift2_dub['id'], opening_tasks['id'])
@@ -530,7 +538,7 @@ give_employee_a_position(cody_employee_id_brew['id'], bar_back['id'])
 
 if (IS_PROD):
     your_user = create_or_get_existing_user("l.skinner@eagles.oc.edu");
-    your_users_employee = create_employee(your_user['id'], the_brew['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
+    # your_users_employee = create_employee(your_user['id'], the_brew['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
     your_users_employee_dub = create_employee(your_user['id'], the_dub['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
 
 
