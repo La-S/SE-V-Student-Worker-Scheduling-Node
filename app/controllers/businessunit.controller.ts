@@ -50,7 +50,8 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await Employee.findAll({
         where: { businessUnitId: id },
-        include: User
+        order: [[User, "lastName", "asc"]],
+        include: User,
     });
     res.send(data);
 }
