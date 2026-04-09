@@ -254,6 +254,10 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
       employeeId: { [Op.in]: employeeIds },
       deleted: false
     },
+    order: [
+      [Announcement, "postAtDate", "desc"],
+      [Announcement, "postAtTime", "desc"]
+    ],
     include: [
       {
         model: Announcement,
