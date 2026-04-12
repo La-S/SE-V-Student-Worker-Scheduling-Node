@@ -33,10 +33,10 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
 exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, id);
-    //sort by the clockIn time, earliest first
-    const timeclocks = await Timeclock.findAll({where: {shiftId: id}, order:[["clockIn", "asc"]]});
+    //sort by the clockIn time, most recent first
+    const timeclocks = await Timeclock.findAll({where: {shiftId: id}, order:[["clockIn", "desc"]]});
     //last timeclock is the one we want to clock out for
-    const currentClockIn = timeclocks[timeclocks.length-1];
+    const currentClockIn = timeclocks[0];
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const clockOut = {"clockOut": currentTime};
     const data = currentClockIn.update(clockOut);

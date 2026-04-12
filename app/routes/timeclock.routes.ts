@@ -6,11 +6,14 @@ import { Router } from "express";
 var router = Router()
 
 
-// Clock in, creates the time clock object
+// Clock in, creates the time clock object, ACTUALLY WORKS AS POST
 router.put("/:shiftId/clockin", [auth.authenticate], timeclocks.clockIn);
 
 //clock out, updates the timeclock's clockout time
 router.put("/:shiftId/clockout", [auth.authenticate], timeclocks.clockOut);
+
+//standard update
+router.put("/:id", [auth.authenticate], generalcontroller.update(TimeclockModel));
 
 // Delete a Timeclock by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(TimeclockModel));
