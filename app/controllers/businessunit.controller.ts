@@ -50,7 +50,8 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await Employee.findAll({
         where: { businessUnitId: id },
-        include: User
+        order: [[User, "lastName", "asc"]],
+        include: User,
     });
     res.send(data);
 }
@@ -59,7 +60,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data = await Position.findAll({ where: { businessUnitId: id }, });
+    const data = await Position.findAll({ where: { businessUnitId: id }, order: [["name", "asc"]] });
     res.send(data);
 }
 
@@ -197,7 +198,8 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         }
     ];
     const data = await CoverRequest.findAll({
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 };
@@ -230,7 +232,8 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     ];
     const data = await CoverRequest.findAll({
         where: { approval: null },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -252,7 +255,8 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
         }
     ];
     const data = await DropRequest.findAll({
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 };
@@ -284,10 +288,38 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
     ];
     const data = await DropRequest.findAll({
         where: { approval: null },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
+
+exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const includeCondition = [
+        { model: Employee, include: [User] },
+        { model: Position },
+        { model: TaskList, as: "taskList" }
+    ];
+    const data = await Shift.findAll({
+        where: {
+            businessUnitId: id, employeeId: null, published: true,
+            [Op.or]: [
+                { date: { [Op.gt]: today } },
+                {
+                    date: { [Op.eq]: today },
+                    startTime: { [Op.gte]: currentTime }
+                }
+            ]
+        },
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
+    });
+    res.send(data);
+};
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({

@@ -11,7 +11,7 @@ load_dotenv()
 
 IS_PROD = False
 YOUR_WORKER_EMAIL = "l.skinner@eagles.oc.edu"  # can be None...
-YOUR_MANAGER_EMAIL = "okcbroncoshomeschool@gmail.com" # can also be None
+YOUR_MANAGER_EMAIL = "jrevery03@gmail.com" # can also be None
 
 
 ENDPOINT = "https://127.0.0.1:3133/workerscheduling-t3"

@@ -11,7 +11,7 @@ var router = Router()
 router.post("/", [auth.authenticate], users.create);
 
 // Retrieve all People
-router.get("/all", [auth.authenticate], generalcontroller.findAll(UserModel));
+router.get("/all", [auth.authenticate], users.findAll);
 
 router.get("/email/:email", [auth.authenticate], users.findByEmail);
 

@@ -8,6 +8,9 @@ const AnnouncementFile = SequelizeInstance.define("announcementFile", {
         type: Sequelize.INTEGER,
         autoIncrement: true,
         primaryKey: true,
+    },
+    description: {
+        type: Sequelize.STRING
     }
 });
 
