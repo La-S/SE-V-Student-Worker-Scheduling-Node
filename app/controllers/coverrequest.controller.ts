@@ -26,7 +26,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     // send notification to required parties.
     if (req.body.requesterId) {
         // don't wait for this response.
-        const employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const employee = await Employee.findByPk(req.body.requesterId, { include: [User] });
         const businessUnitId = employee?.dataValues.businessUnitId;
         const firstName = employee?.dataValues.user.firstName;
         const lastName = employee?.dataValues.user?.lastName ?? "";
@@ -93,7 +93,9 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
         acceptTime: currentTime
     });
 
-    sendNotificationToEmployee(coverRequest.dataValues.requesterId, "Shift picked up", "Pending approval from your manager.")
+    if (coverRequest.dataValues.requesterId) {
+        sendNotificationToEmployee(coverRequest.dataValues.requesterId, "Shift picked up", "Pending approval from your manager.")
+    }
     sendNotificationToManagers(businessUnitId, "New cover request", "A cover requests needs your review")
     res.send(coverRequest);
 }
@@ -122,7 +124,9 @@ exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
         reviewedTime: currentTime
     });
 
-    sendNotificationToEmployee(coverRequest.dataValues.requesterId, `Cover Request ${approve ? "Approved" : "Denied"}`, `A manager has reviewed and ${approve ? "approved" : "denied"} your cover request`);
+    if (coverRequest.dataValues.requesterId) {
+        sendNotificationToEmployee(coverRequest.dataValues.requesterId, `Cover Request ${approve ? "Approved" : "Denied"}`, `A manager has reviewed and ${approve ? "approved" : "denied"} your cover request`);
+    }
     if (coverRequest.dataValues.accepterId) {
         sendNotificationToEmployee(coverRequest.dataValues.accepterId, `Cover Request ${approve ? "Approved" : "Denied"}`, `A shift you wanted to pick up has been ${approve ? "approved" : "denied"}.`);
     }
