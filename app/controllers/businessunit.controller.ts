@@ -16,6 +16,7 @@ import { AppError } from "../error/app.error.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
+import Timeclock from '../models/timeclock.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -26,7 +27,8 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const includeCondition = [
         { model: Employee, include: [User] },
         { model: Position },
-        { model: TaskList, as: "taskList" }
+        { model: TaskList, as: "taskList" },
+        { model: Timeclock}
     ];
     const data = await Shift.findAll({
         where: { businessUnitId: id, ...getDateRange(startDate, endDate) },

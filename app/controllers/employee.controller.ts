@@ -17,6 +17,7 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
+import Timeclock from "../models/timeclock.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -80,7 +81,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
         },
-        include: [Position, BusinessUnit, DropRequest, CoverRequest]
+        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock]
     });
     res.send(data);
 }

@@ -9,6 +9,7 @@ import type { ShiftType } from "../types/shift.type.ts";
 import { sendNotificationToEmployee } from "../services/notifications.ts";
 import DropRequest from "../models/droprequest.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
+import Timeclock from "../models/timeclock.model.ts";
 
 
 const exports: any = {};
@@ -81,6 +82,9 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
         },
         {
             model: Position
+        },
+        {
+            model: Timeclock
         },
         {
             model: TaskList,
