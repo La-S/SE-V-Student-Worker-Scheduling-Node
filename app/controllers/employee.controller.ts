@@ -9,7 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { convertDayOfWeek, convertTime, getDateRange, getOneForId } from "../services/services.ts";
+import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
@@ -424,10 +424,49 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
 
 exports.getExpectedBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    await getOneForId(Employee, id);
-    const startDate: string = req.query.start;
-    const endDate: string = req.query.end;
-    const data = await getShiftsForDateRange(id, startDate, endDate);
+    const data = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
+    res.send(data);
+}
+
+export async function getBudgetInformationForDateRange(id: number, startDate: string, endDate: string) {
+    const employee: Model = await getEmployeeForId(id);
+    const shifts: Model[] = await getShiftsForDateRange(id, startDate, endDate);
+    let expectedTotalCost: number = 0;
+    let expectedTotalHours: number = 0;
+    let actualTotalCost: number = 0;
+    let actualTotalHours: number = 0;
+
+    for (const shift of shifts) {
+        const startTime: string = shift.dataValues.startTime;
+        const endTime: string = shift.dataValues.endTime;
+        //difference in ms -> hours
+        const timeDiff: number = toHours(endTime) - toHours(startTime);
+        const position: Model = shift.position;
+        const payRate: number = position.dataValues.payRate;
+        for (const timeclock of shift.timeclocks){
+            const clockIn: string = timeclock.clockIn;
+            const clockOut: string = timeclock.clockOut;
+            //ignore cases where the person failed to clock in or out. Warning on FE?
+            if (!clockIn || !clockOut){
+                continue;
+            }
+            const clockedInTime: number = toHours(clockOut) - toHours(clockIn);
+            actualTotalHours += clockedInTime;
+            actualTotalCost += clockedInTime * payRate
+        }
+        expectedTotalHours += timeDiff;
+        expectedTotalCost += timeDiff * payRate;
+    }
+    const returnObject = {
+        "employeeId": id,
+        "firstName": employee.user.dataValues.firstName,
+        "lastName": employee.user.dataValues.lastName,
+        "expectedHoursWorked": expectedTotalHours,
+        "expectedCost": expectedTotalCost,
+        "actualHoursWorked": actualTotalHours,
+        "actualCost": actualTotalCost
+    }
+    return returnObject;
 }
 
 async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
@@ -451,4 +490,9 @@ async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     }
     return data;
 }
+
+const toHours = (time: string): number => {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    return hours + minutes / 60 + (seconds || 0) / 3600;
+};
 export default exports;
