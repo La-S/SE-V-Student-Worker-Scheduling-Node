@@ -25,7 +25,7 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
 
     const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
     const currentClockIn: Model = timeclocks[0];
-    if (currentClockIn.dataValues.clockOut === null){
+    if (timeclocks.length > 0 && currentClockIn.dataValues.clockOut === null){
         throw new AppError(400, "The previous timeclock for this shift must be clocked out first.")
     }
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
@@ -45,6 +45,9 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
     //last timeclock is the one we want to clock out for
     const currentClockIn: Model = timeclocks[0];
+if (!currentClockIn) {
+  throw new AppError(404, "No clock-ins found for shift.")
+}
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const clockOut = { "clockOut": currentTime };
     const data: number = await currentClockIn.update(clockOut);
