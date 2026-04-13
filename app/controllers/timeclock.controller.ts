@@ -12,21 +12,23 @@ const exports: any = {};
 
 
 exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
-    const id: number = parseInt(req.params.shiftId, 10);
-    const shift: Model = await getOneForId(Shift, id);
+    const shiftId: number = parseInt(req.params.shiftId, 10);
+    const shift: Model = await getOneForId(Shift, shiftId);
     const employee: Model = await shift.getEmployee();
     const user: Model = await employee.getUser();
-    const ocId: number = user.dataValues.ocId;
-    if (user.dataValues.ocId){
-        if (req.body.password != user.dataValues.ocId){
-            throw new AppError(401, "Invalid password entered/")
+    const ocId: string = user.dataValues.ocId;
+    if (ocId) {
+        if (req.params.password != ocId) {
+            throw new AppError(401, "Invalid password entered")
         }
     }
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
-    req.body.clockIn = currentTime;
+    const createBody = {
+        "shiftId": shiftId,
+        "clockIn": currentTime
+    }
 
-
-    const data = await Timeclock.create(req.body);
+    const data = await Timeclock.create(createBody);
     res.send(data);
 };
 
@@ -34,13 +36,13 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, id);
     //sort by the clockIn time, most recent first
-    const timeclocks = await Timeclock.findAll({where: {shiftId: id}, order:[["clockIn", "desc"]]});
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: id }, order: [["clockIn", "desc"]] });
     //last timeclock is the one we want to clock out for
-    const currentClockIn = timeclocks[0];
-    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
-    const clockOut = {"clockOut": currentTime};
-    const data = currentClockIn.update(clockOut);
-    const updatedTimeClock = await Timeclock.findOne({where: {id: currentClockIn.dataValues.id}});
+    const currentClockIn: Model = timeclocks[0];
+    const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const clockOut = { "clockOut": currentTime };
+    const data: number = await currentClockIn.update(clockOut);
+    const updatedTimeClock: Model | null = await Timeclock.findOne({ where: { id: currentClockIn.dataValues.id } });
     res.send(updatedTimeClock);
 }
 

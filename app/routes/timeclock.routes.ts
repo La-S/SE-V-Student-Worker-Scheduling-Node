@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Clock in, creates the time clock object, ACTUALLY WORKS AS POST
-router.put("/:shiftId/clockin", [auth.authenticate], timeclocks.clockIn);
+router.put("/:shiftId/clockin/:password", [auth.authenticate], timeclocks.clockIn);
 
 //clock out, updates the timeclock's clockout time
 router.put("/:shiftId/clockout", [auth.authenticate], timeclocks.clockOut);
