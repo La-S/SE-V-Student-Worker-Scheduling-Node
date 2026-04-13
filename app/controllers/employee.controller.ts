@@ -76,15 +76,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
-    const startDate = req.query.start;
-    const endDate = req.query.end;
-    const data = await Shift.findAll({
-        where: {
-            employeeId: id, ...getDateRange(startDate, endDate)
-        },
-        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock],
-        order: [["date", "asc"], ["startTime", "asc"]]
-    });
+    const startDate: string = req.query.start;
+    const endDate: string = req.query.end;
+    const data = await getShiftsForDateRange(id, startDate, endDate);
     res.send(data);
 }
 
@@ -428,6 +422,24 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 };
 
+exports.getExpectedBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(Employee, id);
+    const startDate: string = req.query.start;
+    const endDate: string = req.query.end;
+    const data = await getShiftsForDateRange(id, startDate, endDate);
+}
+
+async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
+    const data = await Shift.findAll({
+        where: {
+            employeeId: id, ...getDateRange(startDate, endDate)
+        },
+        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock],
+        order: [["date", "asc"], ["startTime", "asc"]]
+    });
+    return data;
+}
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {
