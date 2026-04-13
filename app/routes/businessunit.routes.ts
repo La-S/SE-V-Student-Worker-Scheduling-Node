@@ -53,6 +53,8 @@ router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits
 
 router.get("/:id/shifts/open", [auth.authenticate], businessunits.findShifts)
 
+router.delete("/:id/shifts/:date/week", [auth.authenticate], businessunits.deleteShiftsForWeek);
+
 
 
 export default router;

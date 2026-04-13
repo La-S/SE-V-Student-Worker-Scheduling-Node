@@ -26,6 +26,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const includeCondition = [
         { model: Employee, include: [User] },
         { model: Position },
+
         { model: TaskList, as: "taskList" }
     ];
     const data = await Shift.findAll({
@@ -260,6 +261,14 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     });
     res.send(data);
 };
+
+exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const dateString: string = req.params.date;
+    const startDate: Date = createDateFromString(dateString);
+    deleteShiftsForWeek(startDate, id);
+    res.send({message: "Shifts cleared"});
+}
 
 exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
