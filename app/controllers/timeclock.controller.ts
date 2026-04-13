@@ -22,6 +22,12 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
             throw new AppError(401, "Invalid password entered")
         }
     }
+
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
+    const currentClockIn: Model = timeclocks[0];
+    if (currentClockIn.dataValues.clockOut === null){
+        throw new AppError(400, "The previous timeclock for this shift must be clocked out first.")
+    }
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const createBody = {
         "shiftId": shiftId,
@@ -33,10 +39,10 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
-    const id: number = parseInt(req.params.shiftId, 10);
-    await getOneForId(Shift, id);
+    const shiftId: number = parseInt(req.params.shiftId, 10);
+    await getOneForId(Shift, shiftId);
     //sort by the clockIn time, most recent first
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: id }, order: [["clockIn", "desc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
     //last timeclock is the one we want to clock out for
     const currentClockIn: Model = timeclocks[0];
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
