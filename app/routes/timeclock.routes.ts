@@ -5,6 +5,7 @@ import timeclocks from "../controllers/timeclock.controller.ts"
 import { Router } from "express";
 var router = Router()
 
+router.post("/", [auth.authenticate], generalcontroller.create(TimeclockModel))
 
 // Clock in, creates the time clock object, ACTUALLY WORKS AS POST
 router.put("/:shiftId/clockin/:password", [auth.authenticate], timeclocks.clockIn);
