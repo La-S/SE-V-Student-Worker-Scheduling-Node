@@ -49,7 +49,7 @@ router.get("/:id/announcements/author", [auth.authenticate], employees.findAutho
 
 router.get("/:id/openshifts", [auth.authenticate], employees.getAvailableOpenShifts);
 
-router.get("/:id/expectedbudget/", [auth.authenticate], employees.getExpectedBudgetForDateRange);
+router.get("/:id/budgetdaterange/", [auth.authenticate], employees.getBudgetForDateRange);
 
 
 export default router;

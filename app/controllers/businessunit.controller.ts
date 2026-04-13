@@ -17,6 +17,7 @@ import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
+import { getBudgetInformationForDateRange } from './employee.controller.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -28,7 +29,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, include: [User] },
         { model: Position },
         { model: TaskList, as: "taskList" },
-        { model: Timeclock}
+        { model: Timeclock }
     ];
     const data = await Shift.findAll({
         where: { businessUnitId: id, ...getDateRange(startDate, endDate) },
@@ -322,6 +323,24 @@ exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
     });
     res.send(data);
 };
+
+exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const startDate: string = req.query.start;
+    const endDate: string = req.query.end;
+    await getOneForId(BusinessUnit, id);
+    const employees: Model[] = await Employee.findAll({where: {businessUnitId: id, currentlyEmployed: true}});
+    if (employees.length == 0){
+        throw new AppError(400, "No employees currently employed for business");
+    }
+    const returnObject = [];
+    for (const employee of employees){
+        const employeeId = employee.dataValues.id;
+        const employeeInfo = await (getBudgetInformationForDateRange(employeeId, startDate, endDate));
+        returnObject.push(employeeInfo);
+    }
+    res.send(returnObject);
+}
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({

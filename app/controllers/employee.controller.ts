@@ -422,7 +422,7 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 };
 
-exports.getExpectedBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const data = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
     res.send(data);
