@@ -40,7 +40,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 // Retrieve all Employees from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data = await Employee.findAll({ include: [User] })
+    const data = await Employee.findAll({ include: [User], order: [[User, "lastName", "asc"]] })
     res.send(data);
 };
 
@@ -75,13 +75,15 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
+    await getOneForId(Employee, id);
     const startDate = req.query.start;
     const endDate = req.query.end;
     const data = await Shift.findAll({
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
         },
-        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock]
+        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock],
+        order: [["date", "asc"], ["startTime", "asc"]]
     });
     res.send(data);
 }
@@ -90,7 +92,7 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { hour12: false });
+    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const employee = await Employee.findOne({
         where: { id },
@@ -113,7 +115,8 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
             ],
             positionId: { [Op.in]: positionIds }
         },
-        include: [Position]
+        include: [Position],
+        order: [["date", "asc"], ["startTime", "asc"]]
     });
     res.send(data);
 }
@@ -175,10 +178,10 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
     //@ts-ignore
     const data = await employee.removePosition(position);
     if (!data) {
-        res.status(400).send({ message: "Something went wrong adding position" })
+        res.status(400).send({ message: "Something went wrong removing position" })
     }
     else {
-        res.send({ message: "Position added successfully" });
+        res.send({ message: "Position removed successfully" });
     }
 }
 
@@ -212,7 +215,8 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     ];
     const data = await CoverRequest.findAll({
         where: whereCondition,
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -255,7 +259,8 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     ];
     const data = await CoverRequest.findAll({
         where: { accepterId: null },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -272,7 +277,8 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     ];
     const data = await DropRequest.findAll({
         where: { requesterId: id },
-        include: includeCondition
+        include: includeCondition,
+        order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
 }
@@ -382,6 +388,10 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
                     }
                 ]
             }
+        ],
+        order: [
+            [Announcement, "postAtDate", "desc"],
+            [Announcement, "postAtTime", "desc"]
         ]
     });
     res.send(data);
@@ -409,6 +419,10 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
             {
                 model: AnnouncementFile
             }
+        ],
+        order: [
+            ["postAtDate", "desc"],
+            ["postAtTime", "desc"]
         ]
     });
     res.send(data);

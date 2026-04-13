@@ -48,6 +48,12 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   }
   return data;
 }
+
+exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+  const data = await User.findAll({order:[["lastName", "asc"]]});
+  res.send(data);
+}
+
 // Find a single User with an email
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
@@ -258,6 +264,10 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
       employeeId: { [Op.in]: employeeIds },
       deleted: false
     },
+    order: [
+      [Announcement, "postAtDate", "desc"],
+      [Announcement, "postAtTime", "desc"]
+    ],
     include: [
       {
         model: Announcement,
