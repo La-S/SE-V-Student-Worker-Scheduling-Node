@@ -5,7 +5,7 @@ import timeclocks from "../controllers/timeclock.controller.ts"
 import { Router } from "express";
 var router = Router()
 
-router.post("/", [auth.authenticate], generalcontroller.create(TimeclockModel))
+router.post("/", [auth.authenticate], timeclocks.create)
 
 // Clock in, creates the time clock object, ACTUALLY WORKS AS POST
 router.put("/:shiftId/clockin/:password", [auth.authenticate], timeclocks.clockIn);
@@ -14,7 +14,7 @@ router.put("/:shiftId/clockin/:password", [auth.authenticate], timeclocks.clockI
 router.put("/:shiftId/clockout", [auth.authenticate], timeclocks.clockOut);
 
 //standard update
-router.put("/:id", [auth.authenticate], generalcontroller.update(TimeclockModel));
+router.put("/:id", [auth.authenticate], timeclocks.update);
 
 // Delete a Timeclock by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(TimeclockModel));

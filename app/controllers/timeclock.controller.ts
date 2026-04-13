@@ -10,6 +10,21 @@ import { NotFoundError } from "../error/notfound.error.ts";
 
 const exports: any = {};
 
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    await getOneForId(Shift, req.body.shiftId);
+    const data: Model = await Timeclock.create(req.body);
+    res.send(data);
+}
+
+exports.update = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    req.body.id = undefined;
+    req.body.shiftId = undefined;
+    await Timeclock.update(req.body, {where: {id: id}});
+    const updatedTimeClock: Model = await getOneForId(Timeclock, id);
+    res.send(updatedTimeClock);
+}
 
 exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.shiftId, 10);
