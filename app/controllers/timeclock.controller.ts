@@ -42,7 +42,7 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, shiftId);
     //sort by the clockIn time, most recent first
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc", "id", "desc"]] });
     //last timeclock is the one we want to clock out for
     const currentClockIn: Model = timeclocks[0];
 if (!currentClockIn) {
@@ -53,17 +53,6 @@ if (!currentClockIn) {
     const data: number = await currentClockIn.update(clockOut);
     const updatedTimeClock: Model | null = await Timeclock.findOne({ where: { id: currentClockIn.dataValues.id } });
     res.send(updatedTimeClock);
-}
-
-async function getTaskListForId(id: number): Promise<Model<any, any> | null> {
-    if (!id) {
-        throw new AppError(400, "id provided must be an integer")
-    }
-    const data = await TaskList.findByPk(id, { include: [Task] });
-    if (!data) {
-        throw new NotFoundError(errorClassName, id);
-    }
-    return data;
 }
 
 export default exports;
