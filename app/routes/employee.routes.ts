@@ -28,7 +28,9 @@ router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(Em
 //Get shifts for employee
 router.get("/:id/shifts", [auth.authenticate], employees.findShifts);
 
-router.get("/:id/availabilitytemplates", [auth.authenticate], employees.findAvailabilityTemplates)
+router.get("/:id/availabilitytemplates", [auth.authenticate], employees.findCurrentAvailabilityTemplates)
+
+router.get("/:id/availabilitytemplates/all", [auth.authenticate], employees.findAllAvailabilityTemplates)
 
 router.post("/:id/position/:positionid", [auth.authenticate], employees.addPosition)
 

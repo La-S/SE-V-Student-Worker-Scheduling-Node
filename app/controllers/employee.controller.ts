@@ -55,8 +55,8 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getEmployeeForId(id);
-    await employee!.update({"currentlyEmployed": false});
-    res.send({message: "employee set as not currently employed."});
+    await employee!.update({ "currentlyEmployed": false });
+    res.send({ message: "employee set as not currently employed." });
 }
 
 // Update a Employee by the id in the request
@@ -122,7 +122,7 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     res.send(data);
 }
 
-exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+exports.findAllAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
 
@@ -130,6 +130,18 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
     const userId = employee.userId
 
     const data = await AvailabilityTemplate.findAll({ where: { userId: userId } });
+    res.send(data);
+}
+
+exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    const semester = employee.dataValues.semester;
+
+    //@ts-ignore
+    const userId = employee.userId
+
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester} });
     res.send(data);
 }
 
@@ -295,6 +307,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
+    const semester = employee.dataValues.id;
     const user = await employee.getUser();
     let availabilities: Model<any, any>[] = [];
     if (clear) {
@@ -314,7 +327,8 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
                 "startTime": startTime,
                 "endTime": endTime,
                 "preference": preference,
-                "userId": userId
+                "userId": userId,
+                "semester": semester
             };
 
             const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
@@ -449,15 +463,15 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
         //difference in ms -> hours
         const timeDiff: number = toHours(endTime) - toHours(startTime);
         const position: Model = shift.position;
-        if (!position){
+        if (!position) {
             continue;
         }
         const payRate: number = position.dataValues.payRate;
-        for (const timeclock of shift.timeclocks){
+        for (const timeclock of shift.timeclocks) {
             const clockIn: string = timeclock.clockIn;
             const clockOut: string = timeclock.clockOut;
             //ignore cases where the person failed to clock in or out. Warning on FE?
-            if (!clockIn || !clockOut){
+            if (!clockIn || !clockOut) {
                 continue;
             }
             const clockedInTime: number = toHours(clockOut) - toHours(clockIn);
