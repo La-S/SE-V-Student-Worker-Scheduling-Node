@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getDateRange, getOneForId, getStringFromDate } from '../services/services.ts';
+import { createDateFromString, getDateRange, getOneForId, getStringFromDate, incrementSemester } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -269,7 +269,7 @@ exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     const dateString: string = req.params.date;
     const startDate: Date = createDateFromString(dateString);
     deleteShiftsForWeek(startDate, id);
-    res.send({message: "Shifts cleared"});
+    res.send({ message: "Shifts cleared" });
 }
 
 exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response) => {
@@ -337,12 +337,12 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
     const startDate: string = req.query.start;
     const endDate: string = req.query.end;
     await getOneForId(BusinessUnit, id);
-    const employees: Model[] = await Employee.findAll({where: {businessUnitId: id, currentlyEmployed: true}});
-    if (employees.length == 0){
+    const employees: Model[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    if (employees.length == 0) {
         throw new AppError(400, "No employees currently employed for business");
     }
     const returnObject = [];
-    for (const employee of employees){
+    for (const employee of employees) {
         const employeeId = employee.dataValues.id;
         const employeeInfo = await (getBudgetInformationForDateRange(employeeId, startDate, endDate));
         returnObject.push(employeeInfo);
@@ -350,6 +350,47 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
     res.send(returnObject);
 }
 
+exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const businessUnit: Model = await getOneForId(BusinessUnit, id);
+    const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    let semester: string = req.query.semester;
+    //if not defined in request, get the current semester and increment it (FA26 -> SP27)
+    if (!semester) {
+        semester = getMostCommonSemester(employees);
+        semester = incrementSemester(semester);
+    }
+    for (const employee of employees) {
+        await employee.update({ semester: semester });
+    }
+    res.send({message: `Employees updated to semester ${semester}`});
+}
+
+function getMostCommonSemester(employees: Model[]) {
+    const semesters: Map<string, number> = new Map();
+
+    for (const employee of employees) {
+        const semester: string = employee.dataValues.semester;
+        if (semester) {
+            const currentValue: number | undefined = semesters.get(semester);
+            if (!currentValue) {
+                semesters.set(semester, 1);
+            }
+            else {
+                semesters.set(semester, currentValue + 1);
+            }
+        }
+    }
+    let mostCommonSemester = "";
+    let mostCommonSemesterCount = 0;
+    semesters.forEach((value, key) => {
+        if (value > mostCommonSemesterCount) {
+            mostCommonSemesterCount = value;
+            mostCommonSemester = key;
+        }
+    })
+    return mostCommonSemester;
+}
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({
     //     where: { businessUnitId: id },
