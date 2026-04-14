@@ -30,6 +30,9 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     const shift: Model = await getOneForId(Shift, shiftId);
     const employee: Model = await shift.getEmployee();
+    if (!employee){
+        throw new AppError(400, "Shift is not assigned to anyone, cannot clock in.")
+    }
     const user: Model = await employee.getUser();
     const ocId: string = user.dataValues.ocId;
     if (ocId) {
