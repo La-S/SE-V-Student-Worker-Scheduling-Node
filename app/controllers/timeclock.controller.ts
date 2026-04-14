@@ -38,7 +38,7 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
 
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "asc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "desc"]] });
     const currentClockIn: Model = timeclocks[0];
     if (timeclocks.length > 0 && currentClockIn.dataValues.clockOut === null) {
         throw new AppError(400, "The previous timeclock for this shift must be clocked out first.")
@@ -57,7 +57,7 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, shiftId);
     //sort by the clockIn time, most recent first
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "asc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "desc"]] });
     //last timeclock is the one we want to clock out for
     const currentClockIn: Model = timeclocks[0];
     if (!currentClockIn) {
