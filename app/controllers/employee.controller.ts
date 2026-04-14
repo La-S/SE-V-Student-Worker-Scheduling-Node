@@ -52,6 +52,13 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 };
 
+exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getEmployeeForId(id);
+    await employee!.update({"currentlyEmployed": false});
+    res.send({message: "employee set as not currently employed."});
+}
+
 // Update a Employee by the id in the request
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
