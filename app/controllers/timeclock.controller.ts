@@ -21,7 +21,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     req.body.id = undefined;
     req.body.shiftId = undefined;
-    await Timeclock.update(req.body, {where: {id: id}});
+    await Timeclock.update(req.body, { where: { id: id } });
     const updatedTimeClock: Model = await getOneForId(Timeclock, id);
     res.send(updatedTimeClock);
 }
@@ -38,9 +38,9 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
 
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "asc"]] });
     const currentClockIn: Model = timeclocks[0];
-    if (timeclocks.length > 0 && currentClockIn.dataValues.clockOut === null){
+    if (timeclocks.length > 0 && currentClockIn.dataValues.clockOut === null) {
         throw new AppError(400, "The previous timeclock for this shift must be clocked out first.")
     }
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
@@ -57,12 +57,12 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, shiftId);
     //sort by the clockIn time, most recent first
-    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc", "id", "desc"]] });
+    const timeclocks: Model[] = await Timeclock.findAll({ where: { shiftId: shiftId }, order: [["clockIn", "desc"], ["id", "asc"]] });
     //last timeclock is the one we want to clock out for
     const currentClockIn: Model = timeclocks[0];
-if (!currentClockIn) {
-  throw new AppError(404, "No clock-ins found for shift.")
-}
+    if (!currentClockIn) {
+        throw new AppError(404, "No clock-ins found for shift.")
+    }
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const clockOut = { "clockOut": currentTime };
     const data: number = await currentClockIn.update(clockOut);
