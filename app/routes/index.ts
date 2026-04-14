@@ -11,6 +11,7 @@ import DailyScheduleTemplateRoutes from "./dailyscheduletemplate.routes.ts"
 import WeeklyScheduleTemplateRoutes from "./weeklyscheduletemplate.routes.ts";
 import TaskListRoutes from "./tasklist.routes.ts"
 import TaskRoutes from "./task.routes.ts"
+import TimeclockRoutes from "./timeclock.routes.ts"
 import TaskCompletionRoutes from "./taskcompletion.routes.ts"
 import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
 import CoverRequestRoutes from "./coverrequest.routes.ts";
@@ -34,6 +35,7 @@ router.use("/notification", Notifications);
 router.use("/employee", EmployeeRoutes);
 router.use("/position", PositionRoutes);
 router.use("/shift", ShiftRoutes);
+router.use("/timeclock", TimeclockRoutes)
 router.use("/dailyscheduletemplate", DailyScheduleTemplateRoutes)
 router.use("/weeklyscheduletemplate", WeeklyScheduleTemplateRoutes)
 router.use("/tasklist", TaskListRoutes);
@@ -47,7 +49,7 @@ router.use("/announcement", AnnouncementRoutes);
 router.use("/announcementreceipt", AnnouncementReceiptRoutes);
 router.use("/file", FileRoutes);
 router.use("/announcementfile", AnnouncementFileRoutes);
-router.use("/userfile", UserFileRoutes)
+router.use("/userfile", UserFileRoutes);
 router.use("/debug", DebugRoutes);
 router.use("/settings", SettingsRoutes);
 

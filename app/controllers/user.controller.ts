@@ -21,6 +21,7 @@ import Announcement from "../models/announcement.model.ts";
 import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
+import Timeclock from "../models/timeclock.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -160,6 +161,9 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
     },
     {
       model: DropRequest
+    },
+    {
+      model: Timeclock
     },
     {
       model: TaskList,

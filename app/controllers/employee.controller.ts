@@ -9,7 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { convertDayOfWeek, convertTime, getDateRange, getOneForId } from "../services/services.ts";
+import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
@@ -17,6 +17,7 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
+import Timeclock from "../models/timeclock.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -51,6 +52,13 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 };
 
+exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getEmployeeForId(id);
+    await employee!.update({"currentlyEmployed": false});
+    res.send({message: "employee set as not currently employed."});
+}
+
 // Update a Employee by the id in the request
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
@@ -75,15 +83,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
-    const startDate = req.query.start;
-    const endDate = req.query.end;
-    const data = await Shift.findAll({
-        where: {
-            employeeId: id, ...getDateRange(startDate, endDate)
-        },
-        include: [Position, BusinessUnit, DropRequest, CoverRequest],
-        order: [["date", "asc"], ["startTime", "asc"]]
-    });
+    const startDate: string = req.query.start;
+    const endDate: string = req.query.end;
+    const data = await getShiftsForDateRange(id, startDate, endDate);
     res.send(data);
 }
 
@@ -427,6 +429,66 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
     res.send(data);
 };
 
+exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const data = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
+    res.send(data);
+}
+
+export async function getBudgetInformationForDateRange(employeeId: number, startDate: string, endDate: string) {
+    const employee: Model = await getEmployeeForId(employeeId);
+    const shifts: Model[] = await getShiftsForDateRange(employeeId, startDate, endDate);
+    let expectedTotalCost: number = 0;
+    let expectedTotalHours: number = 0;
+    let actualTotalCost: number = 0;
+    let actualTotalHours: number = 0;
+
+    for (const shift of shifts) {
+        const startTime: string = shift.dataValues.startTime;
+        const endTime: string = shift.dataValues.endTime;
+        //difference in ms -> hours
+        const timeDiff: number = toHours(endTime) - toHours(startTime);
+        const position: Model = shift.position;
+        if (!position){
+            continue;
+        }
+        const payRate: number = position.dataValues.payRate;
+        for (const timeclock of shift.timeclocks){
+            const clockIn: string = timeclock.clockIn;
+            const clockOut: string = timeclock.clockOut;
+            //ignore cases where the person failed to clock in or out. Warning on FE?
+            if (!clockIn || !clockOut){
+                continue;
+            }
+            const clockedInTime: number = toHours(clockOut) - toHours(clockIn);
+            actualTotalHours += clockedInTime;
+            actualTotalCost += clockedInTime * payRate
+        }
+        expectedTotalHours += timeDiff;
+        expectedTotalCost += timeDiff * payRate;
+    }
+    const returnObject = {
+        "employeeId": employeeId,
+        "firstName": employee.user.dataValues.firstName,
+        "lastName": employee.user.dataValues.lastName,
+        "expectedHoursWorked": expectedTotalHours,
+        "expectedCost": expectedTotalCost,
+        "actualHoursWorked": actualTotalHours,
+        "actualCost": actualTotalCost
+    }
+    return returnObject;
+}
+
+async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
+    const data = await Shift.findAll({
+        where: {
+            employeeId: id, ...getDateRange(startDate, endDate)
+        },
+        include: [Position, BusinessUnit, DropRequest, CoverRequest, Timeclock],
+        order: [["date", "asc"], ["startTime", "asc"]]
+    });
+    return data;
+}
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {
@@ -438,4 +500,9 @@ async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     }
     return data;
 }
+
+const toHours = (time: string): number => {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    return hours + minutes / 60 + (seconds || 0) / 3600;
+};
 export default exports;

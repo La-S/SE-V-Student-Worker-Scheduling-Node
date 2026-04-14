@@ -20,7 +20,10 @@ router.get("/:id", [auth.authenticate], employees.findOne);
 router.put("/:id", [auth.authenticate], employees.update);
 
 // Delete a Employee by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(EmployeeModel));
+router.delete("/:id", [auth.authenticate], employees.delete);
+
+router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(EmployeeModel));
+
 
 //Get shifts for employee
 router.get("/:id/shifts", [auth.authenticate], employees.findShifts);
@@ -48,6 +51,8 @@ router.get("/:id/announcementreceipts", [auth.authenticate], employees.getAvaila
 router.get("/:id/announcements/author", [auth.authenticate], employees.findAuthoredAnnouncements);
 
 router.get("/:id/openshifts", [auth.authenticate], employees.getAvailableOpenShifts);
+
+router.get("/:id/budgetdaterange/", [auth.authenticate], employees.getBudgetForDateRange);
 
 
 export default router;

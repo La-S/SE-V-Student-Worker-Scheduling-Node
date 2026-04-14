@@ -25,6 +25,7 @@ import AnnouncementReceipt from "./announcementreceipt.model.ts";
 import AnnouncementFile from "./announcementfile.model.ts";
 import UserFile from "./userfile.model.ts"
 import File from "./file.model.ts"
+import Timeclock from "./timeclock.model.ts"
 
 const db = {
     Sequelize,
@@ -49,6 +50,7 @@ const db = {
     AnnouncementFile,
     File,
     UserFile,
+    Timeclock,
     Settings
 };
 
@@ -162,6 +164,10 @@ db.CoverRequest.belongsTo(db.Shift,
 db.Shift.hasMany(db.DropRequest,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 db.DropRequest.belongsTo(db.Shift,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+db.Shift.hasMany(db.Timeclock,
+    { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
+db.Timeclock.belongsTo(db.Shift,
     { foreignKey: { name: "shiftId", allowNull: false }, onDelete: "CASCADE" });
 
 
