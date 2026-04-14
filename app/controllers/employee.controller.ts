@@ -442,6 +442,9 @@ export async function getBudgetInformationForDateRange(id: number, startDate: st
         //difference in ms -> hours
         const timeDiff: number = toHours(endTime) - toHours(startTime);
         const position: Model = shift.position;
+        if (!position){
+            continue;
+        }
         const payRate: number = position.dataValues.payRate;
         for (const timeclock of shift.timeclocks){
             const clockIn: string = timeclock.clockIn;
