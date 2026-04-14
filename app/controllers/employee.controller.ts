@@ -435,9 +435,9 @@ exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-export async function getBudgetInformationForDateRange(id: number, startDate: string, endDate: string) {
-    const employee: Model = await getEmployeeForId(id);
-    const shifts: Model[] = await getShiftsForDateRange(id, startDate, endDate);
+export async function getBudgetInformationForDateRange(employeeId: number, startDate: string, endDate: string) {
+    const employee: Model = await getEmployeeForId(employeeId);
+    const shifts: Model[] = await getShiftsForDateRange(employeeId, startDate, endDate);
     let expectedTotalCost: number = 0;
     let expectedTotalHours: number = 0;
     let actualTotalCost: number = 0;
@@ -468,7 +468,7 @@ export async function getBudgetInformationForDateRange(id: number, startDate: st
         expectedTotalCost += timeDiff * payRate;
     }
     const returnObject = {
-        "employeeId": id,
+        "employeeId": employeeId,
         "firstName": employee.user.dataValues.firstName,
         "lastName": employee.user.dataValues.lastName,
         "expectedHoursWorked": expectedTotalHours,
