@@ -55,6 +55,8 @@ router.get("/:id/shifts/open", [auth.authenticate], businessunits.findShifts)
 
 router.get("/:id/budgetdaterange", [auth.authenticate], businessunits.getBudgetInformationForDateRange);
 
+router.delete("/:id/shifts/:date/week", [auth.authenticate], businessunits.deleteShiftsForWeek);
+
 
 
 export default router;
