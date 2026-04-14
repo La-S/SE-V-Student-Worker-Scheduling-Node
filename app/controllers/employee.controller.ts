@@ -425,12 +425,18 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
 exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const data = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
+    if (!data){
+        res.status(404).send("No shifts in date range for employee");
+    }
     res.send(data);
 }
 
 export async function getBudgetInformationForDateRange(id: number, startDate: string, endDate: string) {
     const employee: Model = await getEmployeeForId(id);
     const shifts: Model[] = await getShiftsForDateRange(id, startDate, endDate);
+    if (shifts.length == 0){
+        return;
+    }
     let expectedTotalCost: number = 0;
     let expectedTotalHours: number = 0;
     let actualTotalCost: number = 0;
