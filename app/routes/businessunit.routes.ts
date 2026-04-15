@@ -49,7 +49,13 @@ router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunit
 
 router.get("/:id/droprequests", [auth.authenticate], businessunits.getDropRequests)
 
-router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
+router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests);
+
+router.get("/:id/timeoffrequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenTimeOffRequests);
+
+router.get("/:id/timeoffrequests/all", [auth.authenticate], businessunits.getAllTimeOffRequests);
+
+router.get("/:id/timeoffrequests/daterange/:start/:end", [auth.authenticate], businessunits.getTimeOffRequestsDateRange);
 
 router.get("/:id/shifts/open", [auth.authenticate], businessunits.findShifts)
 
@@ -57,7 +63,7 @@ router.get("/:id/budgetdaterange", [auth.authenticate], businessunits.getBudgetI
 
 router.delete("/:id/shifts/:date/week", [auth.authenticate], businessunits.deleteShiftsForWeek);
 
-router.put("/:id/rolloveremployees", [auth.authenticate], businessunits.rolloverEmployees);
+router.put("/:id/employees/rollover", [auth.authenticate], businessunits.rolloverEmployees);
 
 
 

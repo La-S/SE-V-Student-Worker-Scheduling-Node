@@ -18,6 +18,7 @@ import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
 import { getBudgetInformationForDateRange } from './employee.controller.ts';
+import TimeOffRequest from '../models/timeoffrequest.model.ts';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -363,7 +364,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     for (const employee of employees) {
         await employee.update({ semester: semester });
     }
-    res.send({message: `Employees updated to semester ${semester}`});
+    res.send({ message: `Employees updated to semester ${semester}` });
 }
 
 function getMostCommonSemester(employees: Model[]) {
@@ -391,6 +392,85 @@ function getMostCommonSemester(employees: Model[]) {
     })
     return mostCommonSemester;
 }
+
+exports.getAllTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const includeCondition = [
+        { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
+        { model: Employee, as: "timeOffReviewer", include: [User], where: { businessUnitId: id } },
+    ];
+    const data = await TimeOffRequest.findAll({
+        include: includeCondition,
+        order: [["startDate", "asc"]]
+    });
+    res.send(data);
+};
+
+exports.getTimeOffRequestsDateRange = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const dateRangeStart = req.params.start;
+    const dateRangeEnd = req.params.end;
+    const includeCondition = [
+        { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
+        { model: Employee, as: "timeOffReviewer", include: [User], where: { businessUnitId: id } },
+    ];
+    const data = await TimeOffRequest.findAll({
+        include: includeCondition,
+        where: { startDate: { [Op.lte]: dateRangeEnd }, endDate: { [Op.gte]: dateRangeStart } },
+        order: [["startDate", "asc"]]
+    });
+    res.send(data);
+};
+
+exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const dateString: string = req.params.date;
+    const startDate: Date = createDateFromString(dateString);
+    deleteShiftsForWeek(startDate, id);
+    res.send({ message: "Shifts cleared" });
+}
+
+exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const business = await getOneForId(BusinessUnit, id);
+    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const timeOffRequestsWithShifts = [];
+    const employees: Model[] = await business.getEmployees();
+    console.log(employees);
+    const employeeIds: number[] = employees.map((employee: Model) => { return employee.dataValues.id });
+    const timeOffRequests = await TimeOffRequest.findAll({
+        where: {
+            requesterId: {
+                [Op.in]: employeeIds
+            },
+            startDate: {
+                [Op.gte]: today
+            },
+            approval: null
+        },
+        include: [{
+            model: Employee,
+            as: "timeOffRequester"
+        }],
+    });
+
+    for (const timeOffRequest of timeOffRequests) {
+        const shifts = await Shift.findAll({
+            where: {
+                employeeId: timeOffRequest.dataValues.requesterId,
+                date: {
+                    [Op.between]: [timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate]
+                }
+            }
+        });
+        timeOffRequest.dataValues.Shifts = shifts;
+    }
+
+    res.send(timeOffRequests);
+}
+
 async function getUnavailableEmployees(employees: Model<any, any>[]) {
     // const unavailableEmployees = await Employee.findAll({
     //     where: { businessUnitId: id },

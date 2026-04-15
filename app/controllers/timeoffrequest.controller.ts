@@ -8,13 +8,14 @@ import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
 import Shift from "../models/shift.model.ts";
+import { getShiftsForDateRange } from "./employee.controller.ts";
 
 const errorClassName: string = "Time Off Request";
 const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
-    { model: Employee, as: "requester", include: [User] },
-    { model: Employee, as: "reviewer", include: [User] },
+    { model: Employee, as: "timeOffRequester", include: [User] },
+    { model: Employee, as: "timeOffReviewer", include: [User] },
 ];
 
 
@@ -70,7 +71,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     // throws error if not found
     await getOneForId(TimeOffRequest, id);
-
+    if (req.body.reviewedBy){
+        await getOneForId(Employee, req.body.reviewedBy);
+    }
     req.body.requesterId = undefined;
     req.body.id = undefined;
 
@@ -101,6 +104,13 @@ exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
         reviewedTime: currentTime
     });
 
+    if (approve) {
+        const shifts: Model[] = await getShiftsForDateRange(timeOffRequest.dataValues.requesterId, timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate);
+        for (const shift of shifts) {
+            shift.update({ employeeId: null });
+        }
+    }
+
     sendNotificationToEmployee(
         timeOffRequest.dataValues.requesterId,
         `Time Off Request ${approve ? "Approved" : "Denied"}`,
@@ -119,18 +129,25 @@ async function getTimeOffRequestWithShifts(id: number): Promise<Model<any, any> 
         throw new NotFoundError("Time Off Request", id);
     }
     const data = await TimeOffRequest.findByPk(id, {
-        include: [...EMPLOYEE_INCLUDES,
-        {
-            model: Employee,
-            include: [User,
-                {
-                    model: Shift,
-                    where: {
-                        date: { [Op.between]: [timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate] }
+        include: [
+            {
+                model: Employee,
+                as: "timeOffReviewer",
+                include: [User]
+            },
+            {
+                model: Employee,
+                as: "timeOffRequester",
+                include: [User,
+                    {
+                        model: Shift,
+                        required: false,
+                        where: {
+                            date: { [Op.between]: [timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate] }
+                        }
                     }
-                }
-            ]
-        }
+                ]
+            }
         ]
     });
     return data;

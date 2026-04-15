@@ -18,6 +18,7 @@ import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -141,7 +142,7 @@ exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Res
     //@ts-ignore
     const userId = employee.userId
 
-    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester} });
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
     res.send(data);
 }
 
@@ -493,7 +494,7 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
     return returnObject;
 }
 
-async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
+export async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
     const data = await Shift.findAll({
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
@@ -503,6 +504,22 @@ async function getShiftsForDateRange(id: number, startDate: string, endDate: str
     });
     return data;
 }
+
+exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const includeCondition = [
+        { model: Employee, as: "timeOffRequester", include: [User] },
+        { model: Employee, as: "timeOffReviewer", include: [User] },
+    ];
+    const data = await TimeOffRequest.findAll({
+        where: { requesterId: id },
+        include: includeCondition,
+        order: [["startDate", "asc"]]
+    });
+    res.send(data);
+}
+
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {

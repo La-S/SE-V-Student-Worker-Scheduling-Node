@@ -44,6 +44,8 @@ router.get("/:id/availablecoverrequests", [auth.authenticate], employees.getAvai
 
 router.get("/:id/droprequests", [auth.authenticate], employees.getDropRequests);
 
+router.get("/:id/timeoffrequests", [auth.authenticate], employees.getTimeOffRequests);
+
 router.delete("/:id/clearavailability", [auth.authenticate], employees.clearAvailabilityTemplates);
 
 router.post("/:id/loadclasses", [auth.authenticate], employees.importEmployeeClasses);
