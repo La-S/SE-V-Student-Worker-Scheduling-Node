@@ -357,16 +357,31 @@ async function getClassData(employee: Model<any, any>) {
 
     let classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${email}/${semester}`);
     classData = await classData.json();
+    updateUserInfo(classData, user);
     //try id
     if (classData.Success === "False") {
         classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${ocId}/${semester}`);
         classData = await classData.json();
+        updateUserInfo(classData, user);
         //nothing, no class data
         if (classData.Success === "False") {
             throw new AppError(404, "No classes for employee. Make sure the user has a correct email or ocId");
         }
     }
     return classData;
+}
+
+async function updateUserInfo(classData, user: Model) {
+    const email: string = classData.Email;
+    const ocId: string = classData.UserID;
+    if (classData.Success === "False")
+        return;
+    const updateBody = { "email": email, "ocId": ocId };
+    const updateSucceed = await user.update(updateBody);
+    if (updateSucceed)
+        return;
+    else
+        console.log("User info did not update");
 }
 
 exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
