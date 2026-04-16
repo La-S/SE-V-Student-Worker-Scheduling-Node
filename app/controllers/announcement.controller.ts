@@ -1,32 +1,27 @@
-
 const exports: any = {};
-import { Model, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import Employee from '../models/employee.model.ts';
 import Announcement from '../models/announcement.model.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import { getOneForId, getStringFromDate } from "../services/services.ts";
-import BusinessUnit from '../models/businessunit.model.ts';
-import User from '../models/user.model.ts';
+import { getOneForId } from "../services/services.ts";
 import { NotFoundError } from '../error/notfound.error.ts';
 import AnnouncementFile from '../models/announcementfile.model.ts';
 import File from "../models/file.model.ts";
+import User from '../models/user.model.ts';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
+import { sendEmailToBusinessUnit, sendEmailToEmployeeIds } from '../services/mailer.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
-    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employees = await Employee.findAll({
         where: {
-            businessUnitId: businessUnit.dataValues.id,
-            currentlyEmployed: true
+            businessUnitId: req.body.businessUnitId,
+            currentlyEmployed: true,
         }
     });
-    const employeeIds: number[] = [];
-    for (const employee of employees) {
-        employeeIds.push(employee.dataValues.id);
-    }
+    const employeeIds: number[] = employees.map((employee) => employee.dataValues.id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
@@ -70,12 +65,18 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
             sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
         }
     }
+    if (sendNotifNow) {
+        await sendEmailToBusinessUnit(
+            req.body.businessUnitId,
+            req.body.subject ?? 'No Subject',
+            req.body.body ?? 'No Content',
+        );
+    }
     res.send(announcement);
 }
 
 exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
-    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employeeIds: number[] = req.body.employeeIds;
 
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -120,6 +121,13 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
         if (sendNotifNow) {
             sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
         }
+    }
+    if (sendNotifNow) {
+        await sendEmailToEmployeeIds(
+            employeeIds,
+            req.body.subject ?? 'No Subject',
+            req.body.body ?? 'No Content',
+        );
     }
     res.send(announcement);
 }
