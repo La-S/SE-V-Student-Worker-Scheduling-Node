@@ -66,7 +66,7 @@ cron.schedule("*/1 * * * *", async () => {
 
     for (let annRcpt of allUnnotifiedInPast) {
         sendNotificationToEmployee(annRcpt.dataValues.employeeId, annRcpt.dataValues.announcement.subject ?? 'No subject', annRcpt.dataValues.announcement.body ?? 'No body');
-        void sendAnnouncementEmailToEmployeeIds([annRcpt.dataValues.employeeId], {
+        void sendAnnouncementEmailToEmployeeIds([annRcpt.dataValues.employeeId], annRcpt.dataValues.announcement.id, {
             subject: annRcpt.dataValues.announcement.subject ?? 'No subject',
             text: annRcpt.dataValues.announcement.body ?? 'No body',
         });

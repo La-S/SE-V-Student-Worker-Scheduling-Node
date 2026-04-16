@@ -69,7 +69,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     if (sendNotifNow) {
-        await sendAnnouncementEmailToBusinessUnit(req.body.businessUnitId, {
+        await sendAnnouncementEmailToBusinessUnit(req.body.businessUnitId, announcementId, {
             subject: req.body.subject ?? 'No Subject',
             text: req.body.body ?? 'No Content',
         });
@@ -125,7 +125,7 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
         }
     }
     if (sendNotifNow) {
-        await sendAnnouncementEmailToEmployeeIds(employeeIds, {
+        await sendAnnouncementEmailToEmployeeIds(employeeIds, announcementId, {
             subject: req.body.subject ?? 'No Subject',
             text: req.body.body ?? 'No Content',
         });
