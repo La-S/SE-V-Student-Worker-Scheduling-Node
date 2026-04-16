@@ -30,7 +30,9 @@ router.get("/:id/availability", [auth.authenticate], businessunits.findAvailabil
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], businessunits.findAvailabilityTemplates)
 
-router.get("/:id/employees", [auth.authenticate], businessunits.findEmployees)
+router.get("/:id/employees", [auth.authenticate], businessunits.findCurrentEmployees)
+
+router.get("/:id/employees/all", [auth.authenticate], businessunits.findAllEmployees)
 
 router.get("/:id/positions", [auth.authenticate], businessunits.findPositions)
 

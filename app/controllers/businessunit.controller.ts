@@ -48,7 +48,19 @@ exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
+exports.findCurrentEmployees = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+
+    const data = await Employee.findAll({
+        where: { businessUnitId: id, currentlyEmployed: true },
+        order: [[User, "lastName", "asc"]],
+        include: User,
+    });
+    res.send(data);
+}
+
+exports.findAllEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
