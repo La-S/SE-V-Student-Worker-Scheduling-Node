@@ -260,7 +260,8 @@ async function getAnnouncementAttachments(announcementId: number): Promise<SendM
 }
 
 function buildAttachmentFromAnnouncementFile(announcementFile: any): NonNullable<SendMailOptions["attachments"]>[number] | null {
-  const rawFilePayload = announcementFile?.dataValues?.file?.dataValues?.image;
+  const fileRecord = announcementFile?.dataValues?.file ?? announcementFile?.dataValues?.File;
+  const rawFilePayload = fileRecord?.dataValues?.image;
   if (typeof rawFilePayload !== "string" || rawFilePayload.trim().length === 0) {
     return null;
   }
@@ -274,6 +275,7 @@ function buildAttachmentFromAnnouncementFile(announcementFile: any): NonNullable
     filename: parsedPayload.name,
     content: parsedPayload.buffer,
     contentType: parsedPayload.mimeType,
+    contentDisposition: "attachment",
   };
 }
 

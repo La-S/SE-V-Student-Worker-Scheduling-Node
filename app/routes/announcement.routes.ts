@@ -10,6 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], announcements.create);
 
 router.post("/specific", [auth.authenticate], announcements.createSpecificEmployees);
+router.post("/:id/email", [auth.authenticate], announcements.sendEmail);
 
 // Retrieve all Announcements
 router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
@@ -24,4 +25,3 @@ router.put("/:id", [auth.authenticate], announcements.update);
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(AnnouncementModel));
 
 export default router;
-

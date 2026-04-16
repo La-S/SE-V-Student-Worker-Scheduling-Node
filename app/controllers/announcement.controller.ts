@@ -12,7 +12,6 @@ import File from "../models/file.model.ts";
 import User from '../models/user.model.ts';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
 import {
-    sendAnnouncementEmailToBusinessUnit,
     sendAnnouncementEmailToEmployeeIds,
 } from '../services/mailer.ts';
 
@@ -68,12 +67,6 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
             sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
         }
     }
-    if (sendNotifNow) {
-        await sendAnnouncementEmailToBusinessUnit(req.body.businessUnitId, announcementId, {
-            subject: req.body.subject ?? 'No Subject',
-            text: req.body.body ?? 'No Content',
-        });
-    }
     res.send(announcement);
 }
 
@@ -124,14 +117,38 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
             sendNotificationToEmployee(employeeId, req.body.subject ?? 'No Subject', req.body.body ?? 'No Content')
         }
     }
-    if (sendNotifNow) {
-        await sendAnnouncementEmailToEmployeeIds(employeeIds, announcementId, {
-            subject: req.body.subject ?? 'No Subject',
-            text: req.body.body ?? 'No Content',
-        });
-    }
     res.send(announcement);
 }
+
+exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    await getOneForId(Announcement, id);
+
+    const receipts = await AnnouncementReceipt.findAll({
+        where: {
+            announcementId: id,
+            deleted: false,
+        },
+    });
+    const employeeIds = receipts
+        .map((receipt) => receipt.dataValues.employeeId)
+        .filter((employeeId) => Number.isInteger(employeeId));
+
+    if (employeeIds.length === 0) {
+        throw new AppError(404, `Announcement ${id} has no recipients.`);
+    }
+
+    const announcement = await Announcement.findByPk(id);
+    const subject = announcement?.dataValues?.subject ?? 'No Subject';
+    const text = announcement?.dataValues?.body ?? 'No Content';
+
+    await sendAnnouncementEmailToEmployeeIds(employeeIds, id, {
+        subject,
+        text,
+    });
+
+    res.send({ message: 'Announcement email sent.' });
+};
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
