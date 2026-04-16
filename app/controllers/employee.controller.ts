@@ -33,7 +33,10 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     });
     if (existingEmployee) {
         if (existingEmployee.currentlyEmployed == false) {
-            existingEmployee.update({ currentlyEmployed: true })
+            await existingEmployee.update({ "currentlyEmployed": true })
+            const updatedEmployee = await getOneForId(Employee, existingEmployee.dataValues.id);
+            res.send(updatedEmployee);
+            return;
         }
         else {
             throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
