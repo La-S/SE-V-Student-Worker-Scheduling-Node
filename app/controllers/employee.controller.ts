@@ -18,7 +18,7 @@ import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
-import { sendEmployeeAssignmentEmail } from "../services/mailer.ts";
+import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -36,11 +36,11 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
     const data = await Employee.create(req.body)
     if (req.body.currentlyEmployed !== false) {
-        void sendEmployeeAssignmentEmail(
-            data.dataValues.id,
-            req.body.businessUnitId,
-            req.body.isManager === true,
-        );
+        if (req.body.isManager === true) {
+            void sendManagerAssignmentEmail(data.dataValues.id, req.body.businessUnitId);
+        } else {
+            void sendEmployeeAssignmentEmail(data.dataValues.id, req.body.businessUnitId);
+        }
     }
     res.send(data);
 }
@@ -89,7 +89,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (existingEmployee?.dataValues.isManager !== true && req.body.isManager === true) {
         const businessUnitId = existingEmployee?.dataValues.businessUnitId;
         if (businessUnitId) {
-            void sendEmployeeAssignmentEmail(id, businessUnitId, true);
+            void sendManagerAssignmentEmail(id, businessUnitId);
         }
     }
     res.send(updatedEmployee);

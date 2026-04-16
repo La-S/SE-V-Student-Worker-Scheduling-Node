@@ -1,4 +1,4 @@
-import nodemailer from "nodemailer";
+import nodemailer, { type SendMailOptions } from "nodemailer";
 import "dotenv/config";
 
 import BusinessUnit from "../models/businessunit.model.ts";
@@ -10,6 +10,7 @@ type EmailContent = {
   subject: string;
   text: string;
   html?: string;
+  attachments?: SendMailOptions["attachments"];
 };
 
 const transporter = nodemailer.createTransport({
@@ -31,7 +32,7 @@ function getFromAddress(): string | null {
 
 
 
-async function sendEmail(content: EmailContent): Promise<boolean> {
+export async function sendEmail(content: EmailContent): Promise<boolean> {
   const from = getFromAddress();
   if (!from) {
     return false;
@@ -44,6 +45,7 @@ async function sendEmail(content: EmailContent): Promise<boolean> {
       subject: content.subject,
       text: content.text,
       html: content.html ?? `<p>${escapeHtml(content.text)}</p>`,
+      attachments: content.attachments,
     });
     return true;
   } catch (error) {
@@ -156,16 +158,11 @@ export async function sendEmailToManagers(
 export async function sendEmployeeAssignmentEmail(
   employeeId: number,
   businessUnitId: number,
-  isManager: boolean,
 ): Promise<boolean> {
   const businessUnit = await BusinessUnit.findByPk(businessUnitId);
   const businessName = (businessUnit as any)?.dataValues?.name?.trim() || "your business";
-  const subject = isManager
-    ? `Manager access added for ${businessName}`
-    : `Added to ${businessName}`;
-  const text = isManager
-    ? `You have been added as a manager for ${businessName}.`
-    : `You have been added to ${businessName} as an employee.`;
+  const subject = `Added to ${businessName}`;
+  const text = `You have been added to ${businessName} as an employee.`;
 
   return sendEmailToEmployeeId(
     employeeId,
@@ -175,20 +172,62 @@ export async function sendEmployeeAssignmentEmail(
   );
 }
 
+export async function sendManagerAssignmentEmail(
+  employeeId: number,
+  businessUnitId: number,
+): Promise<boolean> {
+  const businessUnit = await BusinessUnit.findByPk(businessUnitId);
+  const businessName = (businessUnit as any)?.dataValues?.name?.trim() || "your business";
+  const subject = `Manager access added for ${businessName}`;
+  const text = `You have been added as a manager for ${businessName}.`;
+
+  return sendEmailToEmployeeId(
+    employeeId,
+    subject,
+    text,
+    `<p>${escapeHtml(text)}</p>`,
+  );
+}
+
+type AnnouncementEmailPayload = {
+  subject: string;
+  text: string;
+  html?: string;
+  attachments?: SendMailOptions["attachments"];
+};
+
+export async function sendAnnouncementEmailToEmployeeIds(
+  employeeIds: number[],
+  payload: AnnouncementEmailPayload,
+): Promise<void> {
+  const emails = await getEmailAddressesForEmployeeIds(employeeIds);
+  await sendEmailToAddresses(emails, payload.subject, payload.text, payload.html, payload.attachments);
+}
+
+export async function sendAnnouncementEmailToBusinessUnit(
+  businessUnitId: number,
+  payload: AnnouncementEmailPayload,
+): Promise<void> {
+  const emails = await getEmailAddressesForBusinessUnitEmployees(businessUnitId);
+  await sendEmailToAddresses(emails, payload.subject, payload.text, payload.html, payload.attachments);
+}
+
 async function sendEmailToAddresses(
   emails: string[],
   subject: string,
   text: string,
   html?: string,
+  attachments?: SendMailOptions["attachments"],
 ): Promise<void> {
   const uniqueEmails = [...new Set(emails)];
   await Promise.allSettled(
-    uniqueEmails.map((email) =>
+      uniqueEmails.map((email) =>
       sendEmail({
         to: email,
         subject,
         text,
         html,
+        attachments,
       }),
     ),
   );
