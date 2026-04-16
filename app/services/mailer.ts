@@ -164,14 +164,19 @@ export async function sendEmployeeAssignmentEmail(
 ): Promise<boolean> {
   const businessUnit = await BusinessUnit.findByPk(businessUnitId);
   const businessName = (businessUnit as any)?.dataValues?.name?.trim() || "your business";
-  const subject = `Added to ${businessName}`;
-  const text = `You have been added to ${businessName} as an employee.`;
+  const subject = `Congratulations on being hired by ${businessName}`;
+  const text = `Congratulations on being hired by ${businessName}. You have been added to the scheduling system.`;
 
   return sendEmailToEmployeeId(
     employeeId,
     subject,
     text,
-    `<p>${escapeHtml(text)}</p>`,
+    buildEmailHtml({
+      heading: `Congratulations on being hired by ${businessName}`,
+      body: "You have been added to the scheduling system. Use the button below to sign in and get started.",
+      buttonLabel: "Click here to register",
+      buttonHref: getApplicationUrl(),
+    }),
   );
 }
 
@@ -335,4 +340,59 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+function getApplicationUrl(): string {
+  return process.env.CLIENT_URL?.trim()
+    || process.env.EMAIL_CLIENT_URL?.trim()
+    || "https://workerscheduling.eaglesoftwareteam.com/sev2026/t3/login";
+}
+
+function buildEmailHtml(options: {
+  heading: string;
+  body: string;
+  buttonLabel: string;
+  buttonHref: string;
+}): string {
+  const primary = "#48111c";
+  const accent = "#d5dfe7";
+  const background = "#f0f1f5";
+  const surface = "#ffffff";
+  const textColor = "#1a2433";
+  const subtleText = "#5c6675";
+
+  return `
+    <div style="margin:0;padding:0;background:${background};font-family:Arial,Helvetica,sans-serif;">
+      <div style="max-width:640px;margin:0 auto;padding:32px 16px;">
+        <div style="background:${surface};border:1px solid rgba(24,36,51,0.08);border-radius:20px;overflow:hidden;box-shadow:0 10px 30px rgba(24,36,51,0.08);">
+          <div style="background:linear-gradient(135deg, ${primary} 0%, #5f1a29 100%);padding:28px 32px;text-align:center;">
+            <h1 style="margin:18px 0 0 0;color:#ffffff;font-size:28px;line-height:1.25;font-weight:700;">
+              ${escapeHtml(options.heading)}
+            </h1>
+          </div>
+
+          <div style="padding:36px 32px;text-align:center;color:${textColor};">
+            <p style="margin:0 auto;max-width:500px;font-size:16px;line-height:1.7;color:${subtleText};">
+              ${escapeHtml(options.body)}
+            </p>
+
+            <div style="margin-top:32px;">
+              <a
+                href="${options.buttonHref}"
+                style="display:inline-block;background:${primary};color:#ffffff;text-decoration:none;padding:14px 28px;border-radius:999px;font-size:15px;font-weight:700;letter-spacing:0.01em;"
+              >
+                ${escapeHtml(options.buttonLabel)}
+              </a>
+            </div>
+
+            <p style="margin:28px auto 0 auto;max-width:500px;font-size:13px;line-height:1.6;color:${subtleText};">
+              If the button does not work, copy and paste this link into your browser:
+              <br />
+              <a href="${options.buttonHref}" style="color:${primary};word-break:break-all;">${escapeHtml(options.buttonHref)}</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
 }
