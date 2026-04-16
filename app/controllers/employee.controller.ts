@@ -32,7 +32,12 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     });
     if (existingEmployee) {
-        throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
+        if (existingEmployee.currentlyEmployed == false) {
+            existingEmployee.update({ currentlyEmployed: true })
+        }
+        else {
+            throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
+        }
     }
     const data = await Employee.create(req.body)
     res.send(data);
