@@ -308,7 +308,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
-    const semester = employee.dataValues.id;
+    const semester = employee.dataValues.semester;
     const user = await employee.getUser();
     let availabilities: Model<any, any>[] = [];
     if (clear) {
