@@ -11,7 +11,10 @@ import AnnouncementFile from '../models/announcementfile.model.ts';
 import File from "../models/file.model.ts";
 import User from '../models/user.model.ts';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
-import { sendEmailToBusinessUnit, sendEmailToEmployeeIds } from '../services/mailer.ts';
+import {
+    sendAnnouncementEmailToBusinessUnit,
+    sendAnnouncementEmailToEmployeeIds,
+} from '../services/mailer.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
@@ -66,11 +69,10 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     if (sendNotifNow) {
-        await sendEmailToBusinessUnit(
-            req.body.businessUnitId,
-            req.body.subject ?? 'No Subject',
-            req.body.body ?? 'No Content',
-        );
+        await sendAnnouncementEmailToBusinessUnit(req.body.businessUnitId, {
+            subject: req.body.subject ?? 'No Subject',
+            text: req.body.body ?? 'No Content',
+        });
     }
     res.send(announcement);
 }
@@ -123,11 +125,10 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
         }
     }
     if (sendNotifNow) {
-        await sendEmailToEmployeeIds(
-            employeeIds,
-            req.body.subject ?? 'No Subject',
-            req.body.body ?? 'No Content',
-        );
+        await sendAnnouncementEmailToEmployeeIds(employeeIds, {
+            subject: req.body.subject ?? 'No Subject',
+            text: req.body.body ?? 'No Content',
+        });
     }
     res.send(announcement);
 }

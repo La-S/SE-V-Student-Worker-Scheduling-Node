@@ -4,7 +4,7 @@ import { Op } from 'sequelize';
 import moment from 'moment';
 import 'moment-timezone';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
-import { sendEmailToEmployeeId } from '../services/mailer.ts';
+import { sendAnnouncementEmailToEmployeeIds } from '../services/mailer.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import Announcement from '../models/announcement.model.ts';
 
@@ -66,11 +66,10 @@ cron.schedule("*/1 * * * *", async () => {
 
     for (let annRcpt of allUnnotifiedInPast) {
         sendNotificationToEmployee(annRcpt.dataValues.employeeId, annRcpt.dataValues.announcement.subject ?? 'No subject', annRcpt.dataValues.announcement.body ?? 'No body');
-        void sendEmailToEmployeeId(
-            annRcpt.dataValues.employeeId,
-            annRcpt.dataValues.announcement.subject ?? 'No subject',
-            annRcpt.dataValues.announcement.body ?? 'No body',
-        );
+        void sendAnnouncementEmailToEmployeeIds([annRcpt.dataValues.employeeId], {
+            subject: annRcpt.dataValues.announcement.subject ?? 'No subject',
+            text: annRcpt.dataValues.announcement.body ?? 'No body',
+        });
         annRcpt.setDataValue("notified", true); // todo, could get return value of notification to update this intelligently...
         annRcpt.save()
     }
