@@ -12,7 +12,7 @@ auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFu
   let foundSession = await Session.findOne({ where: { token: token } })
   if (!foundSession) {
     //maybe have new error class that holds token and we can keep info server-side 
-    throw new AppError(500, "No sessions found for user")
+    throw new AppError(401, "No sessions found for token")
   }
   let sessionData = foundSession.dataValues as SessionType;
   if (sessionData == null || sessionData.expirationDate.getTime() < Date.now()) {
@@ -27,7 +27,7 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
   let token = getToken(req);
   const foundSession = await Session.findOne({ where: { token: token } });
   if (!foundSession) {
-    throw new AppError(404, "No sessions found for token");
+    throw new AppError(401, "No sessions found for token");
   }
   let user = await (foundSession as any).getUser();
   if (user.dataValues.isAdmin !== true) {
@@ -42,7 +42,7 @@ auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.
   let token = getToken(req);
   const foundSession = await Session.findOne({ where: { token: token } });
   if (!foundSession) {
-    throw new AppError(404, "No sessions found for token");
+    throw new AppError(401, "No sessions found for token");
   }
   let user = await (foundSession as any).getUser();
   if (user.dataValues.isAdmin === true) {
@@ -78,7 +78,7 @@ auth.authorizeById = (option: any) => {
     let token = getToken(req);
     const foundSession = await Session.findOne({ where: { token: token } });
     if (!foundSession) {
-      throw new AppError(404, "No sessions found for token");
+      throw new AppError(401, "No sessions found for token");
     }
     let user = await (foundSession as any).getUser();
     if (user.dataValues.isAdmin === true) {

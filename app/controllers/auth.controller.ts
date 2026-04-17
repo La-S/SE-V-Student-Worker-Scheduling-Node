@@ -70,7 +70,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
       expiresIn: 3600 * 24 * 31, // expires once every 31 days.
     });
     let tempExpirationDate = new Date();
-    tempExpirationDate.setDate(tempExpirationDate.getDate() + 1);
+    tempExpirationDate.setDate(tempExpirationDate.getDate() + 31);
     const session: SessionType = {
       token: token,
       email: googleUserInfo.email,
