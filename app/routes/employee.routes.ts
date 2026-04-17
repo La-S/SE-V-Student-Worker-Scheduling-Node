@@ -50,6 +50,8 @@ router.get("/:id/timeoffrequests", [auth.authenticate], employees.getTimeOffRequ
 
 router.delete("/:id/clearavailability", [auth.authenticate], employees.clearAvailabilityTemplates);
 
+router.delete("/:id/availabilitytemplates/semester/", [auth.authenticate], employees.clearAvailabilityTemplatesForSemester);
+
 router.post("/:id/loadclasses", [auth.authenticate], employees.importEmployeeClasses);
 
 router.get("/:id/announcementreceipts", [auth.authenticate], employees.getAvailableAnnouncementReceipts);

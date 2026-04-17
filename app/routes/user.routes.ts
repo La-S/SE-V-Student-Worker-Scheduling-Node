@@ -42,5 +42,10 @@ router.get("/:id/announcementreceipts", [auth.authenticate], users.getAnnounceme
 
 router.get("/:id/userfiles", [auth.authenticate], users.getUserFiles);
 
+router.delete("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], user.clearAvailabilityTemplatesForSemester);
+
+router.delete("/:id/availabilitytemplates", [auth.authenticate], user.clearAvailabilityTemplates);
+
+
 export default router;
 

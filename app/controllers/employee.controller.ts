@@ -328,6 +328,16 @@ exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response)
     res.send({ message: "Availability Templates cleared!" });
 }
 
+exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const employee = await getOneForId(Employee, id);
+    const user = await employee.getUser();
+    const userId = user.dataValues.id;
+    const semester = req.query.semester ?? employee.dataValues.semester;
+    await AvailabilityTemplate.destroy({where: {userId: userId, semester: semester}})
+    res.send({ message: `Availability Templates for semester ${semester} cleared!` });
+}
+
 exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
@@ -380,7 +390,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
     const user = await employee.getUser();
     const userId = user.dataValues.id;
-    const data = await AvailabilityTemplate.destroy({ where: { userId: userId } });
+    const data = await AvailabilityTemplate.destroy({ where: { userId: userId} });
 }
 
 async function getClassData(employee: Model<any, any>) {
