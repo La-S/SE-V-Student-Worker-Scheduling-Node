@@ -318,6 +318,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const employee = await getOneForId(Employee, id);
     const semester = employee.dataValues.semester;
     const user = await employee.getUser();
+    const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
     let availabilities: Model<any, any>[] = [];
     if (clear) {
         deleteEmployeeAvailabilityTemplates(employee);
@@ -330,21 +331,30 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             const endTime = convertTime(course.meeting_times[0].end_time);
             const userId = user.dataValues.id;
             const preference = "unavailable";
+            let exists: boolean = false;
+            for (const availability of existing) {
+                if (availability.dataValues.dayOfWeek === fullDay && availability.dataValues.startTime === startTime && availability.dataValues.endTime === endTime) {
+                    exists = true;
+                    break;
+                }
+                if (exists) {
+                    continue;
+                }
+                const availabilityTemplateBody = {
+                    "dayOfWeek": fullDay,
+                    "startTime": startTime,
+                    "endTime": endTime,
+                    "preference": preference,
+                    "userId": userId,
+                    "semester": semester
+                };
 
-            const availabilityTemplateBody = {
-                "dayOfWeek": fullDay,
-                "startTime": startTime,
-                "endTime": endTime,
-                "preference": preference,
-                "userId": userId,
-                "semester": semester
-            };
-
-            const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
-            availabilities.push(newAvailability);
+                const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
+                availabilities.push(newAvailability);
+            }
         }
+        res.send(availabilities);
     }
-    res.send(availabilities);
 }
 
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
