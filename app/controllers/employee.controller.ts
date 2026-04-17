@@ -392,9 +392,15 @@ async function getClassData(employee: Model<any, any>) {
 async function updateUserInfo(classData, user: Model) {
     const email: string = classData.Email;
     const ocId: string = classData.UserID;
+    const updateBody = {}
     if (classData.Success === "False")
         return;
-    const updateBody = { "email": email, "ocId": ocId };
+    if (!user.email) {
+        updateBody.email = email;
+    }
+    if (!user.ocId){
+        updateBody.ocId = ocId;
+    }
     const updateSucceed = await user.update(updateBody);
     if (updateSucceed)
         return;
