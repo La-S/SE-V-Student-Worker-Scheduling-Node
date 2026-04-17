@@ -175,7 +175,7 @@ export async function sendEmployeeAssignmentEmail(
       heading: `Congratulations on being hired by ${businessName}`,
       body: "You have been added to the scheduling system. Use the button below to sign in and get started.",
       buttonLabel: "Click here to register",
-      buttonHref: getApplicationUrl(),
+      buttonHref: "https://workerscheduling.eaglesoftwareteam.com/sev2026/t3/login",
     }),
   );
 }
@@ -197,7 +197,7 @@ export async function sendManagerAssignmentEmail(
       heading: `Congratulations! You have been added as a manager at ${businessName}`,
       body: "You now have manager access in the scheduling system. Click below to review your workspace and begin managing your team.",
       buttonLabel: "Click here to get started",
-      buttonHref: getApplicationUrl(),
+      buttonHref: "https://workerscheduling.eaglesoftwareteam.com/sev2026/t3/login",
     }),
   );
 }
@@ -345,12 +345,6 @@ function escapeHtml(value: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
-}
-
-function getApplicationUrl(): string {
-  return process.env.CLIENT_URL?.trim()
-    || process.env.EMAIL_CLIENT_URL?.trim()
-    || "https://workerscheduling.eaglesoftwareteam.com/sev2026/t3/login";
 }
 
 function buildEmployeeEmailHtml(options: {
