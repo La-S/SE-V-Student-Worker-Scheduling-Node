@@ -15,7 +15,6 @@ auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFu
     throw new AppError(500, "No sessions found for user")
   }
   let session = sessions[0].dataValues as SessionType;
-  console.log(session.expirationDate);
   if (session == null || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again");
   }
@@ -66,6 +65,8 @@ auth.authorizeById = (option: any) => {
       return;
     }
 
+    // only allow this if it is the employees's own id or they're a manager
+    // note, managers can currently view *any* user's info.
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
       let isManagerAnywhere = !!employeesForUser.some((a) => { return a.dataValues.isManager === true }) // console.log(a.dataValues); 
@@ -92,7 +93,11 @@ function getToken(req: pkg.Request): string {
   if (!authHeader.startsWith("Bearer ")) {
     throw new UnauthorizedError("Unauthorized! Please Use Bearer Token for authentication!");
   }
-  return authHeader.slice(7);
+  let token = authHeader.slice(7);
+  if (!token) {
+    throw new UnauthorizedError("Unauthorized! No empty tokens allowed.");
+  }
+  return token;
 }
 
 export default auth;

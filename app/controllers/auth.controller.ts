@@ -99,8 +99,9 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
     throw new AppError(400,  "Must have a request body with a token");
   }
 
-  // invalidate session -- delete token out of session table
-  let response = await Session.update({ token: "" }, { where: { token: req.body.token } })
+  // invalidate session -- set the token to "" & update the expiration date to now.
+  // That way, if a bad guy tries to user "" as a token, he can't.
+  let response = await Session.update({ token: "", expirationDate: new Date() }, { where: { token: req.body.token } })
   if (response[0] <= 0) {
     throw new AppError(500, 'Unknown error logging out user.')
   }
