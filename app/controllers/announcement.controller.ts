@@ -18,7 +18,7 @@ import BusinessUnit from '../models/businessunit.model.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
-    const businessunit = await getOneForId(BusinessUnit, req.body.businessUnitId);
+    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employees = await Employee.findAll({
         where: {
             businessUnitId: req.body.businessUnitId,
@@ -75,7 +75,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
     const employeeIds: number[] = req.body.employeeIds;
-    const businessunit = await getOneForId(BusinessUnit, req.body.businessUnitId);
+    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
