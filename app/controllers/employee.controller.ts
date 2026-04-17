@@ -333,25 +333,29 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             const preference = "unavailable";
             let exists: boolean = false;
             for (const availability of existing) {
-                if (availability.dataValues.dayOfWeek === fullDay && availability.dataValues.startTime === startTime && availability.dataValues.endTime === endTime) {
+                console.log(availability)
+                if (availability.dataValues.dayOfWeek === fullDay && availability.dataValues.startTime === startTime && availability.dataValues.endTime === endTime && availability.dataValues.semester === semester) {
                     exists = true;
                     break;
                 }
                 if (exists) {
                     continue;
                 }
-                const availabilityTemplateBody = {
-                    "dayOfWeek": fullDay,
-                    "startTime": startTime,
-                    "endTime": endTime,
-                    "preference": preference,
-                    "userId": userId,
-                    "semester": semester
-                };
-
-                const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
-                availabilities.push(newAvailability);
             }
+            if (exists) {
+                continue;
+            }
+            const availabilityTemplateBody = {
+                "dayOfWeek": fullDay,
+                "startTime": startTime,
+                "endTime": endTime,
+                "preference": preference,
+                "userId": userId,
+                "semester": semester
+            };
+
+            const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
+            availabilities.push(newAvailability);
         }
         res.send(availabilities);
     }
@@ -398,7 +402,7 @@ async function updateUserInfo(classData, user: Model) {
     if (!user.email) {
         updateBody.email = email;
     }
-    if (!user.ocId){
+    if (!user.ocId) {
         updateBody.ocId = ocId;
     }
     const updateSucceed = await user.update(updateBody);

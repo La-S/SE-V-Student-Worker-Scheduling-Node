@@ -62,7 +62,7 @@ export function convertTime(time: String) {
     if (modifier === "PM") {
         hours = (parseInt(hours, 10) + 12).toString();
     }
-    return hours + mins
+    return hours + mins + ":00"
 }
 
 export function convertDayOfWeek(dayOfWeek: String) {
