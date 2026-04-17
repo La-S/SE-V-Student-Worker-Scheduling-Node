@@ -123,8 +123,15 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
-    const businessUnit = await getOneForId(BusinessUnit, id);
+    const businessUnit: Model = await getOneForId(BusinessUnit, id);
+    const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    let currentSemester = null
+    //if not defined in request, get the current semester and increment it (FA26 -> SP27)
+    if (!currentSemester) {
+        currentSemester = getMostCommonSemester(employees);
+    }
     const data = await AvailabilityTemplate.findAll({
+        where: {semester: currentSemester},
         include: [{
             model: User,
             required: true, //REQUIRED. DO NOT REMOVE
@@ -133,7 +140,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
                 where: { businessUnitId: id },
             }]
         }]
-    })
+    });
     res.send(data);
 }
 
