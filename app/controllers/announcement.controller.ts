@@ -124,7 +124,7 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
 
 exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    await getOneForId(Announcement, id);
+    const announcement = await getOneForId(Announcement, id);
 
     const receipts = await AnnouncementReceipt.findAll({
         where: {
