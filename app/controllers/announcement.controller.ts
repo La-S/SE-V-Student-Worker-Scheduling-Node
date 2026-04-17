@@ -140,7 +140,6 @@ exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(404, `Announcement ${id} has no recipients.`);
     }
 
-    const announcement = await Announcement.findByPk(id);
     const subject = announcement?.dataValues?.subject ?? 'No Subject';
     const text = announcement?.dataValues?.body ?? 'No Content';
 
