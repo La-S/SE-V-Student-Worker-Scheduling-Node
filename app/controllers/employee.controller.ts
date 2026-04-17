@@ -71,8 +71,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
-    const existingEmployee = await Employee.findByPk(id);
-    await getEmployeeForId(id);
+const existingEmployee = await getEmployeeForId(id);
 
     //an employee should refer to a userId and businessUnitId, these should not change
     req.body.userId = undefined;
