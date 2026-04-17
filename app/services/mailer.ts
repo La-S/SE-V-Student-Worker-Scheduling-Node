@@ -171,7 +171,7 @@ export async function sendEmployeeAssignmentEmail(
     employeeId,
     subject,
     text,
-    buildEmailHtml({
+    buildEmployeeEmailHtml({
       heading: `Congratulations on being hired by ${businessName}`,
       body: "You have been added to the scheduling system. Use the button below to sign in and get started.",
       buttonLabel: "Click here to register",
@@ -186,14 +186,19 @@ export async function sendManagerAssignmentEmail(
 ): Promise<boolean> {
   const businessUnit = await BusinessUnit.findByPk(businessUnitId);
   const businessName = (businessUnit as any)?.dataValues?.name?.trim() || "your business";
-  const subject = `Manager access added for ${businessName}`;
-  const text = `You have been added as a manager for ${businessName}.`;
+  const subject = `Congratulations on your promotion at ${businessName}`;
+  const text = `Congratulations. You have been promoted to manager at ${businessName}.`;
 
   return sendEmailToEmployeeId(
     employeeId,
     subject,
     text,
-    `<p>${escapeHtml(text)}</p>`,
+    buildEmployeeEmailHtml({
+      heading: `Congratulations! You have been added as a manager at ${businessName}`,
+      body: "You now have manager access in the scheduling system. Click below to review your workspace and begin managing your team.",
+      buttonLabel: "Click here to get started",
+      buttonHref: getApplicationUrl(),
+    }),
   );
 }
 
@@ -348,7 +353,7 @@ function getApplicationUrl(): string {
     || "https://workerscheduling.eaglesoftwareteam.com/sev2026/t3/login";
 }
 
-function buildEmailHtml(options: {
+function buildEmployeeEmailHtml(options: {
   heading: string;
   body: string;
   buttonLabel: string;
@@ -396,3 +401,4 @@ function buildEmailHtml(options: {
     </div>
   `;
 }
+
