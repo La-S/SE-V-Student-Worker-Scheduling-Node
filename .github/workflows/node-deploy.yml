@@ -34,6 +34,8 @@ jobs:
           echo PORT = ${{secrets.PORT}} >> .env
           echo SECRET_PASSWORD = \"${{secrets.SECRET_PASSWORD}}\" >> .env
           echo GOOGLE_APPLICATION_CREDENTIALS = \"./creds.json\" >> .env
+          echo EMAIL_USER = ${{secrets.EMAIL_USER}} >> .env
+          echo EMAIL_PASS = ${{secrets.EMAIL_PASS}} >> .env
 
       - run: npm run bundle
 
