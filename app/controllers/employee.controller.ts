@@ -158,6 +158,18 @@ exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Res
     res.send(data);
 }
 
+exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    const semester = routes.params.semester;
+
+    //@ts-ignore
+    const userId = employee.userId
+
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
+    res.send(data);
+}
+
 exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
     const employeeId = parseInt(req.params.id, 10);
     const positionId = parseInt(req.params.positionid, 10)
