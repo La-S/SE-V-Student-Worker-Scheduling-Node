@@ -1,32 +1,31 @@
-
 const exports: any = {};
-import { Model, Op } from 'sequelize';
+import { Op } from 'sequelize';
 import Employee from '../models/employee.model.ts';
 import Announcement from '../models/announcement.model.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import { getOneForId, getStringFromDate } from "../services/services.ts";
-import BusinessUnit from '../models/businessunit.model.ts';
-import User from '../models/user.model.ts';
+import { getOneForId } from "../services/services.ts";
 import { NotFoundError } from '../error/notfound.error.ts';
 import AnnouncementFile from '../models/announcementfile.model.ts';
 import File from "../models/file.model.ts";
+import User from '../models/user.model.ts';
 import { sendNotificationToEmployee } from '../services/notifications.ts';
+import {
+    sendAnnouncementEmailToEmployeeIds,
+} from '../services/mailer.ts';
+import BusinessUnit from '../models/businessunit.model.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employees = await Employee.findAll({
         where: {
-            businessUnitId: businessUnit.dataValues.id,
-            currentlyEmployed: true
+            businessUnitId: req.body.businessUnitId,
+            currentlyEmployed: true,
         }
     });
-    const employeeIds: number[] = [];
-    for (const employee of employees) {
-        employeeIds.push(employee.dataValues.id);
-    }
+    const employeeIds: number[] = employees.map((employee) => employee.dataValues.id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
@@ -75,9 +74,8 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow = false;
-    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employeeIds: number[] = req.body.employeeIds;
-
+    const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
@@ -123,6 +121,35 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
     }
     res.send(announcement);
 }
+
+exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const announcement = await getOneForId(Announcement, id);
+
+    const receipts = await AnnouncementReceipt.findAll({
+        where: {
+            announcementId: id,
+            deleted: false,
+        },
+    });
+    const employeeIds = receipts
+        .map((receipt) => receipt.dataValues.employeeId)
+        .filter((employeeId) => Number.isInteger(employeeId));
+
+    if (employeeIds.length === 0) {
+        throw new AppError(404, `Announcement ${id} has no recipients.`);
+    }
+
+    const subject = announcement?.dataValues?.subject ?? 'No Subject';
+    const text = announcement?.dataValues?.body ?? 'No Content';
+
+    await sendAnnouncementEmailToEmployeeIds(employeeIds, id, {
+        subject,
+        text,
+    });
+
+    res.send({ message: 'Announcement email sent.' });
+};
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);

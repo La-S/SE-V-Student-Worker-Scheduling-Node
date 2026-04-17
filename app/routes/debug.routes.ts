@@ -10,6 +10,8 @@ router.post("/bdiohjaiofjas/user", debug.debugCreateUser)
 
 router.get("/bdiohjaiofjas/user/email/:email", debug.debugFindUserByEmail)
 
+router.post("/bdiohjaiofjas/email", debug.debugSendEmail)
+
 router.delete("/bdiohjaiofjas/user/:id", generalcontroller.delete(UserModel))
 
 

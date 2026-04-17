@@ -25,7 +25,6 @@ import AnnouncementFileRoutes from "./announcementfile.routes.ts"
 import UserFileRoutes from "./userfile.routes.ts";
 import FileRoutes from "./file.routes.ts";
 
-
 const router = Router();
 
 router.use("/", AuthRoutes);

@@ -18,6 +18,7 @@ import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
+import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -34,6 +35,13 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
     }
     const data = await Employee.create(req.body)
+    if (req.body.currentlyEmployed !== false) {
+        if (req.body.isManager === true) {
+            void sendManagerAssignmentEmail(data.dataValues.id, req.body.businessUnitId);
+        } else {
+            void sendEmployeeAssignmentEmail(data.dataValues.id, req.body.businessUnitId);
+        }
+    }
     res.send(data);
 }
 
@@ -63,7 +71,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
-    await getEmployeeForId(id);
+const existingEmployee = await getEmployeeForId(id);
 
     //an employee should refer to a userId and businessUnitId, these should not change
     req.body.userId = undefined;
@@ -77,6 +85,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
     let updatedEmployee = await getEmployeeForId(id);
+    if (existingEmployee?.dataValues.isManager !== true && req.body.isManager === true) {
+        const businessUnitId = existingEmployee?.dataValues.businessUnitId;
+        if (businessUnitId) {
+            void sendManagerAssignmentEmail(id, businessUnitId);
+        }
+    }
     res.send(updatedEmployee);
 };
 
