@@ -191,7 +191,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
 
 exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  const semester = routes.params.semester;
+  const semester = req.params.semester;
 
   const data = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
   res.send(data);

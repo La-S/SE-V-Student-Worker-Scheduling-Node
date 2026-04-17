@@ -32,8 +32,7 @@ router.get("/:id/shifts", [auth.authenticate], users.findShiftsForDateRange)
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabilityTemplates);
 
-router.get("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], users.findAvailabilityTemplatesForSemester)
-
+router.get("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], users.findAvailabilityTemplatesForSemester);
 
 router.get("/emaillike/:email", [auth.authenticate], users.findLikeEmail)
 

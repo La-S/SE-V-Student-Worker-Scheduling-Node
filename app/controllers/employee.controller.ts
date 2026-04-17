@@ -161,7 +161,7 @@ exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Res
 exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
-    const semester = routes.params.semester;
+    const semester = req.params.semester;
 
     //@ts-ignore
     const userId = employee.userId
