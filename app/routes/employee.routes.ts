@@ -30,7 +30,7 @@ router.get("/:id/shifts", [auth.authenticate], employees.findShifts);
 
 router.get("/:id/availabilitytemplates", [auth.authenticate], employees.findCurrentAvailabilityTemplates)
 
-router.get("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], employees.findCurrentAvailabilityTemplates)
+router.get("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], employees.findAvailabilityTemplatesForSemester)
 
 router.get("/:id/availabilitytemplates/all", [auth.authenticate], employees.findAllAvailabilityTemplates)
 

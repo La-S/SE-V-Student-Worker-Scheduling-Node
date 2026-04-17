@@ -50,7 +50,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-  const data = await User.findAll({order:[["lastName", "asc"]]});
+  const data = await User.findAll({ order: [["lastName", "asc"]] });
   res.send(data);
 }
 
@@ -186,6 +186,14 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
   const id = parseInt(req.params.id, 10);
   await getOneForId(User, id);
   const data = await AvailabilityTemplate.findAll({ where: { userId: id } });
+  res.send(data);
+}
+
+exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+  const semester = routes.params.semester;
+
+  const data = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
   res.send(data);
 }
 
