@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(BusinessUnitModel));
 
 // Retrieve all BusinessUnits
-router.get("/all", [auth.authenticate], generalcontroller.findAll(BusinessUnitModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(BusinessUnitModel));
 
 // Retrieve a single BusinessUnit by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(BusinessUnitModel));

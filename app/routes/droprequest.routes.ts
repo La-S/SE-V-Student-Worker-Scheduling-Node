@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], droprequests.create);
 
 // Retrieve all Drop Request
-router.get("/all", [auth.authenticate], droprequests.findAll);
+router.get("/all", [auth.authenticate, auth.isAdminOnly], droprequests.findAll);
 
 // Retrieve a single Drop Request by id
 router.get("/:id", [auth.authenticate], droprequests.findOne);

@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(TaskCompletionModel));
 
 // Retrieve all TaskCompletions
-router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskCompletionModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(TaskCompletionModel));
 
 // Retrieve a single TaskCompletion by id
 router.get("/:id", [auth.authenticate], taskCompletions.findOne);

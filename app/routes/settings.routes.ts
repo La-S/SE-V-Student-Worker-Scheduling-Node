@@ -11,7 +11,7 @@ var router = Router();
 router.post("/", [auth.authenticate], settings.create);
 
 // Retrieve all Settings
-router.get("/all", [auth.authenticate], generalcontroller.findAll(SettingsModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(SettingsModel));
 
 // Retrieve a single Setting by code
 router.get("/:code", [auth.authenticate], settings.findOne);

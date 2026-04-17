@@ -13,7 +13,7 @@ router.post("/specific", [auth.authenticate], announcements.createSpecificEmploy
 router.post("/:id/email", [auth.authenticate], announcements.sendEmail);
 
 // Retrieve all Announcements
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(AnnouncementModel));
 
 // Retrieve a single Announcement by id
 router.get("/:id", [auth.authenticate], announcements.findOne);

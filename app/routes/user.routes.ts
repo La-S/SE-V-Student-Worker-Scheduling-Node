@@ -11,14 +11,14 @@ var router = Router()
 router.post("/", [auth.authenticate], users.create);
 
 // Retrieve all People
-router.get("/all", [auth.authenticate], users.findAll);
+router.get("/all", [auth.authenticate, auth.isAdminOnly], users.findAll);
 
 router.get("/email/:email", [auth.authenticate], users.findByEmail);
 
 // Retrieve a single User with id
 router.get("/:id", [auth.authenticate], users.findOne);
 
-// Update a User with idF
+// Update a User with id
 router.put("/:id", [auth.authenticate], users.update);
 
 router.put("/:id/admin", [auth.authenticate, auth.isAdminOnly], users.updateIsAdmin)

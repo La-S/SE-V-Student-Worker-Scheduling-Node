@@ -13,7 +13,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(AvailabilityTemplateModel));
 
 // Retrieve all AvailabilityTemplates
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AvailabilityTemplateModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(AvailabilityTemplateModel));
 
 // Retrieve a single AvailabilityTemplate by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(AvailabilityTemplateModel));

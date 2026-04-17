@@ -9,7 +9,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(OpenHoursModel));
 
 // Retrieve all OpenHours
-router.get("/all", [auth.authenticate], generalcontroller.findAll(OpenHoursModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(OpenHoursModel));
 
 // Retrieve a single OpenHours by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(OpenHoursModel));

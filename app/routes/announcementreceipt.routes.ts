@@ -11,7 +11,7 @@ var router = Router()
 router.post("/", [auth.authenticate], announcementreceipts.create);
 
 // Retrieve all Announcement Receipts
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementReceiptModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(AnnouncementReceiptModel));
 
 // Retrieve a single Announcement Receipt by id
 router.get("/:id", [auth.authenticate], announcementreceipts.findOne);

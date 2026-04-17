@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(PositionModel));
 
 // Retrieve all Positions
-router.get("/all", [auth.authenticate], generalcontroller.findAll(PositionModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(PositionModel));
 
 // Retrieve a single Position by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(PositionModel));

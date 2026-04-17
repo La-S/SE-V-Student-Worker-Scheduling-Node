@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], shifts.create);
 
 // Retrieve all Shifts
-router.get("/all", [auth.authenticate], generalcontroller.findAll(ShiftModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(ShiftModel));
 
 // Retrieve a single Shift by id
 router.get("/:id", [auth.authenticate], shifts.findOne);

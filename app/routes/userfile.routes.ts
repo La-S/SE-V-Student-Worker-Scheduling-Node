@@ -9,7 +9,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(UserFileModel));
 
 // Retrieve all UserFiles
-router.get("/all", [auth.authenticate], generalcontroller.findAll(UserFileModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(UserFileModel));
 
 // Retrieve a single UserFile by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(UserFileModel));

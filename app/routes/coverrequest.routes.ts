@@ -6,19 +6,19 @@ import { Router } from "express";
 var router = Router()
 
 
-// Create a new Position
+// Create a new CoverRequest
 router.post("/", [auth.authenticate], coverrequests.create);
 
-// Retrieve all Positions
-router.get("/all", [auth.authenticate], coverrequests.findAll);
+// Retrieve all CoverRequests
+router.get("/all", [auth.authenticate, auth.isAdminOnly], coverrequests.findAll);
 
-// Retrieve a single Position by id
+// Retrieve a single CoverRequest by id
 router.get("/:id", [auth.authenticate], coverrequests.findOne);
 
-// Update a Position by id
+// Update a CoverRequest by id
 router.put("/:id", [auth.authenticate], coverrequests.update);
 
-// Delete a Position by id
+// Delete a CoverRequest by id
 router.delete("/:id", [auth.authenticate], generalcontroller.delete(CoverRequestModel));
 
 router.put("/:id/accept/:employeeId", [auth.authenticate], coverrequests.acceptCoverRequest);

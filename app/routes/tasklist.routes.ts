@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(TaskListModel));
 
 // Retrieve all TaskLists
-router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskListModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(TaskListModel));
 
 // Retrieve a single TaskList by id
 router.get("/:id", [auth.authenticate], taskLists.findOne);

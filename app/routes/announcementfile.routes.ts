@@ -9,7 +9,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(AnnouncementFileModel));
 
 // Retrieve all AnnouncementFiles
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementFileModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(AnnouncementFileModel));
 
 // Retrieve a single AnnouncementFile by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(AnnouncementFileModel));

@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], tasks.create);
 
 // Retrieve all Tasks
-router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(TaskModel));
 
 // Retrieve a single Task by id
 router.get("/:id", [auth.authenticate], generalcontroller.findOne(TaskModel));

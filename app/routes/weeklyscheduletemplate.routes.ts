@@ -10,7 +10,7 @@ var router = Router()
 router.post("/", [auth.authenticate], generalcontroller.create(WeeklyScheduleTemplateModel));
 
 // Retrieve all WeeklyScheduleTemplates
-router.get("/all", [auth.authenticate], generalcontroller.findAll(WeeklyScheduleTemplateModel));
+router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(WeeklyScheduleTemplateModel));
 
 // Retrieve a single WeeklyScheduleTemplate by id
 router.get("/:id", [auth.authenticate], weeklyscheduletemplates.findOne);
