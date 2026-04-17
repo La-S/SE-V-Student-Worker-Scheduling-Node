@@ -3,21 +3,23 @@ import pkg from 'express';
 import type { SessionType } from "../types/session.type.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
+import { Op } from "sequelize";
 
 const Session = db.Session;
 
 const auth: any = {};
 auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
-  let foundSession = await Session.findOne({ where: { token: token } })
-  if (!foundSession) {
-    //maybe have new error class that holds token and we can keep info server-side 
-    throw new AppError(401, "No sessions found for token")
-  }
+  let foundSession = await getSession(token);
   let sessionData = foundSession.dataValues as SessionType;
+
   if (sessionData == null || sessionData.expirationDate.getTime() < Date.now()) {
+    foundSession.set("token", null);
+    foundSession.set("expirationDate", new Date());
+    foundSession.save();
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again");
   }
+
   next();
   return;
 };
@@ -25,10 +27,7 @@ auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFu
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
 auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
-  const foundSession = await Session.findOne({ where: { token: token } });
-  if (!foundSession) {
-    throw new AppError(401, "No sessions found for token");
-  }
+  let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
   if (user.dataValues.isAdmin !== true) {
     throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
@@ -40,10 +39,7 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
 auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
-  const foundSession = await Session.findOne({ where: { token: token } });
-  if (!foundSession) {
-    throw new AppError(401, "No sessions found for token");
-  }
+  let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
   if (user.dataValues.isAdmin === true) {
     next();
@@ -76,10 +72,7 @@ auth.authorizeById = (option: any) => {
     }
 
     let token = getToken(req);
-    const foundSession = await Session.findOne({ where: { token: token } });
-    if (!foundSession) {
-      throw new AppError(401, "No sessions found for token");
-    }
+    let foundSession = await getSession(token);
     let user = await (foundSession as any).getUser();
     if (user.dataValues.isAdmin === true) {
       next();
@@ -118,6 +111,14 @@ function getToken(req: pkg.Request): string {
     throw new UnauthorizedError("Unauthorized! No empty tokens allowed.");
   }
   return token;
+}
+
+async function getSession(token: string) {
+  let foundSession = await Session.findOne({ where: { token: token } })
+  if (!foundSession) {
+    throw new AppError(401, "No sessions found for token")
+  }
+  return foundSession;
 }
 
 export default auth;
