@@ -66,7 +66,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const employee = await getEmployeeForId(id);
     await employee!.update({ "currentlyEmployed": false });
     const positions = await employee.getPositions();
-    for (const position of positions){
+    for (const position of positions) {
         await employee.removePosition(position);
     }
     res.send({ message: "employee set as not currently employed." });
@@ -361,8 +361,8 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
             availabilities.push(newAvailability);
         }
-        res.send(availabilities);
     }
+    res.send(availabilities);
 }
 
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
