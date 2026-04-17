@@ -65,6 +65,10 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getEmployeeForId(id);
     await employee!.update({ "currentlyEmployed": false });
+    const positions = await employee.getPositions();
+    for (const position of positions){
+        await employee.removePosition(position);
+    }
     res.send({ message: "employee set as not currently employed." });
 }
 
