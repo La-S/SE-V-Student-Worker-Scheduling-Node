@@ -39,6 +39,30 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
 };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
+auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+  let token = getToken(req);
+  const data = await Session.findAll({ where: { token: token } });
+  let session = data[0];
+  if (!session) {
+    throw new AppError(404, "No sessions found for token");
+  }
+  let user = await (session as any).getUser();
+  if (user.dataValues.isAdmin === true) {
+    next();
+    return;
+  }
+  let employeesForUser = await (user as any).getEmployees() as any[];
+  let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
+  if (isManagerAnywhere === true) {
+    next();
+    return;
+  }
+
+  throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
+};
+
+
+//AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
 
 const AuthOption = {
   employee: "employee",
@@ -69,10 +93,10 @@ auth.authorizeById = (option: any) => {
     // note, managers can currently view *any* user's info.
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
-      let isManagerAnywhere = !!employeesForUser.some((a) => { return a.dataValues.isManager === true }) // console.log(a.dataValues); 
-      let isRelatedToId = employeesForUser.some((a) => { console.log('dv', a.dataValues); return a.dataValues.id === idToVerify })
+      let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
+      let isRelatedToId = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
 
-      if (isManagerAnywhere || employeesForUser.some((a) => {return a.dataValues.id === idToVerify })) {
+      if (isManagerAnywhere || isRelatedToId) {
         next();
         return;
       }
@@ -80,8 +104,7 @@ auth.authorizeById = (option: any) => {
       throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
     }
 
-    next();
-    return;
+    throw new AppError(500, "Developer error occurred! Please contact the developer.")
   }
 }
 
