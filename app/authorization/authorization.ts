@@ -32,49 +32,57 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
     throw new AppError(404, "No sessions found for token");
   }
   let user = await (session as any).getUser();
-  if (user.isAdmin !== true) {
+  if (user.dataValues.isAdmin !== true) {
     throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
   }
   next();
   return;
 };
 
-// //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.isEmployeeOfBusinessUnit = (req, res, next) => {
-  let token = null;
+//AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
 
-  let authHeader = req.get("authorization");
-  if (authHeader == null) {
-    return res.status(401).send("Unauthorized, no auth header");
-  }
-  if (authHeader.startsWith("Bearer ")) {
-    token = authHeader.slice(7);
+const AuthOption = {
+  employee: "employee",
+  businessUnit: "businessUnit",
+}
 
-    Session.findAll({ where: { token: token } })
-      .then(async (data) => {
-        let session = data[0];
-        if (session != null) {
-          let user = await session.getUser();
-          if (user) {
-            next();
-            return;
-          }
-          else
-            return res.status(401).send({
-              message: "Unauthorized! User must be admin or coach to perform this function"
-            });
-        }
-        return res.status(401).send({
-          message: "Unauthorized! No Session!"
-        });
-      })
-      .catch((err) => {
-        return res.status(500).send({
-          message: err.message || "an unknown error occurred while authenticating",
-        });
-      });
+auth.authorizeById = (option: any) => {
+  return async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+    let idToVerify = parseInt(req.params.id, 10);
+    console.log("Verifying: ", idToVerify)
+    if (!idToVerify) {
+      throw new UnauthorizedError("Unauthorized! User must have an ID to perform this function")
+    }
+
+    let token = getToken(req);
+    const data = await Session.findAll({ where: { token: token } });
+    let session = data[0];
+    if (!session) {
+      throw new AppError(404, "No sessions found for token");
+    }
+    let user = await (session as any).getUser();
+    if (user.dataValues.isAdmin === true) {
+      next();
+      return;
+    }
+
+    if (option === AuthOption.employee) {
+      let employeesForUser = await (user as any).getEmployees();
+      let isManagerAnywhere = !!employeesForUser.some((a) => { return a.dataValues.isManager === true }) // console.log(a.dataValues); 
+      let isRelatedToId = employeesForUser.some((a) => { console.log('dv', a.dataValues); return a.dataValues.id === idToVerify })
+
+      if (isManagerAnywhere || employeesForUser.some((a) => {return a.dataValues.id === idToVerify })) {
+        next();
+        return;
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
+    }
+
+    next();
+    return;
   }
-};
+}
 
 function getToken(req: pkg.Request): string {
   let authHeader = req.get("authorization");
