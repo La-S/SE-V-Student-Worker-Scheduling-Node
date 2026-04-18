@@ -124,6 +124,9 @@ export const authorizeById = (option: any) => {
 
     if (option === AuthOption.userfile) {
       let fileTryingToAccess = await UserFile.findOne({ where: { id: idToVerify } })
+      if (!fileTryingToAccess) {
+        throw new AppError(404, "file not found");
+      }
       let employeesForUser = await (user as any).getEmployees();
       let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
       for (let manager of managerPositions) {
