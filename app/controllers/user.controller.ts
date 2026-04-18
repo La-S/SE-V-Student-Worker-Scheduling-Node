@@ -46,7 +46,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   if (!data) {
     throw new NotFoundError("User", id);
   }
-  return data;
+  res.send(data);
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {

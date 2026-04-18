@@ -13,32 +13,32 @@ router.post("/", [authenticate, managerOrAdminOnly], users.create);
 // Retrieve all People
 router.get("/all", [authenticate, isAdminOnly], users.findAll);
 
-router.get("/email/:email", [authenticate], users.findByEmail);
+router.get("/email/:email", [authenticate, managerOrAdminOnly], users.findByEmail);
 
 // Retrieve a single User with id
-router.get("/:id", [authenticate], users.findOne); // , authorizeById("user")
+router.get("/:id", [authenticate, authorizeById("user")], users.findOne);
 
 // Update a User with id
-router.put("/:id", [authenticate], users.update);
+router.put("/:id", [authenticate, authorizeById("user")], users.update);
 
 router.put("/:id/admin", [authenticate, isAdminOnly], users.updateIsAdmin)
 
 // Delete a User with id
-router.delete("/:id", [authenticate], generalcontroller.delete(UserModel));
+router.delete("/:id", [authenticate, authorizeById("user")], generalcontroller.delete(UserModel));
 
-router.get("/:id/employees", [authenticate], users.findEmployeesForUser)
+router.get("/:id/employees", [authenticate, authorizeById("user")], users.findEmployeesForUser)
 
-router.get("/:id/shifts", [authenticate], users.findShiftsForDateRange)
+router.get("/:id/shifts", [authenticate, authorizeById("user")], users.findShiftsForDateRange)
 
-router.get("/:id/availabilitytemplates", [authenticate], users.findAvailabilityTemplates);
+router.get("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.findAvailabilityTemplates);
 
-router.get("/emaillike/:email", [authenticate], users.findLikeEmail)
+router.get("/emaillike/:email", [authenticate, managerOrAdminOnly], users.findLikeEmail)
 
-router.get("/:id/coverrequests/open/upcoming", [authenticate], users.getUpcomingOpenCoverRequests);
+router.get("/:id/coverrequests/open/upcoming", [authenticate, authorizeById("user")], users.getUpcomingOpenCoverRequests);
 
-router.get("/:id/announcementreceipts", [authenticate], users.getAnnouncementReceipts);
+router.get("/:id/announcementreceipts", [authenticate, authorizeById("user")], users.getAnnouncementReceipts);
 
-router.get("/:id/userfiles", [authenticate], users.getUserFiles);
+router.get("/:id/userfiles", [authenticate, authorizeById("user")], users.getUserFiles);
 
 export default router;
 

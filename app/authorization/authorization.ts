@@ -63,7 +63,8 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
 const AuthOption = {
   employee: "employee",
   businessUnit: "businessUnit",
-  userfile: "userfile"
+  userfile: "userfile",
+  user: "user",
 }
 
 export const authorizeById = (option: any) => {
@@ -81,6 +82,27 @@ export const authorizeById = (option: any) => {
       // console.log("is admin")
       next();
       return;
+    }
+
+    if (option === AuthOption.user) {
+      if (user.dataValues.id === idToVerify) {
+        // console.log("user is himself")
+        next();
+        return;
+      }
+
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isUserInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+        // console.log("user is a manger but not allowed to view that data.")
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
     }
 
     if (option === AuthOption.userfile) {
