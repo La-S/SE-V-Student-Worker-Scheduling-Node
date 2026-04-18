@@ -82,15 +82,8 @@ auth.authorizeById = (option: any) => {
     }
 
     // only allow this if it is the employees's own id or they're a manager
-    // note, managers can currently view *any* user's info.
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
-      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
-      if (requesterIsSelf) {
-        // console.log("the requester was himself")
-        next();
-        return;
-      }
 
       let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
       for (let manager of managerPositions) {
@@ -100,6 +93,19 @@ auth.authorizeById = (option: any) => {
           next();
           return;
         }
+      }
+
+      // if the employee is not a manager, they can still call the route as long as they're not an admin.
+      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
+      if (requesterIsSelf) {
+        // console.log("the requester was himself")
+
+        if (req.body?.isManager) {
+          // prevent privilege escalation
+          req.body.isManager = undefined;
+        }
+        next();
+        return;
       }
 
       throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
