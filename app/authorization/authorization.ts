@@ -48,7 +48,7 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
     return;
   }
   let employeesForUser = await (user as any).getEmployees() as any[];
-  let businessUnitsForManager = employeesForUser.filter((a) => { return a.dataValues.isManager === true }).map((a) => { return a.dataValues.businessUnitId });
+  let businessUnitsForManager = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true }).map((a) => { return a.dataValues.businessUnitId });
   let isManagerAnywhere = businessUnitsForManager.length > 0;
   if (isManagerAnywhere === true) {
     if (req.body?.isAdmin) {
@@ -109,7 +109,7 @@ export const authorizeById = (option: any) => {
       }
 
       let employeesForRequestingUser = await (user as any).getEmployees();
-      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true })
+      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isUserInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -128,7 +128,7 @@ export const authorizeById = (option: any) => {
         throw new AppError(404, "file not found");
       }
       let employeesForUser = await (user as any).getEmployees();
-      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isUserInBusinessUnit(fileTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -153,7 +153,7 @@ export const authorizeById = (option: any) => {
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
 
-      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         // console.log('managers buID', manager.dataValues.businessUnitId);
         let isAuthorized = await isEmployeeInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
@@ -213,7 +213,7 @@ async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: numb
 }
 
 async function isUserInBusinessUnit(userId: number, businessUnitId: number) {
-  let employee = await Employee.findOne({ where: { userId: userId, businessUnitId: businessUnitId } })
+  let employee = await Employee.findOne({ where: { userId: userId, businessUnitId: businessUnitId, currentlyEmployed: true } })
   if (!employee) {
     return false
   }
