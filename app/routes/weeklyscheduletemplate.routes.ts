@@ -22,7 +22,7 @@ router.put("/:id", [authenticate, managerOrAdminOnly], weeklyscheduletemplates.u
 // Delete a WeeklyScheduleTemplate by id
 router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(WeeklyScheduleTemplateModel));
 
-router.post("/fromshifts", [authenticate], weeklyscheduletemplates.createFromShifts)
+router.post("/fromshifts", [authenticate, managerOrAdminOnly], weeklyscheduletemplates.createFromShifts)
 
 router.post("/loadshifts", [authenticate], weeklyscheduletemplates.loadShifts)
 
