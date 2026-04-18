@@ -4,6 +4,7 @@ import type { SessionType } from "../types/session.type.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
+import Employee from "../models/employee.model.ts";
 
 const Session = db.Session;
 
@@ -66,15 +67,16 @@ const AuthOption = {
 auth.authorizeById = (option: any) => {
   return async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
     let idToVerify = parseInt(req.params.id, 10);
-    console.log("Verifying: ", idToVerify)
+    // console.log("Verifying: ", idToVerify)
     if (!idToVerify) {
       throw new UnauthorizedError("Unauthorized! User must have an ID to perform this function")
     }
-
+    
     let token = getToken(req);
     let foundSession = await getSession(token);
     let user = await (foundSession as any).getUser();
     if (user.dataValues.isAdmin === true) {
+      // console.log("is admin")
       next();
       return;
     }
@@ -83,12 +85,21 @@ auth.authorizeById = (option: any) => {
     // note, managers can currently view *any* user's info.
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
-      let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
-      let isRelatedToId = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
-
-      if (isManagerAnywhere || isRelatedToId) {
+      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
+      if (requesterIsSelf) {
+        // console.log("the requester was himself")
         next();
         return;
+      }
+
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
+      for (let manager of managerPositions) {
+        // console.log('managers buID', manager.dataValues.businessUnitId);
+        let isAuthorized = await isEmployeeInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
       }
 
       throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
@@ -119,6 +130,12 @@ async function getSession(token: string) {
     throw new AppError(401, "No sessions found for token")
   }
   return foundSession;
+}
+
+async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: number) {
+  let employee = await Employee.findOne({ where: { id: employeeId } })
+  // console.log('emps buID', employee?.dataValues.businessUnitId);
+  return employee?.dataValues.businessUnitId === businessUnitId;
 }
 
 export default auth;
