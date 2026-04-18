@@ -26,9 +26,9 @@ router.put("/:id/admin", [authenticate, isAdminOnly], users.updateIsAdmin)
 // Delete a User with id
 router.delete("/:id", [authenticate, authorizeById("user")], generalcontroller.delete(UserModel));
 
-router.get("/:id/activeEmployees", [authenticate, authorizeById("user")], users.findActiveEmployeesForUser)
+router.get("/:id/allEmployees", [authenticate, authorizeById("user")], users.findEmployeesForUser)
 
-router.get("/:id/employees", [authenticate, authorizeById("user")], users.findEmployeesForUser)
+router.get("/:id/employees", [authenticate, authorizeById("user")], users.findActiveEmployeesForUser)
 
 router.get("/:id/shifts", [authenticate, authorizeById("user")], users.findShiftsForDateRange)
 
