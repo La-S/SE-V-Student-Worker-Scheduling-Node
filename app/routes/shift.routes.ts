@@ -26,7 +26,7 @@ router.delete("/:id", [authenticate], generalcontroller.delete(ShiftModel));
 router.post("/:id/tasklist/:tasklistid", [authenticate, managerOrAdminOnly], shifts.addTaskList);
 
 //remove TaskList from shift
-router.delete("/:id/tasklist/:tasklistid", [authenticate], shifts.removeTaskList);
+router.delete("/:id/tasklist/:tasklistid", [authenticate, managerOrAdminOnly], shifts.removeTaskList);
 
 
 export default router;
