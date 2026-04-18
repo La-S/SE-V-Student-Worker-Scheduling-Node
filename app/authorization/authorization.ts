@@ -52,7 +52,7 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
   if (isManagerAnywhere === true) {
     if (req.body?.isAdmin) {
       // prevent privilege escalation
-      req.body.isAdmin = undefined;
+      req.body.isAdmin = false;
     }
 
     next();
