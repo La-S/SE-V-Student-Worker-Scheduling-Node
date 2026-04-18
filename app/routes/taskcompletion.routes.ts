@@ -20,7 +20,7 @@ router.get("/:id", [authenticate], taskCompletions.findOne);
 router.put("/:id", [authenticate], taskCompletions.update);
 
 // Delete a TaskCompletion by id
-router.delete("/:id", [authenticate], generalcontroller.delete(TaskCompletionModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TaskCompletionModel));
 
 export default router;
 
