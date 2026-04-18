@@ -17,7 +17,7 @@ router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(TaskMo
 router.get("/:id", [authenticate], generalcontroller.findOne(TaskModel));
 
 // Update a Task by id
-router.put("/:id", [authenticate], tasks.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], tasks.update);
 
 // Delete a Task by id
 router.delete("/:id", [authenticate], generalcontroller.delete(TaskModel));
