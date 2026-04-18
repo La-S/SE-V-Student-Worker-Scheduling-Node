@@ -98,7 +98,6 @@ export const authorizeById = (option: any) => {
 
     if (option == AuthOption.businessUnit) {
       let employeesForRequestingUser = await (user as any).getEmployees();
-      console.log(employeesForRequestingUser)
       let hasEmployeeInBusinessUnit = employeesForRequestingUser.some((a) => { return a.dataValues.businessUnitId === idToVerify && a.dataValues.currentlyEmployed === true })
 
       if (hasEmployeeInBusinessUnit) {
