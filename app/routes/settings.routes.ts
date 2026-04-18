@@ -9,7 +9,7 @@ import { Router } from "express";
 var router = Router();
 
 // Create a new Setting
-router.post("/", [authenticate, managerOrAdminOnly], settings.create);
+router.post("/", [authenticate, isAdminOnly], settings.create);
 
 // Retrieve all Settings
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(SettingsModel));

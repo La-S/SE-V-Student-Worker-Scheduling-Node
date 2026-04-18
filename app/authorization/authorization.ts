@@ -96,6 +96,20 @@ export const authorizeById = (option: any) => {
       return;
     }
 
+    if (option == AuthOption.businessUnit) {
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      console.log(employeesForRequestingUser)
+      let hasEmployeeInBusinessUnit = employeesForRequestingUser.some((a) => { return a.dataValues.businessUnitId === idToVerify && a.dataValues.currentlyEmployed === true })
+
+      if (hasEmployeeInBusinessUnit) {
+        // console.log("user is in businessUnit")
+        next();
+        return;
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
+    }
+
     if (option === AuthOption.user) {
       if (req.body?.isAdmin) {
         // prevent privilege escalation

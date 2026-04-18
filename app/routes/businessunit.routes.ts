@@ -1,4 +1,4 @@
-import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
 import generalcontroller from "../controllers/general.controller.ts"
 import BusinessUnitModel from "../models/businessunit.model.ts";
@@ -23,7 +23,7 @@ router.put("/:id", [authenticate, managerOrAdminOnly], generalcontroller.update(
 router.delete("/:id", [authenticate, isAdminOnly], generalcontroller.delete(BusinessUnitModel));
 
 //get shifts for businessUnit
-router.get("/:id/shifts", [authenticate, managerOrAdminOnly], businessunits.findShifts)
+router.get("/:id/shifts", [authenticate, authorizeById("businessUnit")], businessunits.findShifts)
 
 router.get("/:id/tasklists", [authenticate, managerOrAdminOnly], businessunits.findTaskLists);
 
