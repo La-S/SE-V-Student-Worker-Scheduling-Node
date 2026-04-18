@@ -5,6 +5,8 @@ import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
 import Employee from "../models/employee.model.ts";
+import UserFile from "../models/userfile.model.ts";
+
 
 const Session = db.Session;
 
@@ -62,6 +64,7 @@ auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.
 const AuthOption = {
   employee: "employee",
   businessUnit: "businessUnit",
+  userfile: "userfile"
 }
 
 auth.authorizeById = (option: any) => {
@@ -79,6 +82,30 @@ auth.authorizeById = (option: any) => {
       // console.log("is admin")
       next();
       return;
+    }
+
+    if (option === AuthOption.userfile) {
+      let fileTryingToAccess = await UserFile.findOne({ where: { id: idToVerify } })
+      let employeesForUser = await (user as any).getEmployees();
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isUserInBusinessUnit(fileTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+        // console.log("user is a manger but not allowed to view that data.")
+      }
+
+      // console.log(Object.getOwnPropertyNames(user.__proto__));
+      let dataFilesForUser = await (user as any).getUserFiles();
+
+      if (dataFilesForUser.some((a) => {return a.dataValues.id === idToVerify})) {
+        next();
+        return;
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's files");
     }
 
     // only allow this if it is the employees's own id or they're a manager
@@ -140,8 +167,20 @@ async function getSession(token: string) {
 
 async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: number) {
   let employee = await Employee.findOne({ where: { id: employeeId } })
-  // console.log('emps buID', employee?.dataValues.businessUnitId);
+  // console.log('Business Unit Ids (emp, comparison):', employee?.dataValues.businessUnitId, businessUnitId);
   return employee?.dataValues.businessUnitId === businessUnitId;
+}
+
+async function isUserInBusinessUnit(userId: number, businessUnitId: number) {
+  let employees = await Employee.findAll({ where: { userId: userId } })
+  for (let employee of employees) {
+    // console.log('Business Unit Ids (emp, comparison):', employee?.dataValues.businessUnitId, businessUnitId);
+    if (employee?.dataValues.businessUnitId === businessUnitId) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 export default auth;
