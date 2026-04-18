@@ -17,6 +17,6 @@ router.get("/:id", [auth.authenticate, auth.authorizeById("userfile")], generalc
 //No update
 
 // Delete a UserFile by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserFileModel));
+router.delete("/:id", [auth.authenticate, auth.authorizeById("userfile")], generalcontroller.delete(UserFileModel));
 
 export default router;
