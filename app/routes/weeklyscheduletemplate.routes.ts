@@ -17,7 +17,7 @@ router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(Weekly
 router.get("/:id", [authenticate], weeklyscheduletemplates.findOne);
 
 // WeeklyScheduleTemplate's attributes should not be updated. Post a new one
-router.put("/:id", [authenticate], weeklyscheduletemplates.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], weeklyscheduletemplates.update);
 
 // Delete a WeeklyScheduleTemplate by id
 router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(WeeklyScheduleTemplateModel));
