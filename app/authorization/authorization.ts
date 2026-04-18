@@ -10,8 +10,7 @@ import UserFile from "../models/userfile.model.ts";
 
 const Session = db.Session;
 
-const auth: any = {};
-auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let sessionData = foundSession.dataValues as SessionType;
@@ -28,7 +27,7 @@ auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFu
 };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
@@ -40,7 +39,7 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
 };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
@@ -67,7 +66,7 @@ const AuthOption = {
   userfile: "userfile"
 }
 
-auth.authorizeById = (option: any) => {
+export const authorizeById = (option: any) => {
   return async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
     let idToVerify = parseInt(req.params.id, 10);
     // console.log("Verifying: ", idToVerify)
@@ -182,5 +181,3 @@ async function isUserInBusinessUnit(userId: number, businessUnitId: number) {
 
   return false;
 }
-
-export default auth;
