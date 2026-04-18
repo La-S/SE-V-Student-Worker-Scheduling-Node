@@ -213,13 +213,9 @@ async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: numb
 }
 
 async function isUserInBusinessUnit(userId: number, businessUnitId: number) {
-  let employees = await Employee.findAll({ where: { userId: userId } })
-  for (let employee of employees) {
-    // console.log('Business Unit Ids (emp, comparison):', employee?.dataValues.businessUnitId, businessUnitId);
-    if (employee?.dataValues.businessUnitId === businessUnitId) {
-      return true;
-    }
+  let employee = await Employee.findOne({ where: { userId: userId, businessUnitId: businessUnitId } })
+  if (!employee) {
+    return false
   }
-
-  return false;
+  return true;
 }
