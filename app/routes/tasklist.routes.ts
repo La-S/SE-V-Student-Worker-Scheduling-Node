@@ -20,7 +20,7 @@ router.get("/:id", [authenticate], taskLists.findOne);
 router.put("/:id", [authenticate, managerOrAdminOnly], taskLists.update);
 
 // Delete a TaskList by id
-router.delete("/:id", [authenticate], generalcontroller.delete(TaskListModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TaskListModel));
 
 export default router;
 
