@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new AnnouncementFile
-router.post("/", [authenticate], generalcontroller.create(AnnouncementFileModel));
+router.post("/", [authenticate, managerOrAdminOnly], generalcontroller.create(AnnouncementFileModel));
 
 // Retrieve all AnnouncementFiles
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(AnnouncementFileModel));
@@ -18,6 +18,6 @@ router.get("/:id", [authenticate], generalcontroller.findOne(AnnouncementFileMod
 //No update
 
 // Delete a AnnouncementFile by id
-router.delete("/:id", [authenticate], generalcontroller.delete(AnnouncementFileModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(AnnouncementFileModel));
 
 export default router;
