@@ -45,7 +45,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     let emailParts = (googleUserInfo.email.split("@"));
     let emailDomain = emailParts[1];
     if (emailDomain == "oc.edu") {
-      isAdmin = true;
+      // could do special stuff if they're a faculty/staff
     }
     user = {
       firstName: googleUserInfo.firstName,
