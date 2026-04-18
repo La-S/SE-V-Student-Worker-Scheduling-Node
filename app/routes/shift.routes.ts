@@ -20,7 +20,7 @@ router.get("/:id", [authenticate], shifts.findOne);
 router.put("/:id", [authenticate], shifts.update);
 
 // Delete a Shift by id
-router.delete("/:id", [authenticate], generalcontroller.delete(ShiftModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(ShiftModel));
 
 //add TaskList to shift
 router.post("/:id/tasklist/:tasklistid", [authenticate, managerOrAdminOnly], shifts.addTaskList);
