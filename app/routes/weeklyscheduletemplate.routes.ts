@@ -20,7 +20,7 @@ router.get("/:id", [authenticate], weeklyscheduletemplates.findOne);
 router.put("/:id", [authenticate], weeklyscheduletemplates.update);
 
 // Delete a WeeklyScheduleTemplate by id
-router.delete("/:id", [authenticate], generalcontroller.delete(WeeklyScheduleTemplateModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(WeeklyScheduleTemplateModel));
 
 router.post("/fromshifts", [authenticate], weeklyscheduletemplates.createFromShifts)
 
