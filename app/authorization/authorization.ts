@@ -48,11 +48,18 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
     return;
   }
   let employeesForUser = await (user as any).getEmployees() as any[];
-  let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
+  let businessUnitsForManager = employeesForUser.filter((a) => { return a.dataValues.isManager === true }).map((a) => { return a.dataValues.businessUnitId });
+  let isManagerAnywhere = businessUnitsForManager.length > 0;
   if (isManagerAnywhere === true) {
     if (req.body?.isAdmin) {
       // prevent privilege escalation
       req.body.isAdmin = false;
+    }
+
+    if (req.body?.isManager && !businessUnitsForManager.some((a) => { return a === req.body?.businessUnitId})) {
+      // prevent privilege escalation
+      console.log("tried to create a manager for a different businessUnit. Don't allow that")
+      req.body.isManager = undefined;
     }
 
     next();
