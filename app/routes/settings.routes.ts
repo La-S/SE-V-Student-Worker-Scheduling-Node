@@ -9,18 +9,18 @@ import { Router } from "express";
 var router = Router();
 
 // Create a new Setting
-router.post("/", [authenticate], settings.create);
+router.post("/", [authenticate, managerOrAdminOnly], settings.create);
 
 // Retrieve all Settings
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(SettingsModel));
 
 // Retrieve a single Setting by code
-router.get("/:code", [authenticate], settings.findOne);
+router.get("/:code", [authenticate, managerOrAdminOnly], settings.findOne);
 
 // Update a Setting by code
-router.put("/:code", [authenticate], settings.update);
+router.put("/:code", [authenticate, managerOrAdminOnly], settings.update);
 
 // Delete a Setting by code
-router.delete("/:code", [authenticate], settings.delete);
+router.delete("/:code", [authenticate, managerOrAdminOnly], settings.delete);
 
 export default router;
