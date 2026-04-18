@@ -17,7 +17,7 @@ router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(TaskLi
 router.get("/:id", [authenticate], taskLists.findOne);
 
 // Update a TaskList by id
-router.put("/:id", [authenticate], taskLists.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], taskLists.update);
 
 // Delete a TaskList by id
 router.delete("/:id", [authenticate], generalcontroller.delete(TaskListModel));
