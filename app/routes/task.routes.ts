@@ -20,7 +20,7 @@ router.get("/:id", [authenticate], generalcontroller.findOne(TaskModel));
 router.put("/:id", [authenticate, managerOrAdminOnly], tasks.update);
 
 // Delete a Task by id
-router.delete("/:id", [authenticate], generalcontroller.delete(TaskModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TaskModel));
 
 export default router;
 
