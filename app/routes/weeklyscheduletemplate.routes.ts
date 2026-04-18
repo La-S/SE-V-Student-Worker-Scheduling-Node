@@ -24,7 +24,7 @@ router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.dele
 
 router.post("/fromshifts", [authenticate, managerOrAdminOnly], weeklyscheduletemplates.createFromShifts)
 
-router.post("/loadshifts", [authenticate], weeklyscheduletemplates.loadShifts)
+router.post("/loadshifts", [authenticate, managerOrAdminOnly], weeklyscheduletemplates.loadShifts)
 
 
 
