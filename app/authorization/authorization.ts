@@ -66,7 +66,7 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
     return;
   }
 
-  throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
+  throw new UnauthorizedError("Unauthorized! User must be admin or a manager to perform this function")
 };
 
 
