@@ -8,10 +8,10 @@ var router = Router()
 
 
 // Create a new Announcement
-router.post("/", [authenticate], announcements.create);
+router.post("/", [authenticate, managerOrAdminOnly], announcements.create);
 
-router.post("/specific", [authenticate], announcements.createSpecificEmployees);
-router.post("/:id/email", [authenticate], announcements.sendEmail);
+router.post("/specific", [authenticate, managerOrAdminOnly], announcements.createSpecificEmployees);
+router.post("/:id/email", [authenticate, managerOrAdminOnly], announcements.sendEmail);
 
 // Retrieve all Announcements
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(AnnouncementModel));
@@ -20,9 +20,9 @@ router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(Announ
 router.get("/:id", [authenticate], announcements.findOne);
 
 // Update a Announcement by id
-router.put("/:id", [authenticate], announcements.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], announcements.update);
 
 // Delete a Announcement by id
-router.delete("/:id", [authenticate], generalcontroller.delete(AnnouncementModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(AnnouncementModel));
 
 export default router;
