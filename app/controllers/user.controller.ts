@@ -119,10 +119,17 @@ async function getUserForEmail(email: string) {
   return data;
 }
 
-exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+exports.findActiveEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
 
   const data = await Employee.findAll({ where: { userId: id, currentlyEmployed: true } });
+  res.send(data);
+};
+
+exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+
+  const data = await Employee.findAll({ where: { userId: id } });
   res.send(data);
 };
 
