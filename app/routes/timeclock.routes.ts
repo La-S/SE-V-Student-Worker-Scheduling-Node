@@ -18,6 +18,6 @@ router.put("/:shiftId/clockout", [authenticate], timeclocks.clockOut);
 router.put("/:id", [authenticate], timeclocks.update);
 
 // Delete a Timeclock by id
-router.delete("/:id", [authenticate], generalcontroller.delete(TimeclockModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TimeclockModel));
 
 export default router;
