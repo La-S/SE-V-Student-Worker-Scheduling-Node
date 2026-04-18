@@ -207,7 +207,7 @@ async function getSession(token: string) {
 }
 
 async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: number) {
-  let employee = await Employee.findOne({ where: { id: employeeId } })
+  let employee = await Employee.findByPk(employeeId)
   // console.log('Business Unit Ids (emp, comparison):', employee?.dataValues.businessUnitId, businessUnitId);
   return employee?.dataValues.businessUnitId === businessUnitId;
 }
