@@ -163,8 +163,8 @@ export const authorizeById = (option: any) => {
         }
       }
 
-      // if the employee is not a manager, they can still call the route as long as they're not an admin.
-      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
+      // if the employee is not a manager, they can still call the route as long as they're not an admin and they're still employeed
+      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify && a.dataValues.currentlyEmployed === true})
       if (requesterIsSelf) {
         // console.log("the requester was himself")
 
