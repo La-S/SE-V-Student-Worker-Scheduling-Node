@@ -15,7 +15,7 @@ router.put("/:shiftId/clockin/:password", [authenticate], timeclocks.clockIn);
 router.put("/:shiftId/clockout", [authenticate], timeclocks.clockOut);
 
 //standard update
-router.put("/:id", [authenticate], timeclocks.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], timeclocks.update);
 
 // Delete a Timeclock by id
 router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TimeclockModel));
