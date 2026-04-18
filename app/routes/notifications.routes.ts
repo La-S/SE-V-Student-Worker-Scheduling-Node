@@ -7,6 +7,6 @@ var router = Router()
 router.post("/globalNotification", [auth.authenticate, auth.isAdminOnly], notification.globalNotification);
 
 // Send a notification to a specific token
-router.post("/token", notification.notificationByToken);
+router.post("/token", [auth.authenticate, auth.managerOrAdminOnly], notification.notificationByToken);
 
 export default router
