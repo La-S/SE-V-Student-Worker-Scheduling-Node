@@ -50,6 +50,11 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
   let employeesForUser = await (user as any).getEmployees() as any[];
   let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
   if (isManagerAnywhere === true) {
+    if (req.body?.isAdmin) {
+      // prevent privilege escalation
+      req.body.isAdmin = undefined;
+    }
+
     next();
     return;
   }
@@ -85,6 +90,11 @@ export const authorizeById = (option: any) => {
     }
 
     if (option === AuthOption.user) {
+      if (req.body?.isAdmin) {
+        // prevent privilege escalation
+        req.body.isAdmin = undefined;
+      }
+
       if (user.dataValues.id === idToVerify) {
         // console.log("user is himself")
         next();
