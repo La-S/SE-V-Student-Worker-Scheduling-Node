@@ -79,7 +79,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   }
 
   if (req.body.pushToken) {
-    console.log("subscribing to topic all-users!");
+    // console.log("subscribing to topic all-users!");
     await getMessaging().subscribeToTopic(req.body.pushToken, 'all-users');
   }
 
