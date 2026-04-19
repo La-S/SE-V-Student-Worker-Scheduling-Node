@@ -22,6 +22,7 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -50,7 +51,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-  const data = await User.findAll({order:[["lastName", "asc"]]});
+  const data = await User.findAll({ order: [["lastName", "asc"]] });
   res.send(data);
 }
 
@@ -196,6 +197,30 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
   res.send(data);
 }
 
+exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+  const semester = req.params.semester;
+
+  const data = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
+  res.send(data);
+}
+
+exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const userId = id;
+  const semester = req.params.semester;
+  await AvailabilityTemplate.destroy({ where: { userId: id, semester: semester } })
+  res.send({ message: `Availability Templates for semester ${semester} cleared!` });
+}
+
+exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const userId = id;
+  await AvailabilityTemplate.destroy({ where: { userId: id } })
+  res.send({ message: `Availability Templates cleared!` });
+}
+
 exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
   const data = await User.findAll({
@@ -307,6 +332,18 @@ exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const data = await UserFile.findAll({ where: { userId: id } });
+  res.send(data);
+}
+
+exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const employeesForUser = await user.getEmployees();
+  const employeeIds: number[] = [];
+  for (const employee of employeesForUser) {
+    employeeIds.push(employee.dataValues.id);
+  }
+  const data = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
   res.send(data);
 }
 

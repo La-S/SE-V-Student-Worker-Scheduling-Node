@@ -32,6 +32,8 @@ router.get("/:id/employees", [authenticate, authorizeById("user")], users.findAc
 
 router.get("/:id/shifts", [authenticate, authorizeById("user")], users.findShiftsForDateRange)
 
+router.get("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("user")], users.findAvailabilityTemplatesForSemester);
+
 router.get("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.findAvailabilityTemplates);
 
 router.get("/emaillike/:email", [authenticate, managerOrAdminOnly], users.findLikeEmail)
@@ -41,6 +43,13 @@ router.get("/:id/coverrequests/open/upcoming", [authenticate, authorizeById("use
 router.get("/:id/announcementreceipts", [authenticate, authorizeById("user")], users.getAnnouncementReceipts);
 
 router.get("/:id/userfiles", [authenticate, authorizeById("user")], users.getUserFiles);
+
+router.get("/:id/timeoffrequests", [authenticate, authorizeById("user")], users.getTimeOffRequests);
+
+router.delete("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("user")], users.clearAvailabilityTemplatesForSemester);
+
+router.delete("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.clearAvailabilityTemplates);
+
 
 export default router;
 
