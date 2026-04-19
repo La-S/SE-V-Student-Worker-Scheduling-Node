@@ -26,6 +26,9 @@ import AnnouncementFile from "./announcementfile.model.ts";
 import UserFile from "./userfile.model.ts"
 import File from "./file.model.ts"
 import Timeclock from "./timeclock.model.ts"
+import BusinessUnitSettingValue from "./businessunitsettingvalue.model.ts";
+import UserSettingValue from "./usersettingvalue.model.ts";
+import SettingIntMapping from "./settingintmapping.model.ts";
 
 const db = {
     Sequelize,
@@ -51,7 +54,10 @@ const db = {
     File,
     UserFile,
     Timeclock,
-    Setting
+    Setting,
+    BusinessUnitSettingValue,
+    UserSettingValue,
+    SettingIntMapping
 };
 
 //User-owned FKs
@@ -70,6 +76,10 @@ db.AvailabilityTemplate.belongsTo(db.User,
 db.User.hasMany(db.UserFile,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 db.UserFile.belongsTo(db.User,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.User.hasMany(db.UserSettingValue,
+    { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
+db.UserSettingValue.belongsTo(db.User,
     { foreignKey: { name: "userId", allowNull: false }, onDelete: "CASCADE" });
 
 //BusinessUnit-owned FKs
@@ -100,6 +110,10 @@ db.OpenHours.belongsTo(db.BusinessUnit,
 db.BusinessUnit.hasMany(db.Announcement,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 db.Announcement.belongsTo(db.BusinessUnit,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnit.hasMany(db.BusinessUnitSettingValue,
+    { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnitSettingValue.belongsTo(db.BusinessUnit,
     { foreignKey: { name: "businessUnitId", allowNull: false }, onDelete: "CASCADE" });
 
 //Employee-owned FKs
@@ -215,6 +229,20 @@ db.File.hasMany(db.AnnouncementFile,
     { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
 db.AnnouncementFile.belongsTo(db.File,
     { foreignKey: { name: "fileId", allowNull: false }, onDelete: "CASCADE" });
+
+//Setting FKs
+db.Setting.hasMany(db.BusinessUnitSettingValue,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
+db.BusinessUnitSettingValue.belongsTo(db.Setting,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
+db.Setting.hasMany(db.UserSettingValue,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
+db.UserSettingValue.belongsTo(db.Setting,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
+db.Setting.hasMany(db.SettingIntMapping,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
+db.SettingIntMapping.belongsTo(db.Setting,
+    { foreignKey: { name: "settingCode", allowNull: false }, onDelete: "CASCADE" });
 
 // db.sequelize.sync({force: true});
 db.sequelize.sync({ alter: true });
