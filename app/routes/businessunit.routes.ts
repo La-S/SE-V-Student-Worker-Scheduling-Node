@@ -31,9 +31,9 @@ router.get("/:id/availability", [authenticate, managerOrAdminOnly], businessunit
 
 router.get("/:id/availabilitytemplates", [authenticate, managerOrAdminOnly], businessunits.findAvailabilityTemplates)
 
-router.get("/:id/employees", [authenticate, managerOrAdminOnly], businessunits.findEmployees)
+router.get("/:id/employees", [authenticate, managerOrAdminOnly], businessunits.findCurrentEmployees)
 
-router.get("/:id/employees/all", [auth.authenticate], businessunits.findAllEmployees)
+router.get("/:id/employees/all", [authenticate], businessunits.findAllEmployees)
 
 router.get("/:id/positions", [authenticate, managerOrAdminOnly], businessunits.findPositions)
 
