@@ -1,5 +1,4 @@
 import db from "../models/index.ts";
-import authconfig from "../config/auth.config.ts";
 import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
@@ -46,7 +45,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     let emailParts = (googleUserInfo.email.split("@"));
     let emailDomain = emailParts[1];
     if (emailDomain == "oc.edu") {
-      isAdmin = true;
+      // could do special stuff if they're a faculty/staff
     }
     user = {
       firstName: googleUserInfo.firstName,
@@ -67,11 +66,11 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
 
   if (!sessionToken) {
     // create a new Session with an expiration date and save to database
-    let token = jwt.sign({ id: googleUserInfo.email }, authconfig.secret, {
+    let token = jwt.sign({ id: googleUserInfo.email }, process.env.JWT_SECRET, {
       expiresIn: 3600 * 24 * 31, // expires once every 31 days.
     });
     let tempExpirationDate = new Date();
-    tempExpirationDate.setDate(tempExpirationDate.getDate() + 1);
+    tempExpirationDate.setDate(tempExpirationDate.getDate() + 31);
     const session: SessionType = {
       token: token,
       email: googleUserInfo.email,
@@ -80,14 +79,14 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     };
 
     console.log("making a new session");
-    console.log(session);
+    // console.log(session);
     await createSession(session)
 
     sessionToken = session.token;
   }
   let userInfo = { ...user, token: sessionToken }
 
-  console.log(userInfo);
+  // console.log(userInfo);
   res.send(userInfo);
 };
 
@@ -100,11 +99,7 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
     throw new AppError(400,  "Must have a request body with a token");
   }
 
-  // invalidate session -- delete token out of session table
-  let response = await Session.update({ token: "" }, { where: { token: req.body.token } })
-  if (response[0] <= 0) {
-    throw new AppError(500, 'Unknown error logging out user.')
-  }
+  await clearSessionByToken(req.body.token);
   console.log("successfully logged out");
   res.status(200).send({ message: "User has been successfully logged out!" });
 };
@@ -112,7 +107,7 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
 exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   let response = await Session.findOne({ where: { token: req.body.token } })
   let session = response?.dataValues as SessionType | undefined;
-  console.log(session?.expirationDate);
+  // console.log(session?.expirationDate);
   if (!session || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
@@ -127,7 +122,7 @@ async function getExistingSessionToken(email: string) {
   let sessionObj = await Session.findOne({
     where: { // could be this one
       email: email,
-      token: { [Op.ne]: "" },
+      token: { [Op.ne]: null },
     },
   });
 
@@ -135,7 +130,7 @@ async function getExistingSessionToken(email: string) {
     let session = sessionObj.dataValues as SessionType;
     if (session.expirationDate.getTime() < Date.now()) {
       // clear session's token if it's expired
-      clearSession(session);
+      clearSessionByToken(session.token!);
       return;
     } else {
       // if the session is still valid, then send info to the front end
@@ -145,9 +140,10 @@ async function getExistingSessionToken(email: string) {
   return false;
 }
 
-async function clearSession(session: SessionType) {
-  session.token = ""
-  let response = await Session.update(session, { where: { id: session.id } });
+// invalidate session -- set the token to "" & update the expiration date to now.
+// That way, if a bad guy tries to user "" as a token, he can't.
+async function clearSessionByToken(token: string) {
+  let response = await Session.update({token: null, expirationDate: new Date()}, { where: { token: token } });
   if (response[0] == 1) {
     console.log("successfully logged out");
   } else {
@@ -207,7 +203,7 @@ async function getGoogleUser(googleToken: string) {
     audience: google_id,
   });
   let googleUser = ticket.getPayload();
-  console.log("Google payload is " + JSON.stringify(googleUser));
+  // console.log("Google payload is " + JSON.stringify(googleUser));
   return googleUser;
 }
 

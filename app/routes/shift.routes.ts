@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import generalcontroller from "../controllers/general.controller.ts"
 import ShiftModel from "../models/shift.model.ts";
 import shifts from "../controllers/shift.controller.ts"
@@ -7,25 +8,25 @@ var router = Router()
 
 
 // Create a new Shift
-router.post("/", [auth.authenticate], shifts.create);
+router.post("/", [authenticate], shifts.create);
 
 // Retrieve all Shifts
-router.get("/all", [auth.authenticate], generalcontroller.findAll(ShiftModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(ShiftModel));
 
 // Retrieve a single Shift by id
-router.get("/:id", [auth.authenticate], shifts.findOne);
+router.get("/:id", [authenticate], shifts.findOne);
 
 // Update a Shift by id
-router.put("/:id", [auth.authenticate], shifts.update);
+router.put("/:id", [authenticate], shifts.update);
 
 // Delete a Shift by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(ShiftModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(ShiftModel));
 
 //add TaskList to shift
-router.post("/:id/tasklist/:tasklistid", [auth.authenticate], shifts.addTaskList);
+router.post("/:id/tasklist/:tasklistid", [authenticate, managerOrAdminOnly], shifts.addTaskList);
 
 //remove TaskList from shift
-router.delete("/:id/tasklist/:tasklistid", [auth.authenticate], shifts.removeTaskList);
+router.delete("/:id/tasklist/:tasklistid", [authenticate, managerOrAdminOnly], shifts.removeTaskList);
 
 
 export default router;

@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import generalcontroller from "../controllers/general.controller.ts"
 import TaskModel from "../models/task.model.ts";
 import tasks from "../controllers/task.controller.ts"
@@ -7,19 +8,19 @@ var router = Router()
 
 
 // Create a new Task
-router.post("/", [auth.authenticate], tasks.create);
+router.post("/", [authenticate], tasks.create);
 
 // Retrieve all Tasks
-router.get("/all", [auth.authenticate], generalcontroller.findAll(TaskModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(TaskModel));
 
 // Retrieve a single Task by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(TaskModel));
+router.get("/:id", [authenticate], generalcontroller.findOne(TaskModel));
 
 // Update a Task by id
-router.put("/:id", [auth.authenticate], tasks.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], tasks.update);
 
 // Delete a Task by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(TaskModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(TaskModel));
 
 export default router;
 

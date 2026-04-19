@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import generalcontroller from "../controllers/general.controller.ts"
 import BusinessUnitModel from "../models/businessunit.model.ts";
 import businessunits from "../controllers/businessunit.controller.ts"
@@ -7,56 +8,54 @@ var router = Router()
 
 
 // Create a new BusinessUnit
-router.post("/", [auth.authenticate], generalcontroller.create(BusinessUnitModel));
+router.post("/", [authenticate, isAdminOnly], generalcontroller.create(BusinessUnitModel));
 
 // Retrieve all BusinessUnits
-router.get("/all", [auth.authenticate], generalcontroller.findAll(BusinessUnitModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(BusinessUnitModel));
 
 // Retrieve a single BusinessUnit by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(BusinessUnitModel));
+router.get("/:id", [authenticate], generalcontroller.findOne(BusinessUnitModel));
 
 // Update a BusinessUnit by id
-router.put("/:id", [auth.authenticate], generalcontroller.update(BusinessUnitModel));
+router.put("/:id", [authenticate, managerOrAdminOnly], generalcontroller.update(BusinessUnitModel));
 
 // Delete a BusinessUnit by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(BusinessUnitModel));
+router.delete("/:id", [authenticate, isAdminOnly], generalcontroller.delete(BusinessUnitModel));
 
 //get shifts for businessUnit
-router.get("/:id/shifts", [auth.authenticate], businessunits.findShifts)
+router.get("/:id/shifts", [authenticate, authorizeById("businessUnit")], businessunits.findShifts)
 
-router.get("/:id/tasklists", [auth.authenticate], businessunits.findTaskLists);
+router.get("/:id/tasklists", [authenticate, managerOrAdminOnly], businessunits.findTaskLists);
 
-router.get("/:id/availability", [auth.authenticate], businessunits.findAvailabilityForDate)
+router.get("/:id/availability", [authenticate, managerOrAdminOnly], businessunits.findAvailabilityForDate)
 
-router.get("/:id/availabilitytemplates", [auth.authenticate], businessunits.findAvailabilityTemplates)
+router.get("/:id/availabilitytemplates", [authenticate, managerOrAdminOnly], businessunits.findAvailabilityTemplates)
 
-router.get("/:id/employees", [auth.authenticate], businessunits.findEmployees)
+router.get("/:id/employees", [authenticate, managerOrAdminOnly], businessunits.findEmployees)
 
-router.get("/:id/positions", [auth.authenticate], businessunits.findPositions)
+router.get("/:id/positions", [authenticate, managerOrAdminOnly], businessunits.findPositions)
 
-router.get("/:id/weeklyscheduletemplates", [auth.authenticate], businessunits.findWeeklySchedules)
+router.get("/:id/weeklyscheduletemplates", [authenticate, managerOrAdminOnly], businessunits.findWeeklySchedules)
 
-router.put("/:id/shifts/:date/publish", [auth.authenticate], businessunits.publishShiftsForWeek);
+router.put("/:id/shifts/:date/publish", [authenticate, managerOrAdminOnly], businessunits.publishShiftsForWeek);
 
 // get open hours for businessunit
-router.get("/:id/openhours", [auth.authenticate], businessunits.findOpenHours)
+router.get("/:id/openhours", [authenticate], businessunits.findOpenHours)
 
-router.get("/:id/openhours/:dayOfWeek", [auth.authenticate], businessunits.findOpenHoursForDay)
+router.get("/:id/openhours/:dayOfWeek", [authenticate], businessunits.findOpenHoursForDay)
 
-router.get("/:id/coverrequests", [auth.authenticate], businessunits.getCoverRequests)
+router.get("/:id/coverrequests", [authenticate], businessunits.getCoverRequests)
 
-router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenCoverRequests)
+router.get("/:id/coverrequests/open/upcoming", [authenticate], businessunits.getUpcomingOpenCoverRequests)
 
-router.get("/:id/droprequests", [auth.authenticate], businessunits.getDropRequests)
+router.get("/:id/droprequests", [authenticate], businessunits.getDropRequests)
 
-router.get("/:id/droprequests/open/upcoming", [auth.authenticate], businessunits.getUpcomingOpenDropRequests)
+router.get("/:id/droprequests/open/upcoming", [authenticate], businessunits.getUpcomingOpenDropRequests)
 
-router.get("/:id/shifts/open", [auth.authenticate], businessunits.findShifts)
+router.get("/:id/shifts/open", [authenticate], businessunits.findShifts)
 
-router.get("/:id/budgetdaterange", [auth.authenticate], businessunits.getBudgetInformationForDateRange);
+router.get("/:id/budgetdaterange", [authenticate, managerOrAdminOnly], businessunits.getBudgetInformationForDateRange);
 
-router.delete("/:id/shifts/:date/week", [auth.authenticate], businessunits.deleteShiftsForWeek);
-
-
+router.delete("/:id/shifts/:date/week", [authenticate, managerOrAdminOnly], businessunits.deleteShiftsForWeek);
 
 export default router;
