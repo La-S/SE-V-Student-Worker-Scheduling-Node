@@ -110,7 +110,7 @@ export const authorizeById = (option: any) => {
         next();
         return;
       }
-      console.log(timeOffRequestTryingToAccess.dataValues);
+      // console.log(timeOffRequestTryingToAccess.dataValues);
 
       let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
