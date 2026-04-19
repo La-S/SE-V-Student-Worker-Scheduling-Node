@@ -25,6 +25,7 @@ import Timeclock from "../models/timeclock.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 import { getUserSettingValue } from "./usersettingvalue.controller.ts";
 import Setting from "../models/setting.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -207,6 +208,30 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
   res.send(data);
 }
 
+exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+  const semester = req.params.semester;
+
+  const data = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
+  res.send(data);
+}
+
+exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const userId = id;
+  const semester = req.params.semester;
+  await AvailabilityTemplate.destroy({ where: { userId: id, semester: semester } })
+  res.send({ message: `Availability Templates for semester ${semester} cleared!` });
+}
+
+exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const userId = id;
+  await AvailabilityTemplate.destroy({ where: { userId: id } })
+  res.send({ message: `Availability Templates cleared!` });
+}
+
 exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email = req.params.email;
   const data = await User.findAll({
@@ -314,6 +339,18 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
   res.send(data);
 }
 
+exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const employeesForUser = await user.getEmployees();
+  const employeeIds: number[] = [];
+  for (const employee of employeesForUser) {
+    employeeIds.push(employee.dataValues.id);
+  }
+  const data = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
+  res.send(data);
+}
+
 exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
@@ -340,7 +377,5 @@ exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
     const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
     data.push(settingValue);
   }
-  res.send(data);
-}
 
 export default exports;

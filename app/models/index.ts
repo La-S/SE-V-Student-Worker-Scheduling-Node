@@ -18,6 +18,7 @@ import TaskCompletion from "./taskcompletion.model.ts";
 import AvailabilityTemplate from "./availabilitytemplate.model.ts";
 import CoverRequest from "./coverrequest.model.ts"
 import DropRequest from "./droprequest.model.ts"
+import TimeOffRequest from "./timeoffrequest.model.ts";
 import OpenHours from "./openhours.model.ts";
 import Setting from "./setting.model.ts";
 import Announcement from "./announcement.model.ts";
@@ -47,6 +48,7 @@ const db = {
     AvailabilityTemplate,
     CoverRequest,
     DropRequest,
+    TimeOffRequest,
     OpenHours,
     Announcement,
     AnnouncementReceipt,
@@ -157,6 +159,15 @@ db.Employee.hasMany(db.DropRequest,
     { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerDropRequests" });
 db.DropRequest.belongsTo(db.Employee,
     { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "dropReviewer" });
+
+db.Employee.hasMany(db.TimeOffRequest,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "requesterTimeOffRequests" });
+db.TimeOffRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "requesterId", allowNull: false }, onDelete: "CASCADE", as: "timeOffRequester" });
+db.Employee.hasMany(db.TimeOffRequest,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "reviewerTimeOffRequests" });
+db.TimeOffRequest.belongsTo(db.Employee,
+    { foreignKey: { name: "reviewedBy", allowNull: true }, onDelete: "CASCADE", as: "timeOffReviewer" });
 
 //Position-owned FK
 db.Position.hasMany(db.Shift,

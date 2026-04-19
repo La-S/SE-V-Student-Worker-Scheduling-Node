@@ -386,6 +386,18 @@ def link_file_and_user(user_id, file_id):
         print('Hmm, we got an error linking a user and file', r.text)
     return r.json()
 
+def time_off_request(requester_employee_id, posted_date, posted_time, start_date="2026-04-01", end_date="2026-08-14"):
+    r = requests.post(f'{ENDPOINT}/timeoffrequest', json = {
+        "requesterId": requester_employee_id,
+        "requestPostedDate": posted_date,
+        "requestPostedTime": posted_time,
+        "startDate": start_date,
+        "endDate": end_date
+    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error requesting time off', r.text)
+    return r.json()
+
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)

@@ -18,6 +18,7 @@ import Announcement from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
 
 const exports: any = {};
@@ -32,7 +33,15 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     });
     if (existingEmployee) {
-        throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
+        if (existingEmployee.currentlyEmployed == false) {
+            await existingEmployee.update({ "currentlyEmployed": true })
+            const updatedEmployee = await getOneForId(Employee, existingEmployee.dataValues.id);
+            res.send(updatedEmployee);
+            return;
+        }
+        else {
+            throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
+        }
     }
     const data = await Employee.create(req.body)
     if (req.body.currentlyEmployed !== false) {
@@ -63,8 +72,12 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getEmployeeForId(id);
-    await employee!.update({"currentlyEmployed": false});
-    res.send({message: "employee set as not currently employed."});
+    await employee!.update({ "currentlyEmployed": false });
+    const positions = await employee.getPositions();
+    for (const position of positions) {
+        await employee.removePosition(position);
+    }
+    res.send({ message: "employee set as not currently employed." });
 }
 
 // Update a Employee by the id in the request
@@ -138,7 +151,7 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     res.send(data);
 }
 
-exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+exports.findAllAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
 
@@ -146,6 +159,30 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
     const userId = employee.userId
 
     const data = await AvailabilityTemplate.findAll({ where: { userId: userId } });
+    res.send(data);
+}
+
+exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    const semester = employee.dataValues.semester;
+
+    //@ts-ignore
+    const userId = employee.userId
+
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
+    res.send(data);
+}
+
+exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const employee = await getOneForId(Employee, id);
+    const semester = req.params.semester;
+
+    //@ts-ignore
+    const userId = employee.userId
+
+    const data = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
     res.send(data);
 }
 
@@ -307,11 +344,23 @@ exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response)
     res.send({ message: "Availability Templates cleared!" });
 }
 
+exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    const employee = await getOneForId(Employee, id);
+    const user = await employee.getUser();
+    const userId = user.dataValues.id;
+    const semester = req.query.semester ?? employee.dataValues.semester;
+    await AvailabilityTemplate.destroy({where: {userId: userId, semester: semester}})
+    res.send({ message: `Availability Templates for semester ${semester} cleared!` });
+}
+
 exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
+    const semester = employee.dataValues.semester;
     const user = await employee.getUser();
+    const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
     let availabilities: Model<any, any>[] = [];
     if (clear) {
         deleteEmployeeAvailabilityTemplates(employee);
@@ -324,13 +373,27 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             const endTime = convertTime(course.meeting_times[0].end_time);
             const userId = user.dataValues.id;
             const preference = "unavailable";
-
+            let exists: boolean = false;
+            for (const availability of existing) {
+                console.log(availability)
+                if (availability.dataValues.dayOfWeek === fullDay && availability.dataValues.startTime === startTime && availability.dataValues.endTime === endTime && availability.dataValues.semester === semester) {
+                    exists = true;
+                    break;
+                }
+                if (exists) {
+                    continue;
+                }
+            }
+            if (exists) {
+                continue;
+            }
             const availabilityTemplateBody = {
                 "dayOfWeek": fullDay,
                 "startTime": startTime,
                 "endTime": endTime,
                 "preference": preference,
-                "userId": userId
+                "userId": userId,
+                "semester": semester
             };
 
             const newAvailability = await AvailabilityTemplate.create(availabilityTemplateBody);
@@ -343,7 +406,7 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
     const user = await employee.getUser();
     const userId = user.dataValues.id;
-    const data = await AvailabilityTemplate.destroy({ where: { userId: userId } });
+    const data = await AvailabilityTemplate.destroy({ where: { userId: userId} });
 }
 
 async function getClassData(employee: Model<any, any>) {
@@ -358,16 +421,37 @@ async function getClassData(employee: Model<any, any>) {
 
     let classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${email}/${semester}`);
     classData = await classData.json();
+    updateUserInfo(classData, user);
     //try id
     if (classData.Success === "False") {
         classData = await fetch(`https://stingray.oc.edu/api/accommodationuserschedule/${ocId}/${semester}`);
         classData = await classData.json();
+        updateUserInfo(classData, user);
         //nothing, no class data
         if (classData.Success === "False") {
             throw new AppError(404, "No classes for employee. Make sure the user has a correct email or ocId");
         }
     }
     return classData;
+}
+
+async function updateUserInfo(classData, user: Model) {
+    const email: string = classData.Email;
+    const ocId: string = classData.UserID;
+    const updateBody = {}
+    if (classData.Success === "False")
+        return;
+    if (!user.email) {
+        updateBody.email = email;
+    }
+    if (!user.ocId) {
+        updateBody.ocId = ocId;
+    }
+    const updateSucceed = await user.update(updateBody);
+    if (updateSucceed)
+        return;
+    else
+        console.log("User info did not update");
 }
 
 exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
@@ -465,15 +549,15 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
         //difference in ms -> hours
         const timeDiff: number = toHours(endTime) - toHours(startTime);
         const position: Model = shift.position;
-        if (!position){
+        if (!position) {
             continue;
         }
         const payRate: number = position.dataValues.payRate;
-        for (const timeclock of shift.timeclocks){
+        for (const timeclock of shift.timeclocks) {
             const clockIn: string = timeclock.clockIn;
             const clockOut: string = timeclock.clockOut;
             //ignore cases where the person failed to clock in or out. Warning on FE?
-            if (!clockIn || !clockOut){
+            if (!clockIn || !clockOut) {
                 continue;
             }
             const clockedInTime: number = toHours(clockOut) - toHours(clockIn);
@@ -495,7 +579,7 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
     return returnObject;
 }
 
-async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
+export async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Model<any, any>[]> {
     const data = await Shift.findAll({
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
@@ -505,6 +589,22 @@ async function getShiftsForDateRange(id: number, startDate: string, endDate: str
     });
     return data;
 }
+
+exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(Employee, id);
+    const includeCondition = [
+        { model: Employee, as: "timeOffRequester", include: [User] },
+        { model: Employee, as: "timeOffReviewer", include: [User] },
+    ];
+    const data = await TimeOffRequest.findAll({
+        where: { requesterId: id },
+        include: includeCondition,
+        order: [["startDate", "asc"]]
+    });
+    res.send(data);
+}
+
 //cannot be replaced with service because of user in return
 async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {
