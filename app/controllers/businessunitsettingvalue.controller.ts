@@ -10,9 +10,13 @@ import SettingIntMapping from "../models/settingintmapping.model.ts";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
-    await getOneForStringId(Setting, req.body.settingCode);
+    const setting = await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
+
+    if (req.body.settingValue > setting.dataValues.intMax || req.body.settingValue < setting.dataValues.intMin) {
+        throw new AppError(400, `settingValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
+    }
     const data = await BusinessUnitSettingValue.create(req.body);
     res.send(data);
 }
@@ -26,6 +30,12 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.businessUnitId = undefined;
     req.body.settingCode = undefined;
     req.body.id = undefined;
+
+    const setting = await getOneForStringId(Setting, req.body.settingCode);
+
+    if (req.body.settingValue > setting.dataValues.intMax || req.body.settingValue < setting.dataValues.intMin) {
+        throw new AppError(400, `settingValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
+    }
 
     const numUpdated = await BusinessUnitSettingValue.update(req.body, {
         where: { id: id },
