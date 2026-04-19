@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import announcementreceipts from "../controllers/announcementreceipt.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"
 import AnnouncementReceiptModel from "../models/announcementreceipt.model.ts"
@@ -8,25 +9,25 @@ var router = Router()
 //most of these shouldn't be used but I thought it'd be nice to have CRUD still just in case
 
 // Create a new Announcement Receipt
-router.post("/", [auth.authenticate], announcementreceipts.create);
+router.post("/", [authenticate], announcementreceipts.create);
 
 // Retrieve all Announcement Receipts
-router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(AnnouncementReceiptModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(AnnouncementReceiptModel));
 
 // Retrieve a single Announcement Receipt by id
-router.get("/:id", [auth.authenticate], announcementreceipts.findOne);
+router.get("/:id", [authenticate], announcementreceipts.findOne);
 
 // Update a Announcement Receipt by id
-router.put("/:id", [auth.authenticate], announcementreceipts.update);
+router.put("/:id", [authenticate], announcementreceipts.update);
 
 // Delete a Announcement Receipt by id - DO NOT USE
-router.delete("/:id/permanent", [auth.authenticate], generalcontroller.delete(AnnouncementReceiptModel));
+router.delete("/:id/permanent", [authenticate], generalcontroller.delete(AnnouncementReceiptModel));
 
 //actually just sets deleted to true, use most of the time
-router.delete("/:id", [auth.authenticate], announcementreceipts.setDeleted);
+router.delete("/:id", [authenticate], announcementreceipts.setDeleted);
 
 //sets announcement receipt to read
-router.put("/:id/read", [auth.authenticate], announcementreceipts.setRead);
+router.put("/:id/read", [authenticate], announcementreceipts.setRead);
 
 export default router;
 

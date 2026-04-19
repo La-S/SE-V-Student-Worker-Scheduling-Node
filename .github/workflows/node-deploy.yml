@@ -36,6 +36,7 @@ jobs:
           echo GOOGLE_APPLICATION_CREDENTIALS = \"./creds.json\" >> .env
           echo EMAIL_USER = ${{secrets.EMAIL_USER}} >> .env
           echo EMAIL_PASS = ${{secrets.EMAIL_PASS}} >> .env
+          echo JWT_SECRET = ${{secrets.JWT_SECRET}} >> .env
 
       - run: npm run bundle
 

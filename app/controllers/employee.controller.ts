@@ -114,8 +114,10 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
         include: [{ model: Position, as: "positions" }]
     });
     const positions = employee.positions;
-    if (positions.length == 0)
+    if (positions.length == 0) {
         res.status(400).send({ message: "No positions for employee. No requests available" });
+        return;
+    }
     const positionIds = positions.map((position) => position.id);
 
     const data = await Shift.findAll({

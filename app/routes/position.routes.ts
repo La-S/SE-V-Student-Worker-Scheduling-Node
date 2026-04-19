@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import generalcontroller from "../controllers/general.controller.ts"
 import PositionModel from "../models/position.model.ts";
 import positions from "../controllers/position.controller.ts"
@@ -7,21 +8,21 @@ var router = Router()
 
 
 // Create a new Position
-router.post("/", [auth.authenticate], generalcontroller.create(PositionModel));
+router.post("/", [authenticate], generalcontroller.create(PositionModel));
 
 // Retrieve all Positions
-router.get("/all", [auth.authenticate, auth.isAdminOnly], generalcontroller.findAll(PositionModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(PositionModel));
 
 // Retrieve a single Position by id
-router.get("/:id", [auth.authenticate], generalcontroller.findOne(PositionModel));
+router.get("/:id", [authenticate], generalcontroller.findOne(PositionModel));
 
 // Update a Position by id
-router.put("/:id", [auth.authenticate], positions.update);
+router.put("/:id", [authenticate], positions.update);
 
 // Delete a Position by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(PositionModel));
+router.delete("/:id", [authenticate], generalcontroller.delete(PositionModel));
 
-router.get("/:id/employees", [auth.authenticate], positions.findEmployees)
+router.get("/:id/employees", [authenticate], positions.findEmployees)
 
 export default router;
 

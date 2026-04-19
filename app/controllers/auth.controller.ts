@@ -45,7 +45,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     let emailParts = (googleUserInfo.email.split("@"));
     let emailDomain = emailParts[1];
     if (emailDomain == "oc.edu") {
-      isAdmin = true;
+      // could do special stuff if they're a faculty/staff
     }
     user = {
       firstName: googleUserInfo.firstName,
@@ -79,14 +79,14 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     };
 
     console.log("making a new session");
-    console.log(session);
+    // console.log(session);
     await createSession(session)
 
     sessionToken = session.token;
   }
   let userInfo = { ...user, token: sessionToken }
 
-  console.log(userInfo);
+  // console.log(userInfo);
   res.send(userInfo);
 };
 
@@ -107,7 +107,7 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
 exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   let response = await Session.findOne({ where: { token: req.body.token } })
   let session = response?.dataValues as SessionType | undefined;
-  console.log(session?.expirationDate);
+  // console.log(session?.expirationDate);
   if (!session || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
@@ -203,7 +203,7 @@ async function getGoogleUser(googleToken: string) {
     audience: google_id,
   });
   let googleUser = ticket.getPayload();
-  console.log("Google payload is " + JSON.stringify(googleUser));
+  // console.log("Google payload is " + JSON.stringify(googleUser));
   return googleUser;
 }
 

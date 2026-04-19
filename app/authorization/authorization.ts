@@ -4,11 +4,13 @@ import type { SessionType } from "../types/session.type.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
+import Employee from "../models/employee.model.ts";
+import UserFile from "../models/userfile.model.ts";
+
 
 const Session = db.Session;
 
-const auth: any = {};
-auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let sessionData = foundSession.dataValues as SessionType;
@@ -25,7 +27,7 @@ auth.authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFu
 };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
@@ -37,7 +39,7 @@ auth.isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFun
 };
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
-auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
   let user = await (foundSession as any).getUser();
@@ -46,13 +48,25 @@ auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.
     return;
   }
   let employeesForUser = await (user as any).getEmployees() as any[];
-  let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
+  let businessUnitsForManager = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true }).map((a) => { return a.dataValues.businessUnitId });
+  let isManagerAnywhere = businessUnitsForManager.length > 0;
   if (isManagerAnywhere === true) {
+    if (req.body?.isAdmin) {
+      // prevent privilege escalation
+      req.body.isAdmin = false;
+    }
+
+    if (req.body?.isManager && !businessUnitsForManager.some((a) => { return a === req.body?.businessUnitId})) {
+      // prevent privilege escalation
+      console.log("tried to create a manager for a different businessUnit. Don't allow that")
+      req.body.isManager = undefined;
+    }
+
     next();
     return;
   }
 
-  throw new UnauthorizedError("Unauthorized! User must be admin to perform this function")
+  throw new UnauthorizedError("Unauthorized! User must be admin or a manager to perform this function")
 };
 
 
@@ -61,32 +75,116 @@ auth.managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.
 const AuthOption = {
   employee: "employee",
   businessUnit: "businessUnit",
+  userfile: "userfile",
+  user: "user",
 }
 
-auth.authorizeById = (option: any) => {
+export const authorizeById = (option: any) => {
   return async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
     let idToVerify = parseInt(req.params.id, 10);
-    console.log("Verifying: ", idToVerify)
+    // console.log("Verifying: ", idToVerify)
     if (!idToVerify) {
       throw new UnauthorizedError("Unauthorized! User must have an ID to perform this function")
     }
-
+    
     let token = getToken(req);
     let foundSession = await getSession(token);
     let user = await (foundSession as any).getUser();
     if (user.dataValues.isAdmin === true) {
+      // console.log("is admin")
       next();
       return;
     }
 
+    if (option == AuthOption.businessUnit) {
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      let hasEmployeeInBusinessUnit = employeesForRequestingUser.some((a) => { return a.dataValues.businessUnitId === idToVerify && a.dataValues.currentlyEmployed === true })
+
+      if (hasEmployeeInBusinessUnit) {
+        // console.log("user is in businessUnit")
+        next();
+        return;
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
+    }
+
+    if (option === AuthOption.user) {
+      if (req.body?.isAdmin) {
+        // prevent privilege escalation
+        req.body.isAdmin = undefined;
+      }
+
+      if (user.dataValues.id === idToVerify) {
+        // console.log("user is himself")
+        next();
+        return;
+      }
+
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isUserInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+        // console.log("user is a manger but not allowed to view that data.")
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
+    }
+
+    if (option === AuthOption.userfile) {
+      let fileTryingToAccess = await UserFile.findOne({ where: { id: idToVerify } })
+      if (!fileTryingToAccess) {
+        throw new AppError(404, "file not found");
+      }
+      let employeesForUser = await (user as any).getEmployees();
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isUserInBusinessUnit(fileTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+        // console.log("user is a manger but not allowed to view that data.")
+      }
+
+      // console.log(Object.getOwnPropertyNames(user.__proto__));
+      let dataFilesForUser = await (user as any).getUserFiles();
+
+      if (dataFilesForUser.some((a) => {return a.dataValues.id === idToVerify})) {
+        next();
+        return;
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's files");
+    }
+
     // only allow this if it is the employees's own id or they're a manager
-    // note, managers can currently view *any* user's info.
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
-      let isManagerAnywhere = employeesForUser.some((a) => { return a.dataValues.isManager === true })
-      let isRelatedToId = employeesForUser.some((a) => { return a.dataValues.id === idToVerify })
 
-      if (isManagerAnywhere || isRelatedToId) {
+      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      for (let manager of managerPositions) {
+        // console.log('managers buID', manager.dataValues.businessUnitId);
+        let isAuthorized = await isEmployeeInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+      }
+
+      // if the employee is not a manager, they can still call the route as long as they're not an admin and they're still employeed
+      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify && a.dataValues.currentlyEmployed === true})
+      if (requesterIsSelf) {
+        // console.log("the requester was himself")
+
+        if (req.body?.isManager) {
+          // prevent privilege escalation
+          req.body.isManager = undefined;
+        }
         next();
         return;
       }
@@ -121,4 +219,16 @@ async function getSession(token: string) {
   return foundSession;
 }
 
-export default auth;
+async function isEmployeeInBusinessUnit(employeeId: number, businessUnitId: number) {
+  let employee = await Employee.findByPk(employeeId)
+  // console.log('Business Unit Ids (emp, comparison):', employee?.dataValues.businessUnitId, businessUnitId);
+  return employee?.dataValues.businessUnitId === businessUnitId;
+}
+
+async function isUserInBusinessUnit(userId: number, businessUnitId: number) {
+  let employee = await Employee.findOne({ where: { userId: userId, businessUnitId: businessUnitId, currentlyEmployed: true } })
+  if (!employee) {
+    return false
+  }
+  return true;
+}
