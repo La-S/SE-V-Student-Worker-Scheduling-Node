@@ -62,7 +62,7 @@ export function convertTime(time: String) {
     if (modifier === "PM") {
         hours = (parseInt(hours, 10) + 12).toString();
     }
-    return hours + mins
+    return hours + mins + ":00"
 }
 
 export function convertDayOfWeek(dayOfWeek: String) {
@@ -75,4 +75,19 @@ export function convertDayOfWeek(dayOfWeek: String) {
         case "S": return "Saturday";
         case "SU": return "Sunday";
     }
+}
+
+export function incrementSemester(semester: string){
+    let term: string = semester.slice(0, 2);
+    const year: string = semester.slice(2, 4);
+    let yearInt: number = parseInt(year, 10);
+    if (term == "FA"){
+        yearInt++;
+    }
+    // FA -> SP and vice versa
+    if (term == "FA")
+        term = "SP";
+    else
+        term = "FA"
+    return term.concat(yearInt.toString());
 }

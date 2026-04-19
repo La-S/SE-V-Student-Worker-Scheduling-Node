@@ -21,6 +21,9 @@ const AvailabilityTemplate = SequelizeInstance.define("availabilitytemplate", {
     },
     preference: {
         type: Sequelize.ENUM(...Object.values(availabilityPreferences))
+    },
+    semester: {
+        type: Sequelize.STRING,
     }
 
 });

@@ -6,6 +6,7 @@ import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
 import Employee from "../models/employee.model.ts";
 import UserFile from "../models/userfile.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 
 const Session = db.Session;
@@ -77,6 +78,7 @@ const AuthOption = {
   businessUnit: "businessUnit",
   userfile: "userfile",
   user: "user",
+  timeOffRequest: "timeOffRequest"
 }
 
 export const authorizeById = (option: any) => {
@@ -94,6 +96,33 @@ export const authorizeById = (option: any) => {
       // console.log("is admin")
       next();
       return;
+    }
+
+    if (option == AuthOption.timeOffRequest) {
+      let timeOffRequestTryingToAccess = await TimeOffRequest.findByPk(idToVerify);
+      if (!timeOffRequestTryingToAccess) {
+        throw new AppError(404, "request not found");
+      }
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      let isRequestForEmployee = employeesForRequestingUser.some((a) => { return a.dataValues.id === timeOffRequestTryingToAccess.dataValues.requesterId && a.dataValues.currentlyEmployed === true })
+
+      if (isRequestForEmployee) {
+        next();
+        return;
+      }
+      // console.log(timeOffRequestTryingToAccess.dataValues);
+
+      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isEmployeeInBusinessUnit(timeOffRequestTryingToAccess.dataValues.requesterId, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+        // console.log("user is a manager but not allowed to view that data.")
+      }
+
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that user's info");
     }
 
     if (option == AuthOption.businessUnit) {

@@ -29,7 +29,11 @@ router.delete("/:id/permanent", [authenticate, authorizeById("employee")], gener
 //Get shifts for employee
 router.get("/:id/shifts", [authenticate, authorizeById("employee")], employees.findShifts);
 
-router.get("/:id/availabilitytemplates", [authenticate, authorizeById("employee")], employees.findAvailabilityTemplates)
+router.get("/:id/availabilitytemplates", [authenticate, authorizeById("employee")], employees.findCurrentAvailabilityTemplates)
+
+router.get("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("employee")], employees.findAvailabilityTemplatesForSemester)
+
+router.get("/:id/availabilitytemplates/all", [authenticate, authorizeById("employee")], employees.findAllAvailabilityTemplates)
 
 router.post("/:id/position/:positionid", [authenticate, authorizeById("employee")], employees.addPosition)
 
@@ -42,6 +46,10 @@ router.get("/:id/coverrequests", [authenticate, authorizeById("employee")], empl
 router.get("/:id/availablecoverrequests", [authenticate, authorizeById("employee")], employees.getAvailableCoverRequests)
 
 router.get("/:id/droprequests", [authenticate, authorizeById("employee")], employees.getDropRequests);
+
+router.get("/:id/timeoffrequests", [authenticate, authorizeById("employee")], employees.getTimeOffRequests);
+
+router.delete("/:id/availabilitytemplates/semester/", [authenticate, authorizeById("employee")], employees.clearAvailabilityTemplatesForSemester);
 
 router.delete("/:id/clearavailability", [authenticate, authorizeById("employee")], employees.clearAvailabilityTemplates);
 
