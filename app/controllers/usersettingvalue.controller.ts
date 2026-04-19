@@ -8,6 +8,8 @@ import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
 
+const exports: any = {}
+
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     const setting = await getOneForStringId(Setting, req.body.settingCode);
