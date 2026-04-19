@@ -10,10 +10,11 @@ import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.t
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
-    await getOneForStringId(Setting, req.body.settingCode);
+    const setting = await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
     const data = await SettingIntMapping.create(req.body);
+    setting.update({ intMax: setting.dataValues.intMax + 1 });
     res.send(data);
 }
 
@@ -43,6 +44,13 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
         include: [Setting]
     });
     return data;
+}
+
+exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id, 10);
+    const setting = await getOneForStringId(Setting, req.body.settingCode);
+    setting.update({ intMax: setting.dataValues.intMax - 1 });
+    res.send("setting int mapping deleted");
 }
 
 export default exports;

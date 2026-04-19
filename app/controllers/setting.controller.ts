@@ -20,6 +20,35 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Setting with code ${req.body.code} already exists`);
     }
 
+    let typeDefined: boolean = false;
+    if (req.body.type === "int") {
+        if (!req.body.intMin || !req.body.intMax) {
+            throw new AppError(400, "intMin and intMax must be provided for int type settings");
+        }
+        typeDefined = true;
+    }
+
+    if (req.body.type === "boolean") {
+        req.body.intMin = 0;
+        req.body.intMax = 1;
+        typeDefined = true;
+    }
+
+    if (req.body.type === "string") {
+        if (!req.body.values) {
+            throw new AppError(400, "values must be provided for string type settings");
+        }
+        if (req.body.values.length != (req.body.intMax - req.body.intMin + 1)) {
+            throw new AppError(400, "values length must be proportional to intmax and min");
+        }
+        typeDefined = true;
+    }
+
+    if (!typeDefined) {
+        throw new AppError(400, "type must be int, boolean, or string");
+    }
+
+
     const data = await Setting.create(req.body);
     res.send(data);
 };

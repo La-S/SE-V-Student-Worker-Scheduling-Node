@@ -19,6 +19,6 @@ router.get("/:id", [authenticate], settingIntMappings.findOne);
 router.put("/:id", [authenticate], settingIntMappings.update);
 
 // Delete a SettingIntMappingSettingValue by id
-router.delete("/:id", [authenticate], generalcontroller.delete(SettingIntMappingModel));
+router.delete("/:id", [authenticate], settingIntMappings.delete);
 
 export default router;
