@@ -335,7 +335,7 @@ exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 }
 
-exports.getUsersTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const employeesForUser = await user.getEmployees();
