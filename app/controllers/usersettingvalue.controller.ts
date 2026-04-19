@@ -3,15 +3,14 @@ const UserSettingValue = db.UserSettingValue;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
-    const settingId = parseInt(req.body.settingId, 10);
     //throws error if not found
-    await getOneForId(Setting, settingId);
+    await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
     const data = await UserSettingValue.create(req.body);
@@ -25,7 +24,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     //Should not change the business unit or setting 
     req.body.userId = undefined;
-    req.body.settingId = undefined;
+    req.body.settingCode = undefined;
     req.body.id = undefined;
 
     const numUpdated = await UserSettingValue.update(req.body, {
@@ -54,6 +53,36 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
             }]
     });
     return data;
+}
+
+
+export async function getUserSettingValue(userId: number, settingCode: string) {
+    const userSettingValue = await UserSettingValue.findOne({
+        where: {
+            userId: userId,
+        }
+    });
+    if (!userSettingValue) {
+        throw new AppError(404, `No setting value found for user ${userId} and setting code ${settingCode}`);
+    }
+    const settingValue = await UserSettingValue.findOne({
+        where: {
+            userId: userId,
+        },
+        include: [{
+            model: Setting,
+            where: {
+                settingCode: settingCode
+            },
+            include: [{
+                model: SettingIntMapping,
+                required: false,
+                where: { settingValue: userSettingValue.dataValues.settingValue }
+            }]
+
+        }]
+    });
+    return settingValue;
 }
 
 export default exports;

@@ -3,15 +3,14 @@ const BusinessUnitSettingValue = db.BusinessUnitSettingValue;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
-    const settingId = parseInt(req.body.settingId, 10);
     //throws error if not found
-    await getOneForId(Setting, settingId);
+    await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
     const data = await BusinessUnitSettingValue.create(req.body);
@@ -25,7 +24,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     //Should not change the business unit or setting 
     req.body.businessUnitId = undefined;
-    req.body.settingId = undefined;
+    req.body.settingCode = undefined;
     req.body.id = undefined;
 
     const numUpdated = await BusinessUnitSettingValue.update(req.body, {
@@ -54,6 +53,35 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
             }]
     });
     return data;
+}
+
+export async function getBusinessUnitSettingValue(businessUnitId: number, settingCode: string) {
+    const businessUnitSettingValue = await BusinessUnitSettingValue.findOne({
+        where: {
+            businessUnitId: businessUnitId,
+        }
+    });
+    if (!businessUnitSettingValue) {
+        throw new AppError(404, `No setting value found for business unit ${businessUnitId} and setting code ${settingCode}`);
+    }
+    const settingValue = await BusinessUnitSettingValue.findOne({
+        where: {
+            businessUnitId: businessUnitId,
+        },
+        include: [{
+            model: Setting,
+            where: {
+                settingCode: settingCode
+            },
+            include: [{
+                model: SettingIntMapping,
+                required: false,
+                where: { settingValue: businessUnitSettingValue.dataValues.settingValue }
+            }]
+
+        }]
+    });
+    return settingValue;
 }
 
 export default exports;

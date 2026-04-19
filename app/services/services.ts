@@ -13,6 +13,17 @@ export async function getOneForId(model: ModelStatic<Model>, id: number) {
     return data;
 }
 
+export async function getOneForStringId(model: ModelStatic<Model>, id: string) {
+    if (!id) {
+        throw new AppError(400, "id provided must be a string")
+    }
+    const data = await model.findByPk(id);
+    if (!data) {
+        throw new AppError(404, `${model.name} for id ${id} not found`);
+    }
+    return data;
+}
+
 export function isSunday(date: Date) {
     const dayOfWeek = date.getDay();
     return (dayOfWeek == 0)
