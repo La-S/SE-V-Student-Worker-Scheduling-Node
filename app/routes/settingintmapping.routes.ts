@@ -7,7 +7,7 @@ var router = Router()
 
 
 // Create a new SettingIntMappingSettingValue
-router.post("/", [authenticate], settingIntMappings.create);
+router.post("/", [authenticate, isAdminOnly], settingIntMappings.create);
 
 // Retrieve all SettingIntMappingSettingValues
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(SettingIntMappingModel));
@@ -16,9 +16,9 @@ router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(Settin
 router.get("/:id", [authenticate], settingIntMappings.findOne);
 
 // Update a SettingIntMappingSettingValue by id
-router.put("/:id", [authenticate], settingIntMappings.update);
+router.put("/:id", [authenticate, isAdminOnly], settingIntMappings.update);
 
 // Delete a SettingIntMappingSettingValue by id
-router.delete("/:id", [authenticate], settingIntMappings.delete);
+router.delete("/:id", [authenticate, isAdminOnly], settingIntMappings.delete);
 
 export default router;
