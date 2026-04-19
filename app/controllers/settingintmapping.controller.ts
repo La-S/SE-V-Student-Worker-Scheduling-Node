@@ -13,6 +13,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     const setting = await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
+    req.body.intValue = setting.dataValues.intMax + 1;
     const data = await SettingIntMapping.create(req.body);
     setting.update({ intMax: setting.dataValues.intMax + 1 });
     res.send(data);
