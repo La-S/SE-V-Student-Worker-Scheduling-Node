@@ -19,6 +19,11 @@ import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
 import { getBudgetInformationForDateRange } from './employee.controller.ts';
+import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
+import SettingIntMapping from '../models/settingintmapping.model.ts';
+import Setting from '../models/setting.model.ts';
+import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
+import { get } from 'node:http';
 const exports: any = {}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
@@ -356,6 +361,28 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
         returnObject.push(employeeInfo);
     }
     res.send(returnObject);
+}
+
+exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const settingCode = req.params.settingCode as string;
+    const settingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
+    res.send(settingValue);
+}
+
+exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const data: Model<any, any>[] = [];
+    const businessUnitSettings = await BusinessUnitSettingValue.findAll({
+        where: {
+            businessUnitId: businessUnitId,
+        }
+    });
+    for (const businessUnitSettingValue of businessUnitSettings) {
+        const settingValue = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
+        data.push(settingValue);
+    }
+    res.send(data);
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {

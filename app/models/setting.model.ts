@@ -4,6 +4,12 @@ import { settingTypes } from "../types/settings.enum.ts";
 
 //setting
 const Setting = SequelizeInstance.define("setting", {
+    code: {
+        type: Sequelize.STRING,
+        allowNull: false,
+        unique: true,
+        primaryKey: true
+    },
     name: {
         type: Sequelize.STRING,
         allowNull: false
@@ -12,21 +18,22 @@ const Setting = SequelizeInstance.define("setting", {
         type: Sequelize.STRING,
         allowNull: true,
     },
-    code: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true,
-        primaryKey: true
-    },
     type: {
         type: Sequelize.ENUM(...Object.values(settingTypes)),
     },
     intMin: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
     },
     intMax: {
-        type: Sequelize.INTEGER
+        type: Sequelize.INTEGER,
+        allowNull: false
     },
+    defaultValue: {
+        type: Sequelize.INTEGER,
+        allowNull: false
+    },
+    //true if business, false if user, null if testing
     forBusiness: {
         type: Sequelize.BOOLEAN,
         allowNull: false,

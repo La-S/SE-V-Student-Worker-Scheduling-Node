@@ -55,7 +55,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     return data;
 }
 
-export async function getBusinessUnitSettingValue(businessUnitId: number, settingCode: string) {
+export async function getBusinessUnitSettingValue(businessUnitId: number, settingCode: string): Promise<Model<any, any>> {
     const businessUnitSettingValue = await BusinessUnitSettingValue.findOne({
         where: {
             businessUnitId: businessUnitId,
@@ -81,7 +81,7 @@ export async function getBusinessUnitSettingValue(businessUnitId: number, settin
 
         }]
     });
-    return settingValue;
+    return settingValue!;
 }
 
 export default exports;
