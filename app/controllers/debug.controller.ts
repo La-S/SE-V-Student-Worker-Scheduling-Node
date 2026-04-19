@@ -3,6 +3,7 @@ import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import Session from "../models/session.model.ts";
 import users from "../controllers/user.controller.ts";
+import { sendEmail } from "../services/mailer.ts";
 
 const exports: any = {}
 
@@ -46,6 +47,29 @@ exports.debugFindUserByEmail = async (req: pkg.Request, res: pkg.Response) => {
     throw new AppError(400,  "Sorry, wrong token bub.");
   }
   return users.findByEmail(req, res);
+};
+
+exports.debugSendEmail = async (req: pkg.Request, res: pkg.Response) => {
+  if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
+    throw new AppError(400, "Sorry, wrong token bub.");
+  }
+
+  if (!req.body.to) {
+    throw new AppError(400, "Must provide a recipient email address in req.body.to.");
+  }
+
+  const sent = await sendEmail({
+    to: req.body.to,
+    subject: req.body.subject ?? "Debug email from SEV",
+    text: req.body.text ?? "This is a debug email from the SEV backend.",
+    html: req.body.html,
+  });
+
+  if (!sent) {
+    throw new AppError(500, "Debug email could not be sent.");
+  }
+
+  res.status(200).send({ message: "Debug email sent." });
 };
 
 exports.debugDeleteEmail = async (req: pkg.Request, res: pkg.Response) => {

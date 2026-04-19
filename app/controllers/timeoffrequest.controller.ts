@@ -26,7 +26,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     if (!requesterId) {
         throw new AppError(400, "request must have a requesterId");
     }
-    const employee = await Employee.findByPk(req.body.requesterId, { include: [User] });
+    const employee = await Employee.findByPk(requesterId, { include: [User] });
     if (!employee) {
         throw new NotFoundError("Employee", requesterId);
     }
