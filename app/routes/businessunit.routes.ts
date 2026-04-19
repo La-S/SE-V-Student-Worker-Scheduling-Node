@@ -42,25 +42,25 @@ router.get("/:id/weeklyscheduletemplates", [authenticate, managerOrAdminOnly], b
 router.put("/:id/shifts/:date/publish", [authenticate, managerOrAdminOnly], businessunits.publishShiftsForWeek);
 
 // get open hours for businessunit
-router.get("/:id/openhours", [authenticate], businessunits.findOpenHours)
+router.get("/:id/openhours", [authenticate, authorizeById("businessUnit")], businessunits.findOpenHours)
 
-router.get("/:id/openhours/:dayOfWeek", [authenticate], businessunits.findOpenHoursForDay)
+router.get("/:id/openhours/:dayOfWeek", [authenticate, authorizeById("businessUnit")], businessunits.findOpenHoursForDay)
 
-router.get("/:id/coverrequests", [authenticate], businessunits.getCoverRequests)
+router.get("/:id/coverrequests", [authenticate, authorizeById("businessUnit")], businessunits.getCoverRequests)
 
-router.get("/:id/coverrequests/open/upcoming", [authenticate], businessunits.getUpcomingOpenCoverRequests)
+router.get("/:id/coverrequests/open/upcoming", [authenticate, authorizeById("businessUnit")], businessunits.getUpcomingOpenCoverRequests)
 
-router.get("/:id/timeoffrequests/open/upcoming", [authenticate], businessunits.getUpcomingOpenTimeOffRequests);
+router.get("/:id/timeoffrequests/open/upcoming", [authenticate, authorizeById("businessUnit")], businessunits.getUpcomingOpenTimeOffRequests);
 
-router.get("/:id/timeoffrequests/all", [authenticate], businessunits.getAllTimeOffRequests);
+router.get("/:id/timeoffrequests/all", [authenticate, authorizeById("businessUnit")], businessunits.getAllTimeOffRequests);
 
-router.get("/:id/timeoffrequests/daterange/:start/:end", [authenticate], businessunits.getTimeOffRequestsDateRange);
+router.get("/:id/timeoffrequests/daterange/:start/:end", [authenticate, authorizeById("businessUnit")], businessunits.getTimeOffRequestsDateRange);
 
-router.get("/:id/droprequests", [authenticate], businessunits.getDropRequests)
+router.get("/:id/droprequests", [authenticate, authorizeById("businessUnit")], businessunits.getDropRequests)
 
-router.get("/:id/droprequests/open/upcoming", [authenticate], businessunits.getUpcomingOpenDropRequests)
+router.get("/:id/droprequests/open/upcoming", [authenticate, authorizeById("businessUnit")], businessunits.getUpcomingOpenDropRequests)
 
-router.get("/:id/shifts/open", [authenticate], businessunits.findShifts)
+router.get("/:id/shifts/open", [authenticate, authorizeById("businessUnit")], businessunits.findShifts)
 
 router.put("/:id/employees/rollover", [authenticate, managerOrAdminOnly], businessunits.rolloverEmployees);
 
