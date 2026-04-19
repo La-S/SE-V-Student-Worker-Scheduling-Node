@@ -1,5 +1,5 @@
 import users from "../controllers/user.controller.ts";
-import auth from "../authorization/authorization.ts";
+import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 import generalcontroller from "../controllers/general.controller.ts"
 import UserModel from "../models/user.model.ts"
 import { Router } from "express";
@@ -8,39 +8,41 @@ var router = Router()
 //User has email validation checks, so some functions cannot be moved to general controller
 
 // Create a new User
-router.post("/", [auth.authenticate], users.create);
+router.post("/", [authenticate, managerOrAdminOnly], users.create);
 
 // Retrieve all People
-router.get("/all", [auth.authenticate], users.findAll);
+router.get("/all", [authenticate, isAdminOnly], users.findAll);
 
-router.get("/email/:email", [auth.authenticate], users.findByEmail);
+router.get("/email/:email", [authenticate, managerOrAdminOnly], users.findByEmail);
 
 // Retrieve a single User with id
-router.get("/:id", [auth.authenticate], users.findOne);
+router.get("/:id", [authenticate, authorizeById("user")], users.findOne);
 
-// Update a User with idF
-router.put("/:id", [auth.authenticate], users.update);
+// Update a User with id
+router.put("/:id", [authenticate, authorizeById("user")], users.update);
 
-router.put("/:id/admin", [auth.authenticate, auth.isAdminOnly], users.updateIsAdmin)
+router.put("/:id/admin", [authenticate, isAdminOnly], users.updateIsAdmin)
 
 // Delete a User with id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(UserModel));
+router.delete("/:id", [authenticate, authorizeById("user")], generalcontroller.delete(UserModel));
 
-router.get("/:id/employees", [auth.authenticate], users.findEmployeesForUser)
+router.get("/:id/allEmployees", [authenticate, authorizeById("user")], users.findEmployeesForUser)
 
-router.get("/:id/shifts", [auth.authenticate], users.findShiftsForDateRange)
+router.get("/:id/employees", [authenticate, authorizeById("user")], users.findActiveEmployeesForUser)
 
-router.get("/:id/availabilitytemplates", [auth.authenticate], users.findAvailabilityTemplates);
+router.get("/:id/shifts", [authenticate, authorizeById("user")], users.findShiftsForDateRange)
 
-router.get("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], users.findAvailabilityTemplatesForSemester);
+router.get("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("user")], users.findAvailabilityTemplatesForSemester);
 
-router.get("/emaillike/:email", [auth.authenticate], users.findLikeEmail)
+router.get("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.findAvailabilityTemplates);
 
-router.get("/:id/coverrequests/open/upcoming", [auth.authenticate], users.getUpcomingOpenCoverRequests);
+router.get("/emaillike/:email", [authenticate, managerOrAdminOnly], users.findLikeEmail)
 
-router.get("/:id/announcementreceipts", [auth.authenticate], users.getAnnouncementReceipts);
+router.get("/:id/coverrequests/open/upcoming", [authenticate, authorizeById("user")], users.getUpcomingOpenCoverRequests);
 
-router.get("/:id/userfiles", [auth.authenticate], users.getUserFiles);
+router.get("/:id/announcementreceipts", [authenticate, authorizeById("user")], users.getAnnouncementReceipts);
+
+router.get("/:id/userfiles", [authenticate, authorizeById("user")], users.getUserFiles);
 
 router.delete("/:id/availabilitytemplates/semester/:semester", [auth.authenticate], users.clearAvailabilityTemplatesForSemester);
 

@@ -1,4 +1,5 @@
-import auth from "../authorization/authorization.ts";
+import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
+
 import announcements from "../controllers/announcement.controller.ts"
 import generalcontroller from "../controllers/general.controller.ts"
 import AnnouncementModel from "../models/announcement.model.ts"
@@ -7,21 +8,21 @@ var router = Router()
 
 
 // Create a new Announcement
-router.post("/", [auth.authenticate], announcements.create);
+router.post("/", [authenticate, managerOrAdminOnly], announcements.create);
 
-router.post("/specific", [auth.authenticate], announcements.createSpecificEmployees);
+router.post("/specific", [authenticate, managerOrAdminOnly], announcements.createSpecificEmployees);
+router.post("/:id/email", [authenticate, managerOrAdminOnly], announcements.sendEmail);
 
 // Retrieve all Announcements
-router.get("/all", [auth.authenticate], generalcontroller.findAll(AnnouncementModel));
+router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(AnnouncementModel));
 
 // Retrieve a single Announcement by id
-router.get("/:id", [auth.authenticate], announcements.findOne);
+router.get("/:id", [authenticate], announcements.findOne);
 
 // Update a Announcement by id
-router.put("/:id", [auth.authenticate], announcements.update);
+router.put("/:id", [authenticate, managerOrAdminOnly], announcements.update);
 
 // Delete a Announcement by id
-router.delete("/:id", [auth.authenticate], generalcontroller.delete(AnnouncementModel));
+router.delete("/:id", [authenticate, managerOrAdminOnly], generalcontroller.delete(AnnouncementModel));
 
 export default router;
-

@@ -10,7 +10,8 @@ const Session = SequelizeInstance.define("session", {
     },
     token: {
         type: Sequelize.STRING(3000),
-        allowNull: false,
+        allowNull: true,
+        unique: true
     },
     email: {
         type: Sequelize.STRING(100),

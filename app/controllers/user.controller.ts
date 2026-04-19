@@ -46,7 +46,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   if (!data) {
     throw new NotFoundError("User", id);
   }
-  return data;
+  res.send(data);
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
@@ -118,6 +118,13 @@ async function getUserForEmail(email: string) {
   }
   return data;
 }
+
+exports.findActiveEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id, 10);
+
+  const data = await Employee.findAll({ where: { userId: id, currentlyEmployed: true } });
+  res.send(data);
+};
 
 exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);

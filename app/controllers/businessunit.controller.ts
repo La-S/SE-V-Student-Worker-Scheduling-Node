@@ -12,6 +12,7 @@ import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
 import { deleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
+import { sendEmailToBusinessUnit } from '../services/mailer.ts';
 import { AppError } from "../error/app.error.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
@@ -198,7 +199,14 @@ exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
         }
     });
 
-    sendNotificationToBusinessUnit(id, startDate);
+    await Promise.allSettled([
+        sendNotificationToBusinessUnit(id, startDate),
+        sendEmailToBusinessUnit(
+            id,
+            `Shifts Published for Week of ${startDate}`,
+            `Shifts have been published for the week of ${startDate}.`,
+        ),
+    ]);
 
     res.send({ message: "shifts published!" });
 }
