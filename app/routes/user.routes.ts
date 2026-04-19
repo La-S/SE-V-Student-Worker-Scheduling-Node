@@ -44,6 +44,8 @@ router.get("/:id/announcementreceipts", [authenticate, authorizeById("user")], u
 
 router.get("/:id/userfiles", [authenticate, authorizeById("user")], users.getUserFiles);
 
+router.get("/:id/timeoffrequests", [authenticate, authorizeById("user")], users.getTimeOffRequests);
+
 router.delete("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("user")], users.clearAvailabilityTemplatesForSemester);
 
 router.delete("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.clearAvailabilityTemplates);

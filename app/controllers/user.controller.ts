@@ -22,6 +22,7 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
+import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -216,7 +217,7 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
 exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const userId = id;
-  await AvailabilityTemplate.destroy({ where: { userId: id} })
+  await AvailabilityTemplate.destroy({ where: { userId: id } })
   res.send({ message: `Availability Templates cleared!` });
 }
 
@@ -331,6 +332,18 @@ exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const data = await UserFile.findAll({ where: { userId: id } });
+  res.send(data);
+}
+
+exports.getUsersTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const employeesForUser = await user.getEmployees();
+  const employeeIds: number[] = [];
+  for (const employee of employeesForUser) {
+    employeeIds.push(employee.dataValues.id);
+  }
+  const data = await TimeOffRequest.findAll({ where: { employeeId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"], ["startTime", "desc"]] });
   res.send(data);
 }
 
