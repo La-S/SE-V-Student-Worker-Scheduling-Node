@@ -26,6 +26,21 @@ import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.t
 import { get } from 'node:http';
 const exports: any = {}
 
+
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const data = await BusinessUnit.create(req.body);
+    const settings = await Setting.findAll({ where: { isForBusinessUnit: false } });
+    for (const setting of settings) {
+        await BusinessUnitSettingValue.create({
+            businessUnitId: data.dataValues.id,
+            settingCode: setting.dataValues.code,
+            settingValue: setting.dataValues.defaultValue
+        });
+    }
+    res.send(data);
+}
+
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
@@ -282,7 +297,7 @@ exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     const dateString: string = req.params.date;
     const startDate: Date = createDateFromString(dateString);
     deleteShiftsForWeek(startDate, id);
-    res.send({message: "Shifts cleared"});
+    res.send({ message: "Shifts cleared" });
 }
 
 exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response) => {
@@ -350,12 +365,12 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
     const startDate: string = req.query.start;
     const endDate: string = req.query.end;
     await getOneForId(BusinessUnit, id);
-    const employees: Model[] = await Employee.findAll({where: {businessUnitId: id, currentlyEmployed: true}});
-    if (employees.length == 0){
+    const employees: Model[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    if (employees.length == 0) {
         throw new AppError(400, "No employees currently employed for business");
     }
     const returnObject = [];
-    for (const employee of employees){
+    for (const employee of employees) {
         const employeeId = employee.dataValues.id;
         const employeeInfo = await (getBudgetInformationForDateRange(employeeId, startDate, endDate));
         returnObject.push(employeeInfo);

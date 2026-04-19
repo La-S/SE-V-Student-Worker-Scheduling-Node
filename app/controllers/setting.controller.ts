@@ -4,6 +4,10 @@ const Setting = db.Setting;
 import { Model } from "sequelize";
 import pkg from "express";
 import { AppError } from "../error/app.error.ts";
+import BusinessUnit from "../models/businessunit.model.ts";
+import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
+import User from "../models/user.model.ts";
+import UserSettingValue from "../models/usersettingvalue.model.ts";
 
 const exports: any = {};
 
@@ -62,7 +66,29 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
             });
         }
     }
+    if (req.body.isForBusinessUnit) {
+        const businessUnits = await BusinessUnit.findAll();
+        for (const businessUnit of businessUnits) {
+            await BusinessUnitSettingValue.create({
+                businessUnitId: businessUnit.dataValues.id,
+                settingCode: req.body.code,
+                settingValue: req.body.defaultValue
+            });
+        }
+    }
+    //is for users
+    else if (req.body.isForBusinessUnit != null) {
+        const users = await User.findAll();
+        for (const user of users) {
+            await UserSettingValue.create({
+                userId: user.dataValues.id,
+                settingCode: req.body.code,
+                settingValue: req.body.defaultValue
+            });
+        }
+    }
     res.send(data);
+
 };
 
 // Find a single setting by code
@@ -81,10 +107,19 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const code = req.params.code;
 
     // throws error if not found
-    await getSettingForCode(code);
+    const setting = await getSettingForCode(code);
 
     req.body.id = undefined;
     req.body.code = undefined;
+    if (req.body.defaultValue !== undefined && (req.body.defaultValue < setting.dataValues.intMin || req.body.defaultValue > setting.dataValues.intMax)) {
+        throw new AppError(400, `defaultValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
+    }
+    if (req.body.intMax > req.body.defaultValue || req.body.intMin < req.body.defaultValue) {
+        throw new AppError(400, `defaultValue must be between intMin and intMax. Please update the defaultValue.`);
+    }
+    if (req.body.intMax && req.body.intMin && req.body.intMax < req.body.intMin) {
+        throw new AppError(400, `intMax must be greater than or equal to intMin`);
+    }
 
     const numUpdated = await Setting.update(req.body, {
         where: { code: code }

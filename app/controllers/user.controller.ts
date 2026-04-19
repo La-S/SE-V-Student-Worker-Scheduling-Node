@@ -24,6 +24,7 @@ import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 import { getUserSettingValue } from "./usersettingvalue.controller.ts";
+import Setting from "../models/setting.model.ts";
 
 const exports: any = {};
 const errorClassName = "User";
@@ -36,6 +37,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
   // Save User in the database
   const data = await User.create(req.body);
+  const settings = await Setting.findAll({ where: { isForBusinessUnit: false } });
+  for (const setting of settings) {
+    await UserSettingValue.create({
+      userId: data.dataValues.id,
+      settingCode: setting.dataValues.code,
+      settingValue: setting.dataValues.defaultValue
+    });
+  }
   res.send(data);
 };
 
@@ -52,7 +61,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-  const data = await User.findAll({order:[["lastName", "asc"]]});
+  const data = await User.findAll({ order: [["lastName", "asc"]] });
   res.send(data);
 }
 
@@ -313,25 +322,25 @@ exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
-    const userId = parseInt(req.params.id as string, 10);
-    const settingCode = req.params.settingCode as string;
-    const settingValue = await getUserSettingValue(userId, settingCode);
-    res.send(settingValue);
+  const userId = parseInt(req.params.id as string, 10);
+  const settingCode = req.params.settingCode as string;
+  const settingValue = await getUserSettingValue(userId, settingCode);
+  res.send(settingValue);
 }
 
 exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
-    const userId = parseInt(req.params.id as string, 10);
-    const data: Model<any, any>[] = [];
-    const userSettings = await UserSettingValue.findAll({
-        where: {
-            userId: userId,
-        }
-    });
-    for (const userSettingValue of userSettings) {
-        const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
-        data.push(settingValue);
+  const userId = parseInt(req.params.id as string, 10);
+  const data: Model<any, any>[] = [];
+  const userSettings = await UserSettingValue.findAll({
+    where: {
+      userId: userId,
     }
-    res.send(data);
+  });
+  for (const userSettingValue of userSettings) {
+    const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
+    data.push(settingValue);
+  }
+  res.send(data);
 }
 
 export default exports;

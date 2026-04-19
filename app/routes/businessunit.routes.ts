@@ -8,7 +8,7 @@ var router = Router()
 
 
 // Create a new BusinessUnit
-router.post("/", [authenticate, isAdminOnly], generalcontroller.create(BusinessUnitModel));
+router.post("/", [authenticate, isAdminOnly], businessunits.create);
 
 // Retrieve all BusinessUnits
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(BusinessUnitModel));

@@ -2,8 +2,8 @@ import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 
 //settingCode
-//businessUnitId
-const UserUnitSettingValue = SequelizeInstance.define("usersettingvalue", {
+//userId
+const UserSettingValue = SequelizeInstance.define("usersettingvalue", {
     id: {
         type: Sequelize.INTEGER,
         autoIncrement: true,
@@ -15,4 +15,4 @@ const UserUnitSettingValue = SequelizeInstance.define("usersettingvalue", {
 
 });
 
-export default UserUnitSettingValue;
+export default UserSettingValue;
