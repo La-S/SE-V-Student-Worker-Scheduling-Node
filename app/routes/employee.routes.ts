@@ -47,9 +47,9 @@ router.get("/:id/availablecoverrequests", [authenticate, authorizeById("employee
 
 router.get("/:id/droprequests", [authenticate, authorizeById("employee")], employees.getDropRequests);
 
-router.get("/:id/timeoffrequests", [authenticate], employees.getTimeOffRequests);
+router.get("/:id/timeoffrequests", [authenticate, authorizeById("employee")], employees.getTimeOffRequests);
 
-router.delete("/:id/availabilitytemplates/semester/", [authenticate], employees.clearAvailabilityTemplatesForSemester);
+router.delete("/:id/availabilitytemplates/semester/", [authenticate, authorizeById("employee")], employees.clearAvailabilityTemplatesForSemester);
 
 router.delete("/:id/clearavailability", [authenticate, authorizeById("employee")], employees.clearAvailabilityTemplates);
 
