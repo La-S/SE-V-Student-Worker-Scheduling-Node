@@ -1,5 +1,5 @@
 import db from "../models/index.ts";
-const Settings = db.Settings;
+const Setting = db.Setting;
 
 import { Model } from "sequelize";
 import pkg from "express";
@@ -12,7 +12,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
     req.body.id = undefined;
 
-    const existing = await Settings.findOne({
+    const existing = await Setting.findOne({
         where: { code: req.body.code }
     });
 
@@ -20,7 +20,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Setting with code ${req.body.code} already exists`);
     }
 
-    const data = await Settings.create(req.body);
+    const data = await Setting.create(req.body);
     res.send(data);
 };
 
@@ -29,7 +29,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
     const code = req.params.code;
 
-    const data = await getSettingsForCode(code);
+    const data = await getSettingForCode(code);
     res.send(data);
 
 };
@@ -40,20 +40,20 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const code = req.params.code;
 
     // throws error if not found
-    await getSettingsForCode(code);
+    await getSettingForCode(code);
 
     req.body.id = undefined;
     req.body.code = undefined;
 
-    const numUpdated = await Settings.update(req.body, {
+    const numUpdated = await Setting.update(req.body, {
         where: { code: code }
     });
 
     if (numUpdated[0] <= 0) {
-        throw new AppError(400, `Update Settings for code ${code} did not update.`);
+        throw new AppError(400, `Update Setting for code ${code} did not update.`);
     }
 
-    const updatedObject = await getSettingsForCode(code);
+    const updatedObject = await getSettingForCode(code);
 
     res.send(updatedObject);
 };
@@ -63,9 +63,9 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 
     const code = req.params.code;
 
-    await getSettingsForCode(code);
+    await getSettingForCode(code);
 
-    const numDeleted = await Settings.destroy({
+    const numDeleted = await Setting.destroy({
         where: { code: code }
     });
 
@@ -78,13 +78,13 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 // Helper function
-async function getSettingsForCode(code: string): Promise<Model<any, any> | null> {
+async function getSettingForCode(code: string): Promise<Model<any, any> | null> {
 
     if (!code) {
         throw new AppError(400, "code must be provided");
     }
 
-    const data = await Settings.findOne({
+    const data = await Setting.findOne({
         where: { code }
     });
 

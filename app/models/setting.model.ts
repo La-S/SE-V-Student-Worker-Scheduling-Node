@@ -2,8 +2,8 @@ import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
 import { settingTypes } from "../types/settings.enum.ts";
 
-//settings
-const Settings = SequelizeInstance.define("settings", {
+//setting
+const Setting = SequelizeInstance.define("setting", {
     name: {
         type: Sequelize.STRING,
         allowNull: false
@@ -33,4 +33,4 @@ const Settings = SequelizeInstance.define("settings", {
     },
 });
 
-export default Settings;
+export default Setting;

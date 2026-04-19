@@ -19,7 +19,7 @@ import AvailabilityTemplate from "./availabilitytemplate.model.ts";
 import CoverRequest from "./coverrequest.model.ts"
 import DropRequest from "./droprequest.model.ts"
 import OpenHours from "./openhours.model.ts";
-import Settings from "./settings.model.ts";
+import Setting from "./setting.model.ts";
 import Announcement from "./announcement.model.ts";
 import AnnouncementReceipt from "./announcementreceipt.model.ts";
 import AnnouncementFile from "./announcementfile.model.ts";
@@ -51,7 +51,7 @@ const db = {
     File,
     UserFile,
     Timeclock,
-    Settings
+    Setting
 };
 
 //User-owned FKs

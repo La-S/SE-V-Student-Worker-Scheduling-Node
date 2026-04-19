@@ -17,7 +17,7 @@ import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
 import CoverRequestRoutes from "./coverrequest.routes.ts";
 import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
-import SettingsRoutes from "./settings.routes.ts";
+import SettingRoutes from "./setting.routes.ts";
 import DropRequestRoutes from "./droprequest.routes.ts";
 import AnnouncementRoutes from "./announcement.routes.ts";
 import AnnouncementReceiptRoutes from "./announcementreceipt.routes.ts";
@@ -50,6 +50,6 @@ router.use("/file", FileRoutes);
 router.use("/announcementfile", AnnouncementFileRoutes);
 router.use("/userfile", UserFileRoutes);
 router.use("/debug", DebugRoutes);
-router.use("/settings", SettingsRoutes);
+router.use("/setting", SettingRoutes);
 
 export default router;
