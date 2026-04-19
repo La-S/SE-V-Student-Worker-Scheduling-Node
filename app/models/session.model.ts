@@ -9,7 +9,7 @@ const Session = SequelizeInstance.define("session", {
         primaryKey: true,
     },
     token: {
-        type: Sequelize.STRING(3000),
+        type: Sequelize.STRING(750),
         allowNull: true,
         unique: true
     },
