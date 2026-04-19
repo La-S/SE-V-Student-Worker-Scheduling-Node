@@ -33,7 +33,7 @@ router.get("/:id/availabilitytemplates", [authenticate, managerOrAdminOnly], bus
 
 router.get("/:id/employees", [authenticate, managerOrAdminOnly], businessunits.findCurrentEmployees)
 
-router.get("/:id/employees/all", [authenticate], businessunits.findAllEmployees)
+router.get("/:id/employees/all", [authenticate, managerOrAdminOnly], businessunits.findAllEmployees)
 
 router.get("/:id/positions", [authenticate, managerOrAdminOnly], businessunits.findPositions)
 
@@ -62,7 +62,7 @@ router.get("/:id/droprequests/open/upcoming", [authenticate], businessunits.getU
 
 router.get("/:id/shifts/open", [authenticate], businessunits.findShifts)
 
-router.put("/:id/employees/rollover", [authenticate], businessunits.rolloverEmployees);
+router.put("/:id/employees/rollover", [authenticate, managerOrAdminOnly], businessunits.rolloverEmployees);
 
 router.get("/:id/budgetdaterange", [authenticate, managerOrAdminOnly], businessunits.getBudgetInformationForDateRange);
 

@@ -29,11 +29,11 @@ router.delete("/:id/permanent", [authenticate, authorizeById("employee")], gener
 //Get shifts for employee
 router.get("/:id/shifts", [authenticate, authorizeById("employee")], employees.findShifts);
 
-router.get("/:id/availabilitytemplates", [authenticate], employees.findCurrentAvailabilityTemplates)
+router.get("/:id/availabilitytemplates", [authenticate, authorizeById("employee")], employees.findCurrentAvailabilityTemplates)
 
-router.get("/:id/availabilitytemplates/semester/:semester", [authenticate], employees.findAvailabilityTemplatesForSemester)
+router.get("/:id/availabilitytemplates/semester/:semester", [authenticate, authorizeById("employee")], employees.findAvailabilityTemplatesForSemester)
 
-router.get("/:id/availabilitytemplates/all", [authenticate], employees.findAllAvailabilityTemplates)
+router.get("/:id/availabilitytemplates/all", [authenticate, authorizeById("employee")], employees.findAllAvailabilityTemplates)
 
 router.post("/:id/position/:positionid", [authenticate, authorizeById("employee")], employees.addPosition)
 
