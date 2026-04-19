@@ -377,5 +377,6 @@ exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
     const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
     data.push(settingValue);
   }
+}
 
 export default exports;
