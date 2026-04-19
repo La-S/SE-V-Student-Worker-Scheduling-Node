@@ -343,7 +343,7 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   for (const employee of employeesForUser) {
     employeeIds.push(employee.dataValues.id);
   }
-  const data = await TimeOffRequest.findAll({ where: { employeeId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"], ["startTime", "desc"]] });
+  const data = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
   res.send(data);
 }
 
