@@ -398,27 +398,6 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
     res.send(returnObject);
 }
 
-exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
-    const businessUnitId = parseInt(req.params.id as string, 10);
-    const settingCode = req.params.settingCode as string;
-    const settingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
-    res.send(settingValue);
-}
-
-exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
-    const businessUnitId = parseInt(req.params.id as string, 10);
-    const data: Model<any, any>[] = [];
-    const businessUnitSettings = await BusinessUnitSettingValue.findAll({
-        where: {
-            businessUnitId: businessUnitId,
-        }
-    });
-    for (const businessUnitSettingValue of businessUnitSettings) {
-        const settingValue = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
-        data.push(settingValue);
-    }
-    res.send(data);
-}
 exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
@@ -537,6 +516,28 @@ exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Respo
     }
 
     res.send(timeOffRequests);
+}
+
+exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const settingCode = req.params.settingCode as string;
+    const settingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
+    res.send(settingValue);
+}
+
+exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const data: Model<any, any>[] = [];
+    const businessUnitSettings = await BusinessUnitSettingValue.findAll({
+        where: {
+            businessUnitId: businessUnitId,
+        }
+    });
+    for (const businessUnitSettingValue of businessUnitSettings) {
+        const settingValue = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
+        data.push(settingValue);
+    }
+    res.send(data);
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {

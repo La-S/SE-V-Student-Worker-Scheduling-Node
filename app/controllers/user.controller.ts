@@ -365,7 +365,7 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
   res.send(settingValue);
 }
 
-exports.getAllSettingsValue = async (req: pkg.Request, res: pkg.Response) => {
+exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
   const userId = parseInt(req.params.id as string, 10);
   const data: Model<any, any>[] = [];
   const userSettings = await UserSettingValue.findAll({

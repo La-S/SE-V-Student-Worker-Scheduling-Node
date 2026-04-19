@@ -68,4 +68,8 @@ router.get("/:id/budgetdaterange", [authenticate, managerOrAdminOnly], businessu
 
 router.delete("/:id/shifts/:date/week", [authenticate, managerOrAdminOnly], businessunits.deleteShiftsForWeek);
 
+router.get("/:id/businessunitsettingvalues", [authenticate, authorizeById("businessUnit")], businessunits.getAllSettingsValues);
+
+router.get("/:id/businessunitsettingvalues/setting/:settingcode", [authenticate, authorizeById("businessUnit")], businessunits.getSingleSettingValue);
+
 export default router;
