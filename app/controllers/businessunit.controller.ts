@@ -132,7 +132,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
         currentSemester = getMostCommonSemester(employees);
     }
     const data = await AvailabilityTemplate.findAll({
-        where: {semester: currentSemester},
+        where: { semester: currentSemester },
         include: [{
             model: User,
             required: true, //REQUIRED. DO NOT REMOVE
@@ -382,6 +382,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    let loadClasses = req.query.loadclasses === "true";
     let semester: string = req.query.semester;
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
@@ -390,6 +391,10 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     }
     for (const employee of employees) {
         await employee.update({ semester: semester });
+        if (loadClasses) {
+            //probably shouldnt await since it shouldn't return and will take a WHILE
+            loadEmployeeClassUnavailability(employee);
+        }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
 }
