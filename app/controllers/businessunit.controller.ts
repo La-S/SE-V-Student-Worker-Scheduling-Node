@@ -465,7 +465,6 @@ exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Respo
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const timeOffRequestsWithShifts = [];
     const employees: Model[] = await business.getEmployees();
-    console.log(employees);
     const employeeIds: number[] = employees.map((employee: Model) => { return employee.dataValues.id });
     const timeOffRequests = await TimeOffRequest.findAll({
         where: {
