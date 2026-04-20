@@ -34,9 +34,9 @@ const Setting = SequelizeInstance.define("setting", {
         allowNull: false
     },
     //true if business, false if user, null if testing
-    forBusiness: {
+    isForBusinessUnit: {
         type: Sequelize.BOOLEAN,
-        allowNull: false,
+        allowNull: true,
     },
 });
 
