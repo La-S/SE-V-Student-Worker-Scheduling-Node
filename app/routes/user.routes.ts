@@ -50,6 +50,8 @@ router.delete("/:id/availabilitytemplates/semester/:semester", [authenticate, au
 
 router.delete("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.clearAvailabilityTemplates);
 
+router.get("/:id/expectedhours/:startdate", [authenticate, authorizeById("user")], users.getHoursForWeek);
+
 
 export default router;
 

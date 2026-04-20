@@ -9,7 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId } from "../services/services.ts";
+import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId, toHours } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
@@ -617,8 +617,4 @@ async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     return data;
 }
 
-const toHours = (time: string): number => {
-    const [hours, minutes, seconds] = time.split(":").map(Number);
-    return hours + minutes / 60 + (seconds || 0) / 3600;
-};
 export default exports;

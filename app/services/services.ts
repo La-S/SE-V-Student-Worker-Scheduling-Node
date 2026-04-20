@@ -18,6 +18,20 @@ export function isSunday(date: Date) {
     return (dayOfWeek == 0)
 }
 
+export function getSundayOfWeek(date: Date) {
+    //https://stackoverflow.com/questions/4156434/javascript-get-the-first-day-of-the-week-from-current-date
+    const dayOfWeek = date.getDay();
+    const diff = date.getDate() - dayOfWeek;
+    return new Date(date.setDate(diff));
+}
+
+export function getSaturdayOfWeek(date: Date) {
+    //modified from stackoverflow answer in getSunday function
+    const dayOfWeek = date.getDay();
+    const diff = date.getDate() + (6 - dayOfWeek);
+    return new Date(date.setDate(diff));
+}
+
 export function createDateFromString(dateString: string) {
     const date = new Date(dateString + 'T00:00:00');
     if (!date || (date as any) == "Invalid Date") {
@@ -54,7 +68,7 @@ export function convertTime(time: String) {
     //answer modified from https://stackoverflow.com/questions/15083548/convert-12-hour-hhmm-am-pm-to-24-hour-hhmm
     const hoursMins: string = time.slice(0, 5);
     const modifier: string = time.slice(5, 7);
-    let hours : string = hoursMins.slice(0, 2);
+    let hours: string = hoursMins.slice(0, 2);
     let mins: string = hoursMins.slice(2, 5);
     if (hours === "12") {
         hours = "00";
@@ -64,6 +78,11 @@ export function convertTime(time: String) {
     }
     return hours + mins + ":00"
 }
+
+export function toHours (time: string): number {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    return hours + minutes / 60 + (seconds || 0) / 3600;
+};
 
 export function convertDayOfWeek(dayOfWeek: String) {
     switch (dayOfWeek) {
@@ -77,11 +96,11 @@ export function convertDayOfWeek(dayOfWeek: String) {
     }
 }
 
-export function incrementSemester(semester: string){
+export function incrementSemester(semester: string) {
     let term: string = semester.slice(0, 2);
     const year: string = semester.slice(2, 4);
     let yearInt: number = parseInt(year, 10);
-    if (term == "FA"){
+    if (term == "FA") {
         yearInt++;
     }
     // FA -> SP and vice versa
