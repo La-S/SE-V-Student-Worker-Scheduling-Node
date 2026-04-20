@@ -371,15 +371,14 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
 exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   await getOneForId(User, id);
-  const userId = parseInt(req.params.id as string, 10);
   const data: Model<any, any>[] = [];
   const userSettings = await UserSettingValue.findAll({
     where: {
-      userId: userId,
+      userId: id,
     }
   });
   for (const userSettingValue of userSettings) {
-    const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
+    const settingValue = await getUserSettingValue(id, userSettingValue.dataValues.settingCode);
     data.push(settingValue);
   }
   res.send(data);

@@ -55,9 +55,11 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const setting = await getOneForStringId(Setting, req.body.settingCode);
+    const settingIntMapping = await getOneForId(SettingIntMapping, id);
+    const setting = await getOneForStringId(Setting, settingIntMapping.dataValues.settingCode);
+    await SettingIntMapping.destroy({where: {id: id}});
     setting.update({ intMax: setting.dataValues.intMax - 1 });
-    res.send("setting int mapping deleted");
+    res.send({message: "setting int mapping deleted"});
 }
 
 export default exports;

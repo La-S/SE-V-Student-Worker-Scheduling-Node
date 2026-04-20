@@ -35,6 +35,15 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     const setting = await getOneForStringId(Setting, businessUnitSettingValue.dataValues.settingCode);
 
+    if (setting.dataValues.type === "string" && typeof req.body.settingValue == "string"){
+        console.log("test");
+        const settingIntMapping = await SettingIntMapping.findOne({where: {settingCode: setting.dataValues.code, stringValue: req.body.settingValue}});
+        if (!settingIntMapping){
+            throw new AppError(400, `Setting mapping for ${req.body.settingValue} not found`);
+        }
+        req.body.settingValue = settingIntMapping.dataValues.settingValue;
+    }
+
     if (req.body.settingValue > setting.dataValues.intMax || req.body.settingValue < setting.dataValues.intMin) {
         throw new AppError(400, `settingValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
     }
