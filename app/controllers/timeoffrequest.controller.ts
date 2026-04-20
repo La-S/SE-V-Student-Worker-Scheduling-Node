@@ -9,6 +9,7 @@ import { getOneForId } from "../services/services.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
 import Shift from "../models/shift.model.ts";
 import { getShiftsForDateRange } from "./employee.controller.ts";
+import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Time Off Request";
 const exports: any = {};
@@ -47,7 +48,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     if (businessUnitId) {
         sendNotificationToManagers(businessUnitId, "New Time Off Request", `${firstName} ${lastName} has submitted a time off request.`);
     } else {
-        console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+        logger.log('warn', `No businessUnit Id for employee ${req.body.requesterId}...`)
     }
     res.send(data);
 };
@@ -71,7 +72,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     // throws error if not found
     await getOneForId(TimeOffRequest, id);
-    if (req.body.reviewedBy){
+    if (req.body.reviewedBy) {
         await getOneForId(Employee, req.body.reviewedBy);
     }
     req.body.requesterId = undefined;

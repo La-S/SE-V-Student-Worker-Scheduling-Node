@@ -9,6 +9,7 @@ import https from 'https';
 import fs from 'fs';
 import firebaseApp from "./app/config/firebase.ts";
 import { errorHandler } from "./app/error/errorhandler.ts";
+import { logger } from "./app/logger/logger.ts";
 
 
 const app = express();
@@ -40,12 +41,12 @@ if (process.env.NODE_ENV == "dev" && !process.env.USE_HTTP) {
     key: fs.readFileSync('./localhost+2-key.pem'),
     cert: fs.readFileSync('./localhost+2.pem'),
   }, app).listen(PORT, () => {
-    console.log(`Server is running on https port ${PORT}.`);
+    logger.log("info", `Server is running on https port ${PORT}.`);
   });
 } else {
   //prod
   app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}.`);
+    logger.log("info", `Server is running on https port ${PORT}.`);
   });
 }
 

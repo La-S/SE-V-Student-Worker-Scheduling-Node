@@ -20,6 +20,7 @@ import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
 import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
+import { logger } from "../logger/logger.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
@@ -380,7 +381,6 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>)
             const preference = "unavailable";
             let exists: boolean = false;
             for (const availability of existing) {
-                console.log(availability)
                 if (availability.dataValues.dayOfWeek === fullDay && availability.dataValues.startTime === startTime && availability.dataValues.endTime === endTime && availability.dataValues.semester === semester) {
                     exists = true;
                     break;
@@ -456,7 +456,7 @@ async function updateUserInfo(classData, user: Model) {
     if (updateSucceed)
         return;
     else
-        console.log("User info did not update");
+        logger.log("warn", "user info did not update properly.")
 }
 
 exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {

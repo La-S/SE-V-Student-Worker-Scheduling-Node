@@ -4,6 +4,7 @@ import { AppError } from "../error/app.error.ts";
 import Session from "../models/session.model.ts";
 import users from "../controllers/user.controller.ts";
 import { sendEmail } from "../services/mailer.ts";
+import { logger } from '../logger/logger.ts';
 
 const exports: any = {}
 
@@ -28,7 +29,7 @@ exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
     expirationDate: tempExpirationDate,
   };
 
-  console.log("making a new session for DEBUG USER");
+  logger.log("warn", "making a new session for DEBUG USER")
   console.log(session);
   await Session.create(session as any);
 

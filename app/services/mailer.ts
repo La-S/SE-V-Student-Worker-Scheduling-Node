@@ -7,6 +7,7 @@ import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts";
 import Employee from "../models/employee.model.ts";
 import User from "../models/user.model.ts";
+import { logger } from "../logger/logger.ts";
 
 type EmailContent = {
   to: string;
@@ -27,7 +28,7 @@ const transporter = nodemailer.createTransport({
 function getFromAddress(): string | null {
   const from = process.env.EMAIL_USER?.trim();
   if (!from) {
-    console.warn("EMAIL_USER is not configured. Email will be skipped.");
+    logger.log('error', "EMAIL_USER is not configured. Email will be skipped.");
     return null;
   }
   return from;
@@ -52,7 +53,9 @@ export async function sendEmail(content: EmailContent): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error("Email error:", error);
+    logger.log("error", "There was an error with nodemailer: "+ JSON.stringify(error));
+    logger.log("error", error);
+
     return false;
   }
 }
@@ -116,7 +119,7 @@ export async function sendEmailToEmployeeId(
   const email = (employee as any)?.dataValues?.user?.dataValues?.email?.trim();
 
   if (!email) {
-    console.warn(`Employee Id ${employeeId} does not have an email address.`);
+    logger.log('warn', `Employee Id ${employeeId} does not have an email address.`)
     return false;
   }
 

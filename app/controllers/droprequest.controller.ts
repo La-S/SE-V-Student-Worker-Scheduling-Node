@@ -8,6 +8,7 @@ import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
+import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Drop Request";
 const exports: any = {};
@@ -32,7 +33,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         if (businessUnitId) {
             sendNotificationToManagers(businessUnitId, "New Drop Request", `${firstName} ${lastName} wants to drop an upcoming shift.`);
         } else {
-            console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+            logger.log('warn', `No businessUnit Id for employee ${req.body.requesterId}...`)
         }
     }
     res.send(data);

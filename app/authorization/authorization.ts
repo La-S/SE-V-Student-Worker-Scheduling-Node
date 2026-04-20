@@ -7,6 +7,7 @@ import { Op } from "sequelize";
 import Employee from "../models/employee.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
+import { logger } from "../logger/logger.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 
 
@@ -60,7 +61,7 @@ export const managerOrAdminOnly = async (req: pkg.Request, res: pkg.Response, ne
 
     if (req.body?.isManager && !businessUnitsForManager.some((a) => { return a === req.body?.businessUnitId})) {
       // prevent privilege escalation
-      console.log("tried to create a manager for a different businessUnit. Don't allow that")
+      logger.log("info", "A manager was blocked trying to create a manager in a different businessUnit.");
       req.body.isManager = undefined;
     }
 
