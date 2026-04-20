@@ -33,7 +33,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let type: string = req.body.type;
 
     if (type === "int") {
-        if (!req.body.intMin || !req.body.intMax) {
+        if (req.body.intMin == null || req.body.intMax == null) {
             throw new AppError(400, "intMin and intMax must be provided for int type settings");
         }
         if (req.body.intMax < req.body.intMin) {

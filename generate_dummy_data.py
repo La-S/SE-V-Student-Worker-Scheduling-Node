@@ -398,6 +398,41 @@ def time_off_request(requester_employee_id, posted_date, posted_time, start_date
         print('Hmm, we got an error requesting time off', r.text)
     return r.json()
 
+def create_setting(name, description, code, settings_type, default_value, int_min, int_max, is_for_business_unit, values = None):
+    r = requests.post(f'{ENDPOINT}/setting', json = {
+        "name": name,
+        "description": description,
+        "code": code,
+        "type": settings_type,
+        "defaultValue": default_value,
+        "intMin": int_min,
+        "intMax": int_max,
+        "isForBusinessUnit": is_for_business_unit,
+        "values": values,
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error creating a new setting', r.text)
+    return r.json()
+
+def get_setting_for_bu_by_code(businessUnitId, code):
+    r = requests.get(f'{ENDPOINT}/businessunit/{businessUnitId}/setting/{code}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error getting a setting', r.text)
+    return r.json()
+
+def delete_setting(code):
+    r = requests.delete(f'{ENDPOINT}/setting/{code}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error deleting a setting', r.text)
+    return r.json()
+
+def update_business_setting(setting_value_id, value):
+    r = requests.put(f'{ENDPOINT}/businessunitsettingvalue/{setting_value_id}', json= {
+        "settingValue": value
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error updating a setting', r.text)
+    return r.json()
 
 # light side
 yoda = create_user("Master", "Yoda", "yoda@jedimasters.com", True)
@@ -446,7 +481,20 @@ wipe_equipment = create_tasklist(jedi_fitness_center['id'], "Wipe Down Equipment
 wipe_force_weights_task = create_task(wipe_equipment['id'], 'Wipe down force weights (1)', 1)
 wipe_holo_bench_task = create_task(wipe_equipment['id'], 'Wipe down holo bench (3)', 3)
 wipe_saber_trainer_task = create_task(wipe_equipment['id'], 'Wipe down saber trainer (2)', 2)
+delete_setting("REMOTECLKIN")
+create_setting("Allow Remote Clockin", "Allow users to clock in from their phone", "REMOTECLKIN", "boolean", 1, 0, 1, True)
+remote_clockin_setting = get_setting_for_bu_by_code(jedi_fitness_center['id'], "REMOTECLKIN")
+update_business_setting(remote_clockin_setting['id'], False) # disallow clockin via phone at the fitness center.
 
+delete_setting("CLKINBUFF")
+create_setting("Clock in Buffer", "Minutes to wait before sending an alert/marking an employee as late", "CLKINBUFF", "int", 3, 0, 15, True)
+clockin_buffer_setting = get_setting_for_bu_by_code(jedi_fitness_center['id'], "CLKINBUFF")
+update_business_setting(clockin_buffer_setting['id'], 2) # 2 minutes of buffer
+
+delete_setting("STRSETT")
+create_setting("Dummy String Setting", "Not Useful just for debugging", "STRSETT", "string", "a", 0, 3, True, ["a", "b", "c", "d"])
+string_setting = get_setting_for_bu_by_code(jedi_fitness_center['id'], "STRSETT")
+update_business_setting(string_setting['id'], "b") # set b as our value
 
 dexs_diner = create_business_unit("Dex's Diner") #https://starwars.fandom.com/wiki/Dex%27s_Diner/Legends
 jabba_working_for_dex = create_employee(jabba['id'], dexs_diner['id'], 'SP26', True, 40, 0, False)
