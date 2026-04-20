@@ -8,6 +8,8 @@ import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
 
+const exports = {} as any;
+
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     const setting = await getOneForStringId(Setting, req.body.settingCode);
@@ -16,7 +18,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     req.body.id = undefined;
-    req.body.intValue = setting.dataValues.intMax + 1;
+    req.body.settingValue = setting.dataValues.intMax + 1;
     const data = await SettingIntMapping.create(req.body);
     setting.update({ intMax: setting.dataValues.intMax + 1 });
     res.send(data);
@@ -29,6 +31,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     //Should not change the business unit or setting 
     req.body.settingCode = undefined;
+    req.body.settingIntValue = undefined;
     req.body.id = undefined;
 
     const numUpdated = await SettingIntMapping.update(req.body, {

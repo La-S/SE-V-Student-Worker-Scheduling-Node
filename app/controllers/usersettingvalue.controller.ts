@@ -27,14 +27,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
-    await getOneForId(UserSettingValue, id);
+    const userSettingValue = await getOneForId(UserSettingValue, id);
 
     //Should not change the business unit or setting 
     req.body.userId = undefined;
     req.body.settingCode = undefined;
     req.body.id = undefined;
 
-    const setting = await getOneForStringId(Setting, req.body.settingCode);
+    const setting = await getOneForStringId(Setting, userSettingValue.dataValues.settingCode);
 
     if (req.body.settingValue > setting.dataValues.intMax || req.body.settingValue < setting.dataValues.intMin) {
         throw new AppError(400, `settingValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
