@@ -350,12 +350,13 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getHoursForWeek = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
-  const user = await getOneForId(User, id);
-  const expectedTotalHours = await getUserExpectedHoursForWeek(user, req.params.startdate);
+  const user = await getOneForId(User,id);
+  const expectedTotalHours = await getUserExpectedHoursForWeek(id, req.params.startdate);
   res.send({ expectedTotalHours: expectedTotalHours });
 }
 
-async function getUserExpectedHoursForWeek(user: Model<any, any>, queryDate: string): Promise<number> {
+export async function getUserExpectedHoursForWeek(userId: number, queryDate: string): Promise<number> {
+  const user = await getOneForId(User, userId);
   const employees: Model[] = await user.getEmployees();
   const employeeIds: number[] = [];
   const dateObj: Date = createDateFromString(queryDate);
