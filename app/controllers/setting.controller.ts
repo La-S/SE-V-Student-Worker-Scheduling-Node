@@ -113,6 +113,17 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 };
 
+exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+
+    const data = await Setting.findAll({
+        include: [{
+            model: SettingIntMapping,
+            required: false
+        }],
+        order: [["name", "ASC"]]
+    });
+    res.send(data);
+}
 // Find a single setting by code
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
@@ -125,37 +136,64 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
 // Update a setting by code
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-
     const code = req.params.code;
-
-    // throws error if not found
     const setting = await getSettingForCode(code);
-
     req.body.id = undefined;
     req.body.code = undefined;
-    if (req.body.defaultValue !== undefined && (req.body.defaultValue < setting!.dataValues.intMin || req.body.defaultValue > setting!.dataValues.intMax)) {
-        throw new AppError(400, `defaultValue must be between ${setting!.dataValues.intMin} and ${setting!.dataValues.intMax}`);
+
+    let intMin = setting!.dataValues.intMin;
+    let intMax = setting!.dataValues.intMax;
+    let defaultValue = setting!.dataValues.defaultValue;
+    let type = setting!.dataValues.type;
+    if (req.body.intMin !== undefined){
+        intMin = req.body.intMin;
     }
-    if (req.body.defaultValue !== undefined && (req.body.intMax > req.body.defaultValue || req.body.intMin < req.body.defaultValue)) {
-        throw new AppError(400, `defaultValue must be between intMin and intMax. Please update the defaultValue.`);
+    if (req.body.intMax !== undefined){
+        intMax = req.body.intMax;
     }
-    if (req.body.defaultValue === undefined && (req.body.intMax > setting!.dataValues.defaultValue || req.body.intMin < setting!.dataValues.defaultValue)) {
-        throw new AppError(400, `defaultValue must be between intMin and intMax. Please update the defaultValue.`);
+    if (req.body.defaultValue !== undefined){
+        defaultValue = req.body.defaultValue;
     }
-    if (req.body.intMax && req.body.intMin && req.body.intMax < req.body.intMin) {
+    if (req.body.type !== undefined){
+        type = req.body.type;
+    }
+
+    if (intMax !== null && intMin !== null && intMax < intMin) {
         throw new AppError(400, `intMax must be greater than or equal to intMin`);
     }
 
-    const numUpdated = await Setting.update(req.body, {
-        where: { code: code }
-    });
 
+    if (type === 'string') {
+        if (!req.body.values || !Array.isArray(req.body.values)) {
+            throw new AppError(400, 'values must be provided for string type settings');
+        }
+        req.body.intMin = 0;
+        req.body.intMax = req.body.values.length - 1;
+
+        if (defaultValue < 0 || defaultValue > req.body.intMax) {
+            throw new AppError(400, `defaultValue must be between 0 and ${req.body.intMax}`);
+        }
+
+        await SettingIntMapping.destroy({ where: { settingCode: code } });
+        for (let i = 0; i < req.body.values.length; i++) {
+            await SettingIntMapping.create({
+                settingCode: code,
+                intValue: i,
+                stringValue: req.body.values[i],
+            });
+        }
+    } else {
+        if (defaultValue < intMin || defaultValue > intMax) {
+            throw new AppError(400, `defaultValue must be between ${intMin} and ${intMax}`);
+        }
+    }
+
+    const numUpdated = await Setting.update(req.body, { where: { code } });
     if (numUpdated[0] <= 0) {
         throw new AppError(400, `Update Setting for code ${code} did not update.`);
     }
 
     const updatedObject = await getSettingForCode(code);
-
     res.send(updatedObject);
 };
 
@@ -187,7 +225,7 @@ async function getSettingForCode(code: string): Promise<Model<any, any> | null> 
 
     const data = await Setting.findOne({
         where: { code },
-        include:[{
+        include: [{
             model: SettingIntMapping,
             required: false
         }]
