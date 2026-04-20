@@ -25,6 +25,9 @@ import AnnouncementReceiptRoutes from "./announcementreceipt.routes.ts";
 import AnnouncementFileRoutes from "./announcementfile.routes.ts"
 import UserFileRoutes from "./userfile.routes.ts";
 import FileRoutes from "./file.routes.ts";
+import UserSettingValueRoutes from "./usersettingvalue.routes.ts";
+import BusinessUnitSettingValueRoutes from "./businessunitsettingvalue.routes.ts";
+import SettingIntMappingRoutes from "./settingintmapping.routes.ts";
 
 const router = Router();
 
@@ -53,5 +56,9 @@ router.use("/announcementfile", AnnouncementFileRoutes);
 router.use("/userfile", UserFileRoutes);
 router.use("/debug", DebugRoutes);
 router.use("/setting", SettingRoutes);
+router.use("/usersettingvalue", UserSettingValueRoutes);
+router.use("/businessunitsettingvalue", BusinessUnitSettingValueRoutes);
+router.use("/settingintmapping", SettingIntMappingRoutes);
+
 
 export default router;
