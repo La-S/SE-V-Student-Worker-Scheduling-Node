@@ -5,6 +5,7 @@ import UserSettingValueModel from "../models/usersettingvalue.model.ts"
 import { Router } from "express";
 var router = Router()
 
+//SHOULD NOT USE MOST OF THESE BESIDES PUT
 
 // Create a new UserSettingValue
 router.post("/", [authenticate, isAdminOnly], userSettingValues.create);

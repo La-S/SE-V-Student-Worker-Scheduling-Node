@@ -11,6 +11,9 @@ import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.t
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
     const setting = await getOneForStringId(Setting, req.body.settingCode);
+    if (setting.dataValues.type !== "string") {
+        throw new AppError(400, "Setting type must be string for mapping");
+    }
 
     req.body.id = undefined;
     req.body.intValue = setting.dataValues.intMax + 1;

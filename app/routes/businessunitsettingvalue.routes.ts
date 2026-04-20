@@ -5,6 +5,7 @@ import BusinessUnitSettingValueModel from "../models/businessunitsettingvalue.mo
 import { Router } from "express";
 var router = Router()
 
+//SHOULD NOT USE MOST OF THESE BESIDES PUT
 
 // Create a new BusinessUnitSettingValue
 router.post("/", [authenticate, isAdminOnly], businessUnitSettingValues.create);
