@@ -68,27 +68,26 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 export async function getBusinessUnitSettingValue(businessUnitId: number, settingCode: string): Promise<Model<any, any>> {
-    const businessUnitSettingValue = await BusinessUnitSettingValue.findOne({
+    const userSettingValue = await BusinessUnitSettingValue.findOne({
         where: {
             businessUnitId: businessUnitId,
+            settingCode: settingCode
         }
     });
-    if (!businessUnitSettingValue) {
+    if (!userSettingValue) {
         throw new AppError(404, `No setting value found for business unit ${businessUnitId} and setting code ${settingCode}`);
     }
     const settingValue = await BusinessUnitSettingValue.findOne({
         where: {
             businessUnitId: businessUnitId,
+            settingCode: settingCode
         },
         include: [{
             model: Setting,
-            where: {
-                settingCode: settingCode
-            },
             include: [{
                 model: SettingIntMapping,
                 required: false,
-                where: { settingValue: businessUnitSettingValue.dataValues.settingValue }
+                where: { settingValue: userSettingValue.dataValues.settingValue }
             }]
 
         }]

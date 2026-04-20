@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getDateRange, getOneForId, getStringFromDate, incrementSemester } from '../services/services.ts';
+import { createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -152,7 +152,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
         currentSemester = getMostCommonSemester(employees);
     }
     const data = await AvailabilityTemplate.findAll({
-        where: {semester: currentSemester},
+        where: { semester: currentSemester },
         include: [{
             model: User,
             required: true, //REQUIRED. DO NOT REMOVE
@@ -519,13 +519,18 @@ exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Respo
 }
 
 exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    await getOneForStringId(Setting, req.params.code);
     const businessUnitId = parseInt(req.params.id as string, 10);
-    const settingCode = req.params.settingCode as string;
+    const settingCode = req.params.code as string;
     const settingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
     res.send(settingValue);
 }
 
 exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
     const businessUnitId = parseInt(req.params.id as string, 10);
     const data: Model<any, any>[] = [];
     const businessUnitSettings = await BusinessUnitSettingValue.findAll({

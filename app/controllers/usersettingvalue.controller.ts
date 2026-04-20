@@ -7,6 +7,7 @@ import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
+import User from "../models/user.model.ts";
 
 const exports: any = {}
 
@@ -73,6 +74,7 @@ export async function getUserSettingValue(userId: number, settingCode: string): 
     const userSettingValue = await UserSettingValue.findOne({
         where: {
             userId: userId,
+            settingCode: settingCode
         }
     });
     if (!userSettingValue) {
@@ -81,12 +83,10 @@ export async function getUserSettingValue(userId: number, settingCode: string): 
     const settingValue = await UserSettingValue.findOne({
         where: {
             userId: userId,
+            settingCode: settingCode
         },
         include: [{
             model: Setting,
-            where: {
-                settingCode: settingCode
-            },
             include: [{
                 model: SettingIntMapping,
                 required: false,

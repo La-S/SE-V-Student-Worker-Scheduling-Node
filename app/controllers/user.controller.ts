@@ -6,7 +6,7 @@ import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Employee from "../models/employee.model.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
@@ -359,13 +359,18 @@ exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
+  await getOneForStringId(Setting, req.params.code);
   const userId = parseInt(req.params.id as string, 10);
-  const settingCode = req.params.settingCode as string;
+  const settingCode = req.params.code as string;
   const settingValue = await getUserSettingValue(userId, settingCode);
   res.send(settingValue);
 }
 
 exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
   const userId = parseInt(req.params.id as string, 10);
   const data: Model<any, any>[] = [];
   const userSettings = await UserSettingValue.findAll({
@@ -377,6 +382,7 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
     const settingValue = await getUserSettingValue(userId, userSettingValue.dataValues.settingCode);
     data.push(settingValue);
   }
+  res.send(data);
 }
 
 export default exports;
