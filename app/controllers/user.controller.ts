@@ -6,7 +6,7 @@ import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Employee from "../models/employee.model.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
@@ -22,6 +22,9 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
+import UserSettingValue from "../models/usersettingvalue.model.ts";
+import { getUserSettingValue } from "./usersettingvalue.controller.ts";
+import Setting from "../models/setting.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
@@ -35,6 +38,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
   // Save User in the database
   const data = await User.create(req.body);
+  const settings = await Setting.findAll({ where: { isForBusinessUnit: false } });
+  for (const setting of settings) {
+    await UserSettingValue.create({
+      userId: data.dataValues.id,
+      settingCode: setting.dataValues.code,
+      settingValue: setting.dataValues.defaultValue
+    });
+  }
   res.send(data);
 };
 
@@ -328,13 +339,6 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
   res.send(data);
 }
 
-exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id as string, 10);
-  const user = await getOneForId(User, id);
-  const data = await UserFile.findAll({ where: { userId: id } });
-  res.send(data);
-}
-
 exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
@@ -344,6 +348,39 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
     employeeIds.push(employee.dataValues.id);
   }
   const data = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
+  res.send(data);
+}
+
+exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const data = await UserFile.findAll({ where: { userId: id } });
+  res.send(data);
+}
+
+exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
+  await getOneForStringId(Setting, req.params.code);
+  const userId = parseInt(req.params.id as string, 10);
+  const settingCode = req.params.code as string;
+  const settingValue = await getUserSettingValue(userId, settingCode);
+  res.send(settingValue);
+}
+
+exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
+  const data: Model<any, any>[] = [];
+  const userSettings = await UserSettingValue.findAll({
+    where: {
+      userId: id,
+    }
+  });
+  for (const userSettingValue of userSettings) {
+    const settingValue = await getUserSettingValue(id, userSettingValue.dataValues.settingCode);
+    data.push(settingValue);
+  }
   res.send(data);
 }
 

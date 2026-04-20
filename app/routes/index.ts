@@ -17,7 +17,7 @@ import AvailabilityTemplateRoutes from "./availabilitytemplate.routes.ts"
 import CoverRequestRoutes from "./coverrequest.routes.ts";
 import OpenHoursRoutes from "./openhours.routes.ts";
 import DebugRoutes from "./debug.routes.ts";
-import SettingsRoutes from "./settings.routes.ts";
+import SettingRoutes from "./setting.routes.ts";
 import DropRequestRoutes from "./droprequest.routes.ts";
 import TimeOffRequestRoutes from "../routes/timeoffrequest.routes.ts";
 import AnnouncementRoutes from "./announcement.routes.ts";
@@ -25,6 +25,9 @@ import AnnouncementReceiptRoutes from "./announcementreceipt.routes.ts";
 import AnnouncementFileRoutes from "./announcementfile.routes.ts"
 import UserFileRoutes from "./userfile.routes.ts";
 import FileRoutes from "./file.routes.ts";
+import UserSettingValueRoutes from "./usersettingvalue.routes.ts";
+import BusinessUnitSettingValueRoutes from "./businessunitsettingvalue.routes.ts";
+import SettingIntMappingRoutes from "./settingintmapping.routes.ts";
 
 const router = Router();
 
@@ -52,6 +55,10 @@ router.use("/file", FileRoutes);
 router.use("/announcementfile", AnnouncementFileRoutes);
 router.use("/userfile", UserFileRoutes);
 router.use("/debug", DebugRoutes);
-router.use("/settings", SettingsRoutes);
+router.use("/setting", SettingRoutes);
+router.use("/usersettingvalue", UserSettingValueRoutes);
+router.use("/businessunitsettingvalue", BusinessUnitSettingValueRoutes);
+router.use("/settingintmapping", SettingIntMappingRoutes);
+
 
 export default router;

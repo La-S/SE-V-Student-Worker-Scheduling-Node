@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getDateRange, getOneForId, getStringFromDate, incrementSemester } from '../services/services.ts';
+import { createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -19,8 +19,28 @@ import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
 import { getBudgetInformationForDateRange } from './employee.controller.ts';
+import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
+import SettingIntMapping from '../models/settingintmapping.model.ts';
+import Setting from '../models/setting.model.ts';
+import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
+import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
 const exports: any = {}
+
+
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
+    req.body.id = undefined;
+    const data = await BusinessUnit.create(req.body);
+    const settings = await Setting.findAll({ where: { isForBusinessUnit: true } });
+    for (const setting of settings) {
+        await BusinessUnitSettingValue.create({
+            businessUnitId: data.dataValues.id,
+            settingCode: setting.dataValues.code,
+            settingValue: setting.dataValues.defaultValue
+        });
+    }
+    res.send(data);
+}
 
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
@@ -132,7 +152,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
         currentSemester = getMostCommonSemester(employees);
     }
     const data = await AvailabilityTemplate.findAll({
-        where: {semester: currentSemester},
+        where: { semester: currentSemester },
         include: [{
             model: User,
             required: true, //REQUIRED. DO NOT REMOVE
@@ -383,6 +403,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     let semester: string = req.query.semester;
+    let loadClasses = req.query.loadClasses === "true";
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
         semester = getMostCommonSemester(employees);
@@ -390,6 +411,10 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     }
     for (const employee of employees) {
         await employee.update({ semester: semester });
+        if (loadClasses){
+            //probably shouldnt await since it shouldn't return and will take a WHILE
+            loadEmployeeClassUnavailability(employee);
+        }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
 }
@@ -495,6 +520,33 @@ exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Respo
     }
 
     res.send(timeOffRequests);
+}
+
+exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    await getOneForStringId(Setting, req.params.code);
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const settingCode = req.params.code as string;
+    const settingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
+    res.send(settingValue);
+}
+
+exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const businessUnitId = parseInt(req.params.id as string, 10);
+    const data: Model<any, any>[] = [];
+    const businessUnitSettings = await BusinessUnitSettingValue.findAll({
+        where: {
+            businessUnitId: businessUnitId,
+        }
+    });
+    for (const businessUnitSettingValue of businessUnitSettings) {
+        const settingValue = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
+        data.push(settingValue);
+    }
+    res.send(data);
 }
 
 async function getUnavailableEmployees(employees: Model<any, any>[]) {

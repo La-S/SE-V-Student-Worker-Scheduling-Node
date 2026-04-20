@@ -50,6 +50,9 @@ router.delete("/:id/availabilitytemplates/semester/:semester", [authenticate, au
 
 router.delete("/:id/availabilitytemplates", [authenticate, authorizeById("user")], users.clearAvailabilityTemplates);
 
+router.get("/:id/settings", [authenticate, authorizeById("user")], users.getAllSettingsValues);
+
+router.get("/:id/setting/:code", [authenticate, authorizeById("user")], users.getSingleSettingValue);
 
 export default router;
 
