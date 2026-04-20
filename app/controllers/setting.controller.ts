@@ -83,7 +83,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         for (let i = req.body.intMin; i <= req.body.intMax; i++) {
             await SettingIntMapping.create({
                 settingCode: req.body.code,
-                intValue: i,
+                settingValue: i,
                 stringValue: req.body.values[i - req.body.intMin]
             });
         }
@@ -99,7 +99,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     //is for users
-    else if (req.body.isForBusinessUnit != null) {
+    else if (req.body.isForBusinessUnit == false) {
         const users = await User.findAll();
         for (const user of users) {
             await UserSettingValue.create({
