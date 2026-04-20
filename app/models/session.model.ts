@@ -11,7 +11,7 @@ const Session = SequelizeInstance.define("session", {
     token: {
         type: Sequelize.STRING(750),
         allowNull: true,
-        unique: true
+        unique: 'token'
     },
     email: {
         type: Sequelize.STRING(100),
