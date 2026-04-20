@@ -8,6 +8,7 @@ import BusinessUnit from "../models/businessunit.model.ts";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
 import User from "../models/user.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
+import SettingIntMapping from "../models/settingintmapping.model.ts";
 
 const exports: any = {};
 
@@ -80,7 +81,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     const data = await Setting.create(req.body);
     if (type === "string") {
         for (let i = req.body.intMin; i <= req.body.intMax; i++) {
-            await db.SettingIntMapping.create({
+            await SettingIntMapping.create({
                 settingCode: req.body.code,
                 intValue: i,
                 stringValue: req.body.values[i - req.body.intMin]
