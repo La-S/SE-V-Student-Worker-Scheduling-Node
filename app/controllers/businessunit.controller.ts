@@ -31,7 +31,7 @@ const exports: any = {}
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
     const data = await BusinessUnit.create(req.body);
-    const settings = await Setting.findAll({ where: { isForBusinessUnit: false } });
+    const settings = await Setting.findAll({ where: { isForBusinessUnit: true } });
     for (const setting of settings) {
         await BusinessUnitSettingValue.create({
             businessUnitId: data.dataValues.id,
