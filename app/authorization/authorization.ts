@@ -7,6 +7,7 @@ import { Op } from "sequelize";
 import Employee from "../models/employee.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
+import UserSettingValue from "../models/usersettingvalue.model.ts";
 
 
 const Session = db.Session;
@@ -78,7 +79,8 @@ const AuthOption = {
   businessUnit: "businessUnit",
   userfile: "userfile",
   user: "user",
-  timeOffRequest: "timeOffRequest"
+  timeOffRequest: "timeOffRequest",
+  userSettingsValue: "userSettingsValue"
 }
 
 export const authorizeById = (option: any) => {
@@ -88,7 +90,7 @@ export const authorizeById = (option: any) => {
     if (!idToVerify) {
       throw new UnauthorizedError("Unauthorized! User must have an ID to perform this function")
     }
-    
+
     let token = getToken(req);
     let foundSession = await getSession(token);
     let user = await (foundSession as any).getUser();
@@ -96,6 +98,29 @@ export const authorizeById = (option: any) => {
       // console.log("is admin")
       next();
       return;
+    }
+
+    if (option == AuthOption.userSettingsValue) {
+      let userSettingsValueTryingToAccess = await UserSettingValue.findByPk(idToVerify);
+      if (!userSettingsValueTryingToAccess) {
+        throw new AppError(404, "not found");
+      }
+      if (user.id === userSettingsValueTryingToAccess.dataValues.userId) {
+        // this is the own user, let him edit
+        next();
+        return;
+      }
+
+      let employeesForRequestingUser = await (user as any).getEmployees();
+      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      for (let manager of managerPositions) {
+        let isAuthorized = await isUserInBusinessUnit(userSettingsValueTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
+        if (isAuthorized) {
+          next();
+          return;
+        }
+      }
+      throw new UnauthorizedError("Unauthorized! You are not allowed to access that info");
     }
 
     if (option == AuthOption.timeOffRequest) {
