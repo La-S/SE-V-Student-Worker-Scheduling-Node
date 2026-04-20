@@ -28,7 +28,6 @@ const transporter = nodemailer.createTransport({
 function getFromAddress(): string | null {
   const from = process.env.EMAIL_USER?.trim();
   if (!from) {
-    console.warn("EMAIL_USER is not configured. Email will be skipped.");
     logger.log('error', "EMAIL_USER is not configured. Email will be skipped.");
     return null;
   }
@@ -120,7 +119,7 @@ export async function sendEmailToEmployeeId(
   const email = (employee as any)?.dataValues?.user?.dataValues?.email?.trim();
 
   if (!email) {
-    console.warn(`Employee Id ${employeeId} does not have an email address.`);
+    logger.log('warn', `Employee Id ${employeeId} does not have an email address.`)
     return false;
   }
 

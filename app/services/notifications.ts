@@ -11,7 +11,6 @@ export async function sendNotificationToEmployee(employeeId: number, title: stri
     });
     const pushToken: string | undefined = (data as any).dataValues.user.dataValues.pushToken;
     if (!pushToken) {
-        console.warn(`Employee Id ${employeeId} has not signed up for push notifications.`);
         logger.log("info", `Employee Id ${employeeId} has not signed up for push notifications.`);
         return false;
     }
@@ -34,13 +33,13 @@ export async function sendNotificationToManagers(businessUnitId: number, title: 
     });
     let employees = (data as any)?.dataValues?.employees;
     if (!employees) {
-        console.warn("data not found, trying to send a notification to managers.")
+        logger.log('warn', "data not found, trying to send a notification to managers.")
         return;
     }
     for (let employee of (data as any)?.dataValues?.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, title, body);
@@ -62,8 +61,8 @@ export async function sendNotificationToBusinessUnit(businessUnitId: number, for
     });
     for (let employee of (data as any).dataValues.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, "Shifts Published", `Shifts have been published for the week of ${forWeekOf}`);
@@ -86,8 +85,8 @@ export async function sendNotificationToOtherEmployees(employeeId: number, busin
     });
     for (let employee of (data as any).dataValues.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, title, body);
