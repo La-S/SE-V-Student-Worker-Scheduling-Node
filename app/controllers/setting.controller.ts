@@ -24,7 +24,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Setting with code ${req.body.code} already exists`);
     }
 
-    if (!req.body.defaultValue) {
+    if (req.body.defaultValue === undefined) {
         throw new AppError(400, "defaultValue must be provided");
     }
 
@@ -38,12 +38,23 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         if (req.body.intMax < req.body.intMin) {
             throw new AppError(400, "intMax must be greater than or equal to intMin");
         }
+        if ((req.body.defaultValue < req.body.intMin || req.body.defaultValue > req.body.intMax)) {
+            throw new AppError(400, `defaultValue must be between ${req.body.intMin} and ${req.body.intMax}`);
+        }
+        if (req.body.intMax && req.body.intMin && req.body.intMax < req.body.intMin) {
+            throw new AppError(400, `intMax must be greater than or equal to intMin`);
+        }
         typeDefined = true;
     }
 
     if (type === "boolean") {
         req.body.intMin = 0;
         req.body.intMax = 1;
+        if (req.body.defaultValue == true) {
+            req.body.defaultValue = 1;
+        } else {
+            req.body.defaultValue = 0;
+        }
         typeDefined = true;
     }
 
@@ -121,10 +132,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     req.body.id = undefined;
     req.body.code = undefined;
-    if (req.body.defaultValue !== undefined && (req.body.defaultValue < setting.dataValues.intMin || req.body.defaultValue > setting.dataValues.intMax)) {
-        throw new AppError(400, `defaultValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
+    if (req.body.defaultValue !== undefined && (req.body.defaultValue < setting!.dataValues.intMin || req.body.defaultValue > setting!.dataValues.intMax)) {
+        throw new AppError(400, `defaultValue must be between ${setting!.dataValues.intMin} and ${setting!.dataValues.intMax}`);
     }
-    if (req.body.intMax > req.body.defaultValue || req.body.intMin < req.body.defaultValue) {
+    if (req.body.defaultValue !== undefined && (req.body.intMax > req.body.defaultValue || req.body.intMin < req.body.defaultValue)) {
+        throw new AppError(400, `defaultValue must be between intMin and intMax. Please update the defaultValue.`);
+    }
+    if (req.body.defaultValue === undefined && (req.body.intMax > setting!.dataValues.defaultValue || req.body.intMin < setting!.dataValues.defaultValue)) {
         throw new AppError(400, `defaultValue must be between intMin and intMax. Please update the defaultValue.`);
     }
     if (req.body.intMax && req.body.intMin && req.body.intMax < req.body.intMin) {
