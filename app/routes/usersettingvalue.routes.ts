@@ -14,7 +14,7 @@ router.post("/", [authenticate, isAdminOnly], userSettingValues.create);
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(UserSettingValueModel));
 
 // Retrieve a single UserSettingValue by id
-router.get("/:id", [authenticate, authorizeById("user")], userSettingValues.findOne);
+router.get("/:id", [authenticate], userSettingValues.findOne);
 
 // Update a UserSettingValue by id
 router.put("/:id", [authenticate, authorizeById("user")], userSettingValues.update);
