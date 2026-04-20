@@ -24,8 +24,13 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Setting with code ${req.body.code} already exists`);
     }
 
+    if (!req.body.defaultValue) {
+        throw new AppError(400, "defaultValue must be provided");
+    }
+
     let typeDefined: boolean = false;
     let type: string = req.body.type;
+
     if (type === "int") {
         if (!req.body.intMin || !req.body.intMax) {
             throw new AppError(400, "intMin and intMax must be provided for int type settings");
@@ -46,8 +51,13 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         if (!req.body.values) {
             throw new AppError(400, "values must be provided for string type settings");
         }
+        if (!req.body.values.includes(req.body.defaultValue)) {
+            throw new AppError(400, "defaultValue must be one of the values provided in the values array");
+        }
+        req.body.defaultValue = req.body.values.indexOf(req.body.defaultValue);
         req.body.intMin = 0;
         req.body.intMax = req.body.values.length - 1;
+
         typeDefined = true;
     }
 
