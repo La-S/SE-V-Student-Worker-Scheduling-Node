@@ -403,6 +403,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     let semester: string = req.query.semester;
+    let loadClasses = req.query.loadClasses === "true";
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
         semester = getMostCommonSemester(employees);
@@ -410,6 +411,10 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     }
     for (const employee of employees) {
         await employee.update({ semester: semester });
+        if (loadClasses){
+            //probably shouldnt await since it shouldn't return and will take a WHILE
+            loadEmployeeClassUnavailability(employee);
+        }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
 }

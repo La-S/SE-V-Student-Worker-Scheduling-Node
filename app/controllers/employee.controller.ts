@@ -84,7 +84,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
-const existingEmployee = await getEmployeeForId(id);
+    const existingEmployee = await getEmployeeForId(id);
 
     //an employee should refer to a userId and businessUnitId, these should not change
     req.body.userId = undefined;
@@ -350,7 +350,7 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
     const user = await employee.getUser();
     const userId = user.dataValues.id;
     const semester = req.query.semester ?? employee.dataValues.semester;
-    await AvailabilityTemplate.destroy({where: {userId: userId, semester: semester}})
+    await AvailabilityTemplate.destroy({ where: { userId: userId, semester: semester } })
     res.send({ message: `Availability Templates for semester ${semester} cleared!` });
 }
 
@@ -358,6 +358,11 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
+    const availabilities = await loadEmployeeClassUnavailability(employee);
+    res.send(availabilities);
+}
+
+export async function loadEmployeeClassUnavailability(employee: Model<any, any>) {
     const semester = employee.dataValues.semester;
     const user = await employee.getUser();
     const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
@@ -400,13 +405,13 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
             availabilities.push(newAvailability);
         }
     }
-    res.send(availabilities);
+    return availabilities;
 }
 
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
     const user = await employee.getUser();
     const userId = user.dataValues.id;
-    const data = await AvailabilityTemplate.destroy({ where: { userId: userId} });
+    const data = await AvailabilityTemplate.destroy({ where: { userId: userId } });
 }
 
 async function getClassData(employee: Model<any, any>) {
