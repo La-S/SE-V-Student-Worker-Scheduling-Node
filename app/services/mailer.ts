@@ -7,6 +7,7 @@ import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts";
 import Employee from "../models/employee.model.ts";
 import User from "../models/user.model.ts";
+import { logger } from "../logger/logger.ts";
 
 type EmailContent = {
   to: string;
@@ -52,7 +53,7 @@ export async function sendEmail(content: EmailContent): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error("Email error:", error);
+    logger.log("error", "There was an error with nodemailer: "+ error);
     return false;
   }
 }

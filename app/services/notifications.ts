@@ -3,6 +3,7 @@ import Employee from "../models/employee.model.ts";
 import User from "../models/user.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { Op } from "sequelize";
+import { logger } from "../logger/logger.ts";
 
 export async function sendNotificationToEmployee(employeeId: number, title: string, body: string) {
     const data = await Employee.findByPk(employeeId, {
@@ -104,12 +105,11 @@ async function sendNotificationToToken(pushToken: string, title: string, body: s
         };
         const response = await getMessaging().send(message);
         if (response) {
-            console.log("Successfully sent message: ", response)
             return true;
         }
         return false;
     } catch (e) {
-        console.error("Error sending push notification.", e);
+        logger.log("error", "Error sending push notification: "+e);
         return false;
     }
 }

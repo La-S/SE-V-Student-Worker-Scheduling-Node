@@ -1,6 +1,7 @@
 import pkg from 'express';
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from '../error/app.error.ts';
+import { logger } from '../logger/logger.ts';
 
 const exports: any = {};
 
@@ -19,9 +20,8 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
     };
     const response = await getMessaging().send(message)
     if (response) {
-        console.log("Successfully sent message: ", response)
+        logger.log("info", "Successfully sent a push notification");
     }
-    console.log("sending to all-users!");
     res.send("ok");
 };
 
@@ -39,11 +39,9 @@ exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
     };
     const response = await getMessaging().send(message)
     if (response) {
-        console.log("Successfully sent message: ", response)
+        logger.log("info", "Successfully sent a push notification to a token");
     }
 
-    // console.log(userInfo);
-    // res.send(userInfo);
     res.send("ok");
 };
 
