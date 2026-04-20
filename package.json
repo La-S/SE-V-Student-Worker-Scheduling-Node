@@ -5,7 +5,6 @@
   "description": "A Node.js Rest API for Student Worker Scheduling",
   "main": "server.ts",
   "scripts": {
-    "test": "jest --",
     "start": "tsx server.ts",
     "dev": "cross-env NODE_ENV=dev node  server.ts",
     "devinsecure": "cross-env USE_HTTP=true NODE_ENV=dev tsx server.ts",
@@ -23,9 +22,8 @@
     "cors": "^2.8.5",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "firebase-admin": "^13.6.0",
-    "googleapis": "^170.1.0",
-    "jest": "^30.2.0",
+    "firebase-admin": "^13.8.0",
+    "googleapis": "^171.4.0",
     "jsonwebtoken": "^9.0.3",
     "moment": "^2.30.1",
     "moment-timezone": "^0.6.1",
@@ -33,7 +31,6 @@
     "node-cron": "^4.2.1",
     "nodemailer": "^8.0.5",
     "sequelize": "^6.37.7",
-    "supertest": "^7.2.2",
     "tsx": "^4.21.0",
     "winston": "^3.19.0"
   },
