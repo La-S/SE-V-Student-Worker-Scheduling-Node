@@ -12,6 +12,7 @@ export async function sendNotificationToEmployee(employeeId: number, title: stri
     const pushToken: string | undefined = (data as any).dataValues.user.dataValues.pushToken;
     if (!pushToken) {
         console.warn(`Employee Id ${employeeId} has not signed up for push notifications.`);
+        logger.log("info", `Employee Id ${employeeId} has not signed up for push notifications.`);
         return false;
     }
 

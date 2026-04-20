@@ -29,6 +29,7 @@ function getFromAddress(): string | null {
   const from = process.env.EMAIL_USER?.trim();
   if (!from) {
     console.warn("EMAIL_USER is not configured. Email will be skipped.");
+    logger.log('error', "EMAIL_USER is not configured. Email will be skipped.");
     return null;
   }
   return from;
