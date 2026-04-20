@@ -109,7 +109,8 @@ async function sendNotificationToToken(pushToken: string, title: string, body: s
         }
         return false;
     } catch (e) {
-        logger.log("error", "Error sending push notification: "+e);
+        logger.log("error", "Error sending push notification: ");
+        logger.log("error", e);
         return false;
     }
 }

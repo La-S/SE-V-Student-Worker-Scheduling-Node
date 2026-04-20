@@ -53,7 +53,9 @@ export async function sendEmail(content: EmailContent): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    logger.log("error", "There was an error with nodemailer: "+ error);
+    logger.log("error", "There was an error with nodemailer: "+ JSON.stringify(error));
+    logger.log("error", error);
+
     return false;
   }
 }
