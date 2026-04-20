@@ -65,7 +65,7 @@ export function convertTime(time: String) {
     //answer modified from https://stackoverflow.com/questions/15083548/convert-12-hour-hhmm-am-pm-to-24-hour-hhmm
     const hoursMins: string = time.slice(0, 5);
     const modifier: string = time.slice(5, 7);
-    let hours : string = hoursMins.slice(0, 2);
+    let hours: string = hoursMins.slice(0, 2);
     let mins: string = hoursMins.slice(2, 5);
     if (hours === "12") {
         hours = "00";
@@ -88,11 +88,23 @@ export function convertDayOfWeek(dayOfWeek: String) {
     }
 }
 
-export function incrementSemester(semester: string){
+export function convertIntDayOfWeek(dayOfWeek: number) {
+    switch (dayOfWeek) {
+        case 0: return "Sunday";
+        case 1: return "Monday";
+        case 2: return "Tuesday";
+        case 3: return "Wednesday";
+        case 4: return "Thursday";
+        case 5: return "Friday";
+        case 6: return "Saturday";
+    }
+}
+
+export function incrementSemester(semester: string) {
     let term: string = semester.slice(0, 2);
     const year: string = semester.slice(2, 4);
     let yearInt: number = parseInt(year, 10);
-    if (term == "FA"){
+    if (term == "FA") {
         yearInt++;
     }
     // FA -> SP and vice versa

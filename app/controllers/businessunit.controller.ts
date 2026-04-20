@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
+import { convertIntDayOfWeek, createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -411,7 +411,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     }
     for (const employee of employees) {
         await employee.update({ semester: semester });
-        if (loadClasses){
+        if (loadClasses) {
             //probably shouldnt await since it shouldn't return and will take a WHILE
             loadEmployeeClassUnavailability(employee);
         }
@@ -549,31 +549,35 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-async function getUnavailableEmployees(employees: Model<any, any>[]) {
-    // const unavailableEmployees = await Employee.findAll({
-    //     where: { businessUnitId: id },
-    //     include: {
-    //         model: User,
-    //         required: true,
-    //         include: [{
-    //             model: AvailabilityTemplate,
-    //             where: {
-    //                 dayOfWeek: dayOfWeek,
-    //                //TODO: fix inner bound exception (starttime > and endtime <)
-    //                 [Op.or]: {
-    //                     startTime: {[Op.lte]: startTime},
-    //                     endTime: {[Op.gte]: endTime}
-    //                 },
-    //                 //only users where their availability is "available" or "preferred". Unavailable assumed
-    //                 preference: {[Op.in]: acceptablePreferences} 
-    //             }
-    //         }]
-    //     }
-    // });
+exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Response) => {
+    const id = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const startTime = req.params.starttime;
+    const endTime = req.params.endtime;
+    const date = req.params.date;
+    const position = req.params.position;
+    const dateObject = createDateFromString(date);
+    const dayOfWeek = convertIntDayOfWeek(dateObject.getDay());
+    const preferred = [];
+    const available = [];
+    const notSpecified = [];
+    const unavailable = [];
 
-    // const unavailableEmployeeIds = unavailableEmployees.map((employee) => {
-    //     return employee.dataValues.id;
-    // })
+    const employees = await Position.findAll({
+        where: { id: id },
+        include: [{
+            model: Employee,
+            where: {currentlyEmployed: true},
+            include: [User]
+        }]
+    });
+    for (const employee of employees){
+        console.log(employee.user);
+        console.log(employee.dataValues.user);
+        const user = employee.user;
+        const 
+    }
+
 }
 
 export default exports;
