@@ -79,14 +79,12 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     };
 
     console.log("making a new session");
-    // console.log(session);
     await createSession(session)
 
     sessionToken = session.token;
   }
   let userInfo = { ...user, token: sessionToken }
 
-  // console.log(userInfo);
   res.send(userInfo);
 };
 
@@ -107,7 +105,6 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
 exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   let response = await Session.findOne({ where: { token: req.body.token } })
   let session = response?.dataValues as SessionType | undefined;
-  // console.log(session?.expirationDate);
   if (!session || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
@@ -147,7 +144,7 @@ async function clearSessionByToken(token: string) {
   if (response[0] == 1) {
     console.log("successfully logged out");
   } else {
-    console.log("failed");
+    console.log("failed logging a user out");
     throw Error(`Error logging out user.`);
   }
 }
