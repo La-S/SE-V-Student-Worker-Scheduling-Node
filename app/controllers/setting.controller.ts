@@ -185,7 +185,11 @@ async function getSettingForCode(code: string): Promise<Model<any, any> | null> 
     }
 
     const data = await Setting.findOne({
-        where: { code }
+        where: { code },
+        include:[{
+            model: SettingIntMapping,
+            required: false
+        }]
     });
 
     if (!data) {
