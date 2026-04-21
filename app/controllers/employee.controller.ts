@@ -359,6 +359,10 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
     const availabilities = await loadEmployeeClassUnavailability(employee, clear);
+    if (availabilities.length == 0) {
+        res.send({ message: "No class data found for employee. No availability templates created." });
+        return;
+    }
     res.send(availabilities);
 }
 
@@ -371,6 +375,9 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>,
         deleteEmployeeAvailabilityTemplates(employee);
     }
     const classData = await getClassData(employee);
+    if (!classData){
+        return [];
+    }
     for (const course of classData.Courses) {
         for (const day of course.meeting_days) {
             const fullDay = convertDayOfWeek(day);
@@ -433,7 +440,7 @@ async function getClassData(employee: Model<any, any>) {
         updateUserInfo(classData, user);
         //nothing, no class data
         if (classData.Success === "False") {
-            throw new AppError(404, "No classes for employee. Make sure the user has a correct email or ocId");
+            return null;
         }
     }
     return classData;
