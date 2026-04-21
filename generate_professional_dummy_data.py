@@ -35,12 +35,12 @@ weekly_schedule_templates_loaded = 0
 
 
 
-def create_or_get_existing_user(email):
+def create_or_get_existing_user(email, ocId = 1572078):
     your_user = get_existing_user(email)
     if your_user.get('id'):
         return your_user
     # user doesn't exist yet.abs
-    your_user = create_user("your", "user", email, False)
+    your_user = create_user("your", "user", email, False, ocId)
     return your_user
 
 
@@ -52,7 +52,7 @@ def get_existing_user(email):
         print("Warning, couldn't find existing user...", r.text)
     return r.json()
 
-def create_user(first_name, last_name, email, isAdmin, phone_number = None):
+def create_user(first_name, last_name, email, isAdmin, phone_number = None, ocId = 1572078):
     global users_generated
     
     # first see if the user exists, and if so, delete him.
@@ -68,7 +68,8 @@ def create_user(first_name, last_name, email, isAdmin, phone_number = None):
         "email": email,
         "isAdmin": 1 if isAdmin else 0,
         "password": SECRET_PASSWORD,
-        "phone": phone_number
+        "phone": phone_number,
+        'ocId': ocId,
     }, verify=False)
     if r.status_code == 200:
         users_generated += 1
@@ -391,6 +392,66 @@ def link_file_and_user(user_id, file_id):
         print('Hmm, we got an error linking a user and file', r.text)
     return r.json()
 
+
+def time_off_request(requester_employee_id, posted_date, posted_time, start_date="2026-04-01", end_date="2026-08-14"):
+    r = requests.post(f'{ENDPOINT}/timeoffrequest', json = {
+        "requesterId": requester_employee_id,
+        "requestPostedDate": posted_date,
+        "requestPostedTime": posted_time,
+        "startDate": start_date,
+        "endDate": end_date
+    }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error requesting time off', r.text)
+    return r.json()
+
+def create_setting(name, description, code, settings_type, default_value, int_min, int_max, is_for_business_unit, values = None):
+    r = requests.post(f'{ENDPOINT}/setting', json = {
+        "name": name,
+        "description": description,
+        "code": code,
+        "type": settings_type,
+        "defaultValue": default_value,
+        "intMin": int_min,
+        "intMax": int_max,
+        "isForBusinessUnit": is_for_business_unit,
+        "values": values,
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error creating a new setting', r.text)
+    return r.json()
+
+def get_setting_for_bu_by_code(businessUnitId, code):
+    r = requests.get(f'{ENDPOINT}/businessunit/{businessUnitId}/setting/{code}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error getting a setting', r.text)
+    return r.json()
+
+def delete_setting(code):
+    r = requests.delete(f'{ENDPOINT}/setting/{code}', verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error deleting a setting', r.text)
+    return r.json()
+
+def update_business_setting(setting_value_id, value):
+    r = requests.put(f'{ENDPOINT}/businessunitsettingvalue/{setting_value_id}', json= {
+        "settingValue": value
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error updating a setting', r.text)
+    return r.json()
+
+def set_open_hours(business_unit_id, day_of_week_int, start_time, end_time):
+    r = requests.post(f'{ENDPOINT}/openhours', json= {
+        "businessUnitId": business_unit_id,
+        "dayOfWeek": day_of_week_int,
+        "startTime": start_time,
+        "endTime": end_time
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error updating open hours', r.text)
+    return r.json()
+
 delete_business_unit("Jedi Fitness Center")
 
 
@@ -449,6 +510,11 @@ kick_everyone = create_task(closing_tasks['id'], 'Tell everyone to leave', 1)
 turn_off_music = create_task(closing_tasks['id'], 'Turn off music', 2)
 lock_doors = create_task(closing_tasks['id'], 'Lock Doors', 3)
 
+delete_setting("CLKINBUFF")
+create_setting("Clock in Buffer", "Minutes to wait before sending an alert/marking an employee as late", "CLKINBUFF", "int", 3, 0, 15, True)
+clockin_buffer_setting = get_setting_for_bu_by_code(the_dub['id'], "CLKINBUFF")
+update_business_setting(clockin_buffer_setting['id'], 5) # 5 minutes of buffer
+
 # dub position mapping:
 for employee in [brian_employee_id_dub, ben_employee_id_dub, leia_employee_id_dub, luke_employee_id_dub, han_employee_id_dub, cody_employee_id_dub]:
     give_employee_a_position(employee['id'], front_desk['id'])
@@ -457,24 +523,24 @@ for employee in [brian_employee_id_dub, ben_employee_id_dub, leia_employee_id_du
 give_employee_a_position(brian_employee_id_dub['id'], lifeguard['id'])
 
 
-create_availability_template(Ben['id'], "Thursday", "06:00", "10:00", "available")
-create_availability_template(Ben['id'], "Thursday", "12:00", "17:00", "preferred")
-create_availability_template(Ben['id'], "Thursday", "10:00", "12:00", "unavailable")
+create_availability_template(Ben['id'], "Tuesday", "06:00", "10:00", "available")
+create_availability_template(Ben['id'], "Tuesday", "12:00", "17:00", "preferred")
+create_availability_template(Ben['id'], "Tuesday", "10:00", "12:00", "unavailable")
 
-create_availability_template(Brian['id'], "Thursday", "04:00", "08:00", "available")
-create_availability_template(Brian['id'], "Thursday", "08:00", "11:30", "unavailable")
-create_availability_template(Brian['id'], "Thursday", "14:00", "19:00", "available")
+create_availability_template(Brian['id'], "Tuesday", "04:00", "08:00", "available")
+create_availability_template(Brian['id'], "Tuesday", "08:00", "11:30", "unavailable")
+create_availability_template(Brian['id'], "Tuesday", "14:00", "19:00", "available")
 
-create_availability_template(Leia['id'], "Thursday", "06:00", "20:00", "available")
+create_availability_template(Leia['id'], "Tuesday", "06:00", "20:00", "available")
 
-create_availability_template(Luke['id'], "Thursday", "10:00", "15:00", "preferred")
-create_availability_template(Luke['id'], "Thursday", "17:00", "19:00", "unavailable")
+create_availability_template(Luke['id'], "Tuesday", "10:00", "15:00", "preferred")
+create_availability_template(Luke['id'], "Tuesday", "17:00", "19:00", "unavailable")
 
-create_availability_template(Han['id'], "Thursday", "8:00", "9:00", "unavailable")
-create_availability_template(Han['id'], "Thursday", "10:00", "11:00", "unavailable")
-create_availability_template(Han['id'], "Thursday", "12:00", "13:00", "unavailable")
-create_availability_template(Han['id'], "Thursday", "14:00", "15:00", "unavailable")
-create_availability_template(Han['id'], "Thursday", "15:00", "16:00", "unavailable")
+create_availability_template(Han['id'], "Tuesday", "8:00", "9:00", "unavailable")
+create_availability_template(Han['id'], "Tuesday", "10:00", "11:00", "unavailable")
+create_availability_template(Han['id'], "Tuesday", "12:00", "13:00", "unavailable")
+create_availability_template(Han['id'], "Tuesday", "14:00", "15:00", "unavailable")
+create_availability_template(Han['id'], "Tuesday", "15:00", "16:00", "unavailable")
 
 
 # Shifts:
@@ -530,6 +596,13 @@ shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard[
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TWO_DAYS_AGO, True)
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TOMORROWS_DATE, True)
 
+# set dub open hours:
+set_open_hours(the_dub['id'], 3, "5:30", "22:30")
+set_open_hours(the_dub['id'], 4, "5:30", "19:00")
+set_open_hours(the_dub['id'], 4, "20:00", "22:30")
+set_open_hours(the_dub['id'], 5, "5:30", "22:30")
+set_open_hours(the_dub['id'], 6, "5:30", "20:30")
+set_open_hours(the_dub['id'], 7, "7:30", "14:30")
 
 
 add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
@@ -557,7 +630,7 @@ give_employee_a_position(cody_employee_id_brew['id'], bar_back['id'])
 # For prod dummy data...
 
 if (IS_PROD):
-    your_user = create_or_get_existing_user("l.skinner@eagles.oc.edu");
+    your_user = create_or_get_existing_user("l.skinner@eagles.oc.edu", 1572078);
     # your_users_employee = create_employee(your_user['id'], the_brew['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
     your_users_employee_dub = create_employee(your_user['id'], the_dub['id'], 'SP26', True, 40, 0, False) # you work at the fitness center
 
@@ -568,6 +641,8 @@ if (IS_PROD):
     give_employee_a_position(your_users_employee_dub['id'], lifeguard['id'])
 
     shift4_dub = create_shift(your_users_employee_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TODAYS_DATE, True)
+
+    time_off_request(your_users_employee_dub['id'], '2026-04-21', '11:30', start_date="2026-04-21", end_date="2026-05-21")
 
     # give_employee_a_position(your_user['id'], physical_form_coach['id'])
     # give_employee_a_position(your_user['id'], conditioning_specialist['id'])
