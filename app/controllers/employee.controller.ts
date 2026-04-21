@@ -366,6 +366,7 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>)
     const semester = employee.dataValues.semester;
     const user = await employee.getUser();
     const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
+    const clear = req.query.clear === "true";
     let availabilities: Model<any, any>[] = [];
     if (clear) {
         deleteEmployeeAvailabilityTemplates(employee);
