@@ -2,6 +2,13 @@ import { Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
+/**
+ *
+ * @param model The Sequelize Model to Query
+ * @param id The PrimaryKey id
+ * @returns the data
+ * @throws an error if the pk is not found
+ */
 export async function getOneForId(model: ModelStatic<Model>, id: number) {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
