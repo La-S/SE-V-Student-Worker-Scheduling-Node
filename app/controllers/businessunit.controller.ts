@@ -18,7 +18,7 @@ import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
-import { getBudgetInformationForDateRange } from './employee.controller.ts';
+import { getBudgetInformationForDateRange, loadEmployeeClassUnavailability } from './employee.controller.ts';
 import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
 import SettingIntMapping from '../models/settingintmapping.model.ts';
 import Setting from '../models/setting.model.ts';
@@ -404,7 +404,6 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     let loadClasses = req.query.loadclasses === "true";
     let semester: string = req.query.semester;
-    let loadClasses = req.query.loadClasses === "true";
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
         semester = getMostCommonSemester(employees);
@@ -414,7 +413,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
         await employee.update({ semester: semester });
         if (loadClasses) {
             //probably shouldnt await since it shouldn't return and will take a WHILE
-            loadEmployeeClassUnavailability(employee);
+            await loadEmployeeClassUnavailability(employee);
         }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
