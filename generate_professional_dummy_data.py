@@ -453,6 +453,17 @@ def set_open_hours(business_unit_id, day_of_week_int, start_time, end_time):
         print('Hmm, we got an error updating open hours', r.text)
     return r.json()
 
+def create_clockin_out(business_unit_id, day_of_week_int, start_time, end_time):
+    r = requests.post(f'{ENDPOINT}/openhours', json= {
+        "businessUnitId": business_unit_id,
+        "dayOfWeek": day_of_week_int,
+        "startTime": start_time,
+        "endTime": end_time
+        }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
+    if r.status_code != 200:
+        print('Hmm, we got an error updating open hours', r.text)
+    return r.json()
+
 delete_business_unit("Jedi Fitness Center")
 
 
@@ -582,6 +593,13 @@ shift6_dub = create_shift(ben_employee_id_dub['id'], the_dub['id'], personal_tra
 shift6_dub_tomorrow = create_shift(ben_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "15:00", "17:30", TOMORROWS_DATE, True)
 create_drop_request(shift6_dub_tomorrow["id"], ben_employee_id_dub['id'], "12:30", TODAYS_DATE)
 
+add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
+add_tasklist_to_shift(shift2_dub['id'], opening_tasks['id'])
+add_tasklist_to_shift(shift3_dub['id'], opening_tasks['id'])
+add_tasklist_to_shift(shift1_dub['id'], closing_tasks['id'])
+add_tasklist_to_shift(shift2_dub['id'], closing_tasks['id'])
+add_tasklist_to_shift(shift3_dub['id'], closing_tasks['id'])
+
 #DUB - filler for other days
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", YESTERDAYS_DATE, True)
 shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk['id'], "10:15", "16:00", YESTERDAYS_DATE, True)
@@ -598,6 +616,8 @@ shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard[
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TOMORROWS_DATE, True)
 
 # set dub open hours:
+set_open_hours(the_dub['id'], 1, "12:30", "16:30")
+# intentionally leave monday blank for demo
 set_open_hours(the_dub['id'], 3, "5:30", "22:30")
 set_open_hours(the_dub['id'], 4, "5:30", "19:00")
 set_open_hours(the_dub['id'], 4, "20:00", "22:30")
@@ -606,12 +626,6 @@ set_open_hours(the_dub['id'], 6, "5:30", "20:30")
 set_open_hours(the_dub['id'], 7, "7:30", "14:30")
 
 
-add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
-add_tasklist_to_shift(shift2_dub['id'], opening_tasks['id'])
-add_tasklist_to_shift(shift3_dub['id'], opening_tasks['id'])
-add_tasklist_to_shift(shift1_dub['id'], closing_tasks['id'])
-add_tasklist_to_shift(shift2_dub['id'], closing_tasks['id'])
-add_tasklist_to_shift(shift3_dub['id'], closing_tasks['id'])
 
 
 # ben works a lot
