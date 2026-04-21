@@ -92,7 +92,6 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     const shift = await coverRequest.getShift();
     const hoursWorkedForUser = await getUserExpectedHoursForWeek(user.dataValues.id, shift.dataValues.date);
     const hoursForShift: number = toHours(shift.dataValues.endTime) - toHours(shift.dataValues.startTime);
-    console.log(hoursWorkedForUser, hoursForShift);
     if (user.dataValues.isStudent && (hoursWorkedForUser + hoursForShift > 20)){
         throw new AppError(403, "Accepting this cover request would put the user over 20 hours worked for the week.")
     }
