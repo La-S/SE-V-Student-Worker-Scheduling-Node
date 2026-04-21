@@ -247,14 +247,15 @@ def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off
 
     return r.json()
 
-def create_availability_template(user_id, day_of_week, start_time, end_time, preference):
+def create_availability_template(user_id, day_of_week, start_time, end_time, preference, semester="SP26"):
     global avilability_templates_created
     r = requests.post(f'{ENDPOINT}/availabilitytemplate/', data = {
         "userId": user_id,
         "dayOfWeek": day_of_week, 
         "startTime": start_time,
         "endTime": end_time,
-        "preference": preference
+        "preference": preference,
+        "semester": semester
     }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
     if r.status_code == 200:
         avilability_templates_created += 1
