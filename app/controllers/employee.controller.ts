@@ -375,7 +375,7 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>,
         deleteEmployeeAvailabilityTemplates(employee);
     }
     const classData = await getClassData(employee);
-    if (!classData){
+    if (!classData || !classData.Courses){
         return [];
     }
     for (const course of classData.Courses) {
@@ -440,6 +440,9 @@ async function getClassData(employee: Model<any, any>) {
         updateUserInfo(classData, user);
         //nothing, no class data
         if (classData.Success === "False") {
+            return null;
+        }
+        if (classData.Message && classData.Message.includes("No HTTP resource was found that matches the request URI")) {
             return null;
         }
     }
