@@ -260,9 +260,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         whereCondition = { [Op.or]: [{ requesterId: id }, { accepterId: id }] };
     }
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift, include: [Position]
         }
@@ -291,9 +291,9 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     const positionIds = positions.map((position) => position.id);
 
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift,
             required: true,
@@ -326,7 +326,7 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const requester = req.query.requester;
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
-        { model: Employee, as: "dropReviewer", include: [User] },
+        { model: Employee, as: "dropReviewer", required: false, include: [User] },
         { model: Shift, include: [Position] }
     ];
     const data = await DropRequest.findAll({

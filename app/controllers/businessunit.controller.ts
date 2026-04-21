@@ -238,9 +238,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const endDate = req.query.end;
     const dateRange = getDateRange(startDate, endDate);
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift,
             required: true,
@@ -261,9 +261,9 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift,
             include: [Position, BusinessUnit],
@@ -450,7 +450,7 @@ exports.getAllTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
     await getOneForId(BusinessUnit, id);
     const includeCondition = [
         { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
-        { model: Employee, as: "timeOffReviewer", include: [User], where: { businessUnitId: id } },
+        { model: Employee, as: "timeOffReviewer", required: false, include: [User], where: { businessUnitId: id } },
     ];
     const data = await TimeOffRequest.findAll({
         include: includeCondition,
@@ -466,7 +466,7 @@ exports.getTimeOffRequestsDateRange = async (req: pkg.Request, res: pkg.Response
     const dateRangeEnd = req.params.end;
     const includeCondition = [
         { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
-        { model: Employee, as: "timeOffReviewer", include: [User], where: { businessUnitId: id } },
+        { model: Employee, as: "timeOffReviewer", required:false, include: [User], where: { businessUnitId: id } },
     ];
     const data = await TimeOffRequest.findAll({
         include: includeCondition,
