@@ -15,7 +15,7 @@ const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "dropRequester", include: [User] },
-    { model: Employee, as: "dropReviewer", include: [User] },
+    { model: Employee, as: "dropReviewer", required: false, include: [User] },
 ];
 
 

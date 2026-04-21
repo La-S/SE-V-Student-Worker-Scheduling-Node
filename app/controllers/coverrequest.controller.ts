@@ -15,9 +15,9 @@ const errorClassName: string = "Cover Request";
 const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
-    { model: Employee, as: "coverRequester", include: [User] },
-    { model: Employee, as: "coverAccepter", include: [User] },
-    { model: Employee, as: "coverReviewer", include: [User] },
+    { model: Employee, as: "coverRequester", required: false, include: [User] },
+    { model: Employee, as: "coverAccepter", required: false, include: [User] },
+    { model: Employee, as: "coverReviewer", required: false, include: [User] },
 ];
 
 // Create and Save a new CoverRequest

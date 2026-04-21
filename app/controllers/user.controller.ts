@@ -262,9 +262,9 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
   }
 
   const includeCondition = [
-    { model: Employee, as: "coverRequester", include: [User] },
-    { model: Employee, as: "coverAccepter", include: [User] },
-    { model: Employee, as: "coverReviewer", include: [User] },
+    { model: Employee, as: "coverRequester", required: false, include: [User] },
+    { model: Employee, as: "coverAccepter", required: false, include: [User] },
+    { model: Employee, as: "coverReviewer", required: false, include: [User] },
     {
       model: Shift,
       include: [Position, BusinessUnit],

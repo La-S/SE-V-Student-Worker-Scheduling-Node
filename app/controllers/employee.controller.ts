@@ -260,9 +260,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         whereCondition = { [Op.or]: [{ requesterId: id }, { accepterId: id }] };
     }
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift, include: [Position]
         }
@@ -291,9 +291,9 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     const positionIds = positions.map((position) => position.id);
 
     const includeCondition = [
-        { model: Employee, as: "coverRequester", include: [User] },
-        { model: Employee, as: "coverAccepter", include: [User] },
-        { model: Employee, as: "coverReviewer", include: [User] },
+        { model: Employee, as: "coverRequester", required: false, include: [User] },
+        { model: Employee, as: "coverAccepter", required: false, include: [User] },
+        { model: Employee, as: "coverReviewer", required: false, include: [User] },
         {
             model: Shift,
             required: true,
@@ -326,7 +326,7 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const requester = req.query.requester;
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
-        { model: Employee, as: "dropReviewer", include: [User] },
+        { model: Employee, as: "dropReviewer", required: false, include: [User] },
         { model: Shift, include: [Position] }
     ];
     const data = await DropRequest.findAll({
@@ -358,11 +358,15 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
-    const availabilities = await loadEmployeeClassUnavailability(employee);
+    const availabilities = await loadEmployeeClassUnavailability(employee, clear);
+    if (availabilities.length == 0) {
+        res.send({ message: "No class data found for employee. No availability templates created." });
+        return;
+    }
     res.send(availabilities);
 }
 
-export async function loadEmployeeClassUnavailability(employee: Model<any, any>) {
+export async function loadEmployeeClassUnavailability(employee: Model<any, any>, clear: boolean): Promise<Model<any, any>[]> {
     const semester = employee.dataValues.semester;
     const user = await employee.getUser();
     const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
@@ -371,6 +375,9 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>)
         deleteEmployeeAvailabilityTemplates(employee);
     }
     const classData = await getClassData(employee);
+    if (!classData || !classData.Courses){
+        return [];
+    }
     for (const course of classData.Courses) {
         for (const day of course.meeting_days) {
             const fullDay = convertDayOfWeek(day);
@@ -433,7 +440,10 @@ async function getClassData(employee: Model<any, any>) {
         updateUserInfo(classData, user);
         //nothing, no class data
         if (classData.Success === "False") {
-            throw new AppError(404, "No classes for employee. Make sure the user has a correct email or ocId");
+            return null;
+        }
+        if (classData.Message && classData.Message.includes("No HTTP resource was found that matches the request URI")) {
+            return null;
         }
     }
     return classData;
