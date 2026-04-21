@@ -3,6 +3,7 @@ import Employee from "../models/employee.model.ts";
 import User from "../models/user.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { Op } from "sequelize";
+import { logger } from "../logger/logger.ts";
 
 export async function sendNotificationToEmployee(employeeId: number, title: string, body: string) {
     const data = await Employee.findByPk(employeeId, {
@@ -10,7 +11,7 @@ export async function sendNotificationToEmployee(employeeId: number, title: stri
     });
     const pushToken: string | undefined = (data as any).dataValues.user.dataValues.pushToken;
     if (!pushToken) {
-        console.warn(`Employee Id ${employeeId} has not signed up for push notifications.`);
+        logger.log("info", `Employee Id ${employeeId} has not signed up for push notifications.`);
         return false;
     }
 
@@ -32,13 +33,13 @@ export async function sendNotificationToManagers(businessUnitId: number, title: 
     });
     let employees = (data as any)?.dataValues?.employees;
     if (!employees) {
-        console.warn("data not found, trying to send a notification to managers.")
+        logger.log('warn', "data not found, trying to send a notification to managers.")
         return;
     }
     for (let employee of (data as any)?.dataValues?.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, title, body);
@@ -60,8 +61,8 @@ export async function sendNotificationToBusinessUnit(businessUnitId: number, for
     });
     for (let employee of (data as any).dataValues.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, "Shifts Published", `Shifts have been published for the week of ${forWeekOf}`);
@@ -84,8 +85,8 @@ export async function sendNotificationToOtherEmployees(employeeId: number, busin
     });
     for (let employee of (data as any).dataValues.employees) {
         let pushToken = employee.dataValues.user.dataValues.pushToken;
-         if (!pushToken) {
-            console.warn(`Employee Id ${employee.dataValues.id} has not signed up for push notifications.`);
+        if (!pushToken) {
+            logger.log('warn', `Employee Id ${employee.dataValues.id} has not signed up for push notifications.`)
             continue;
         }
         sendNotificationToToken(pushToken, title, body);
@@ -104,12 +105,12 @@ async function sendNotificationToToken(pushToken: string, title: string, body: s
         };
         const response = await getMessaging().send(message);
         if (response) {
-            console.log("Successfully sent message: ", response)
             return true;
         }
         return false;
     } catch (e) {
-        console.error("Error sending push notification.", e);
+        logger.log("error", "Error sending push notification: ");
+        logger.log("error", e);
         return false;
     }
 }

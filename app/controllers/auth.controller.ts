@@ -8,6 +8,7 @@ import type { UserType } from "../types/user.type.ts";
 import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
+import { logger } from "../logger/logger.ts";
 
 const User = db.User;
 const Session = db.Session;
@@ -78,7 +79,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
       expirationDate: tempExpirationDate,
     };
 
-    console.log("making a new session");
+    logger.log("info", "Making a new session");
     await createSession(session)
 
     sessionToken = session.token;
@@ -98,7 +99,7 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
   }
 
   await clearSessionByToken(req.body.token);
-  console.log("successfully logged out");
+  logger.log("info", "successfully logged out");
   res.status(200).send({ message: "User has been successfully logged out!" });
 };
 
@@ -142,9 +143,9 @@ async function getExistingSessionToken(email: string) {
 async function clearSessionByToken(token: string) {
   let response = await Session.update({token: null, expirationDate: new Date()}, { where: { token: token } });
   if (response[0] == 1) {
-    console.log("successfully logged out");
+    logger.log("info", "Logged out a user");
   } else {
-    console.log("failed logging a user out");
+    logger.log("error", "Error logging out a user.");
     throw Error(`Error logging out user.`);
   }
 }
@@ -159,9 +160,7 @@ async function upsertUser(user: UserType): Promise<UserType> {
   if (response[0] <= 0) {
     throw new AppError(400, `Cannot update User with id ${user.id}. Check request body`);
   }
-  console.log("updated user's name");
   return user;
-
 }
 
 async function getGoogleUserInfo(googleToken: string, googleAccessToken: string) {
@@ -200,7 +199,6 @@ async function getGoogleUser(googleToken: string) {
     audience: google_id,
   });
   let googleUser = ticket.getPayload();
-  // console.log("Google payload is " + JSON.stringify(googleUser));
   return googleUser;
 }
 

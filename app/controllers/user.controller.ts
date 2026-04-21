@@ -23,6 +23,9 @@ import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
 import UserFile from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
+import UserSettingValue from "../models/usersettingvalue.model.ts";
+import { getUserSettingValue } from "./usersettingvalue.controller.ts";
+import Setting from "../models/setting.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
 const exports: any = {};
@@ -36,6 +39,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
   // Save User in the database
   const data = await User.create(req.body);
+  const settings = await Setting.findAll({ where: { isForBusinessUnit: false } });
+  for (const setting of settings) {
+    await UserSettingValue.create({
+      userId: data.dataValues.id,
+      settingCode: setting.dataValues.code,
+      settingValue: setting.dataValues.defaultValue
+    });
+  }
   res.send(data);
 };
 
@@ -329,13 +340,6 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
   res.send(data);
 }
 
-exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
-  const id = parseInt(req.params.id as string, 10);
-  const user = await getOneForId(User, id);
-  const data = await UserFile.findAll({ where: { userId: id } });
-  res.send(data);
-}
-
 exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
@@ -382,4 +386,37 @@ export async function getUserExpectedHoursForWeek(userId: number, queryDate: str
   }
   return expectedTotalHours;
 }
+exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User, id);
+  const data = await UserFile.findAll({ where: { userId: id } });
+  res.send(data);
+}
+
+exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
+  await getOneForStringId(Setting, req.params.code);
+  const userId = parseInt(req.params.id as string, 10);
+  const settingCode = req.params.code as string;
+  const settingValue = await getUserSettingValue(userId, settingCode);
+  res.send(settingValue);
+}
+
+exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  await getOneForId(User, id);
+  const data: Model<any, any>[] = [];
+  const userSettings = await UserSettingValue.findAll({
+    where: {
+      userId: id,
+    }
+  });
+  for (const userSettingValue of userSettings) {
+    const settingValue = await getUserSettingValue(id, userSettingValue.dataValues.settingCode);
+    data.push(settingValue);
+  }
+  res.send(data);
+}
+
 export default exports;

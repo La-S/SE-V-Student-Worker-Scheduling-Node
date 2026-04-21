@@ -9,6 +9,7 @@ import { getOneForId, toHours } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers, sendNotificationToOtherEmployees } from "../services/notifications.ts";
 import { getUserExpectedHoursForWeek } from "./user.controller.ts";
+import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Cover Request";
 const exports: any = {};
@@ -34,7 +35,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         if (businessUnitId) {
             sendNotificationToOtherEmployees(req.body.requesterId, businessUnitId, "New Cover Request", `${firstName} ${lastName} needs someone to cover an upcoming shift.`);
         } else {
-            console.warn(`No businessUnit Id for employee ${req.body.requesterId}...`);
+            logger.log('warn', `No businessUnit Id for employee ${req.body.requesterId}...`)
         }
     }
     res.send(data);

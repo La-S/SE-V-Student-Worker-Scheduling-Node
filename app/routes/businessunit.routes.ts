@@ -8,7 +8,7 @@ var router = Router()
 
 
 // Create a new BusinessUnit
-router.post("/", [authenticate, isAdminOnly], generalcontroller.create(BusinessUnitModel));
+router.post("/", [authenticate, isAdminOnly], businessunits.create);
 
 // Retrieve all BusinessUnits
 router.get("/all", [authenticate, isAdminOnly], generalcontroller.findAll(BusinessUnitModel));
@@ -67,5 +67,9 @@ router.put("/:id/employees/rollover", [authenticate, managerOrAdminOnly], busine
 router.get("/:id/budgetdaterange", [authenticate, managerOrAdminOnly], businessunits.getBudgetInformationForDateRange);
 
 router.delete("/:id/shifts/:date/week", [authenticate, managerOrAdminOnly], businessunits.deleteShiftsForWeek);
+
+router.get("/:id/settings", [authenticate, authorizeById("businessUnit")], businessunits.getAllSettingsValues);
+
+router.get("/:id/setting/:code", [authenticate, authorizeById("businessUnit")], businessunits.getSingleSettingValue);
 
 export default router;
