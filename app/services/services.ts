@@ -2,6 +2,13 @@ import { Model, Op, type ModelStatic } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
+/**
+ *
+ * @param model The Sequelize Model to Query
+ * @param id The PrimaryKey id
+ * @returns the data
+ * @throws an error if the pk is not found
+ */
 export async function getOneForId(model: ModelStatic<Model>, id: number) {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
@@ -27,6 +34,20 @@ export async function getOneForStringId(model: ModelStatic<Model>, id: string) {
 export function isSunday(date: Date) {
     const dayOfWeek = date.getDay();
     return (dayOfWeek == 0)
+}
+
+export function getSundayOfWeek(date: Date) {
+    //https://stackoverflow.com/questions/4156434/javascript-get-the-first-day-of-the-week-from-current-date
+    const dayOfWeek = date.getDay();
+    const diff = date.getDate() - dayOfWeek;
+    return new Date(date.setDate(diff));
+}
+
+export function getSaturdayOfWeek(date: Date) {
+    //modified from stackoverflow answer in getSunday function
+    const dayOfWeek = date.getDay();
+    const diff = date.getDate() + (6 - dayOfWeek);
+    return new Date(date.setDate(diff));
 }
 
 export function createDateFromString(dateString: string) {
@@ -75,6 +96,11 @@ export function convertTime(time: String) {
     }
     return hours + mins + ":00"
 }
+
+export function toHours (time: string): number {
+    const [hours, minutes, seconds] = time.split(":").map(Number);
+    return hours + minutes / 60 + (seconds || 0) / 3600;
+};
 
 export function convertDayOfWeek(dayOfWeek: String) {
     switch (dayOfWeek) {

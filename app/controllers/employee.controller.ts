@@ -9,7 +9,7 @@ import { AppError } from "../error/app.error.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId } from "../services/services.ts";
+import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId, toHours } from "../services/services.ts";
 import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import DropRequest from "../models/droprequest.model.ts";
@@ -86,7 +86,6 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     const existingEmployee = await getEmployeeForId(id);
-
     //an employee should refer to a userId and businessUnitId, these should not change
     req.body.userId = undefined;
     req.body.businessUnitId = undefined;
@@ -351,7 +350,7 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
     const user = await employee.getUser();
     const userId = user.dataValues.id;
     const semester = req.query.semester ?? employee.dataValues.semester;
-    await AvailabilityTemplate.destroy({ where: { userId: userId, semester: semester } })
+    await AvailabilityTemplate.destroy({ where: { userId: userId, semester: semester } });
     res.send({ message: `Availability Templates for semester ${semester} cleared!` });
 }
 
@@ -622,8 +621,4 @@ async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     return data;
 }
 
-const toHours = (time: string): number => {
-    const [hours, minutes, seconds] = time.split(":").map(Number);
-    return hours + minutes / 60 + (seconds || 0) / 3600;
-};
 export default exports;

@@ -403,8 +403,8 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    let loadClasses = req.query.loadclasses === "true";
     let semester: string = req.query.semester;
-    let loadClasses = req.query.loadClasses === "true";
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
         semester = getMostCommonSemester(employees);

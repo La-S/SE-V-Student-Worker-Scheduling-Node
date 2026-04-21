@@ -5,9 +5,10 @@ import CoverRequest from "../models/coverrequest.model.ts";
 import Employee from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
-import { getOneForId } from "../services/services.ts";
+import { getOneForId, toHours } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers, sendNotificationToOtherEmployees } from "../services/notifications.ts";
+import { getUserExpectedHoursForWeek } from "./user.controller.ts";
 import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Cover Request";
@@ -84,10 +85,16 @@ exports.acceptCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
     }
     const employeeId = parseInt(req.params.employeeId as string, 10);
     const employee = await getOneForId(Employee, employeeId);
+    const user = await getOneForId(User, employee.dataValues.id);
     const businessUnitId = employee.dataValues.businessUnitId; // a little sketchy getting businessUnitId from employee, but it should work.
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
-
+    const shift = await coverRequest.getShift();
+    const hoursWorkedForUser = await getUserExpectedHoursForWeek(user.dataValues.id, shift.dataValues.date);
+    const hoursForShift: number = toHours(shift.dataValues.endTime) - toHours(shift.dataValues.startTime);
+    if (user.dataValues.isStudent && (hoursWorkedForUser + hoursForShift > 20)){
+        throw new AppError(403, "Accepting this cover request would put the user over 20 hours worked for the week.")
+    }
     await coverRequest.update({
         accepterId: employeeId,
         acceptDate: today,

@@ -11,7 +11,7 @@ load_dotenv()
 
 IS_PROD = False
 YOUR_WORKER_EMAIL = "l.skinner@eagles.oc.edu"  # can be None...
-YOUR_MANAGER_EMAIL = "jrevery03@gmail.com" # can also be None
+YOUR_MANAGER_EMAIL = "okcbroncoshomeschool@gmail.com" # can also be None
 
 
 ENDPOINT = "https://127.0.0.1:3133/workerscheduling-t3"
@@ -603,6 +603,7 @@ if (YOUR_WORKER_EMAIL):
         add_tasklist_to_shift(shift5['id'], wipe_equipment['id'])
         add_task_completion(shift5['id'], wipe_force_weights_task['id'], anakin_fitness_employee['id'], True, "03:00") # Anakin is going to complete one task for you. 
 
+        time_off_request(your_users_employee['id'], '2026-04-18', '13:00:00', TODAYS_DATE, TOMORROWS_DATE)
 
 # Announcements
 ann = create_announcement_to_business_unit(obi_wan_fitness_manager["id"], jedi_fitness_center["id"], "Hello There!", "In the wise words of master Yoda: 'Attachment leads to jealousy. The shadow of greed, that is.'", "2026-04-02", "17:25")

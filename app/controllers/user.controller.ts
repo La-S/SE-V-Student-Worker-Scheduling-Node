@@ -6,7 +6,8 @@ import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { getOneForId, getOneForStringId } from "../services/services.ts";
+import { getOneForId, createDateFromString, getStringFromDate, getSundayOfWeek, getSaturdayOfWeek, toHours } from "../services/services.ts";
+import { getShiftsForDateRange } from "./employee.controller.ts";
 import Employee from "../models/employee.model.ts";
 import Shift from "../models/shift.model.ts";
 import Position from "../models/position.model.ts";
@@ -351,6 +352,40 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 }
 
+exports.getHoursForWeek = async (req: pkg.Request, res: pkg.Response) => {
+  const id = parseInt(req.params.id as string, 10);
+  const user = await getOneForId(User,id);
+  const expectedTotalHours = await getUserExpectedHoursForWeek(id, req.params.startdate);
+  res.send({ expectedTotalHours: expectedTotalHours });
+}
+
+export async function getUserExpectedHoursForWeek(userId: number, queryDate: string): Promise<number> {
+  const user = await getOneForId(User, userId);
+  const employees: Model[] = await user.getEmployees();
+  const employeeIds: number[] = [];
+  const dateObj: Date = createDateFromString(queryDate);
+  const startDateObj: Date = getSundayOfWeek(dateObj);
+  const endDateObj: Date = getSaturdayOfWeek(dateObj);
+  const startDate: string = getStringFromDate(startDateObj);
+  const endDate: string = getStringFromDate(endDateObj);
+  const shifts: Model[] = [];
+  let expectedTotalHours: number = 0;
+  for (const employee of employees) {
+    const employeeShifts: Model[] = await getShiftsForDateRange(employee.dataValues.id, startDate, endDate);
+    for (const shift of employeeShifts) {
+      shifts.push(shift);
+    }
+  }
+
+  for (const shift of shifts) {
+    const startTime: string = shift.dataValues.startTime;
+    const endTime: string = shift.dataValues.endTime;
+    //difference in ms -> hours
+    const timeDiff: number = toHours(endTime) - toHours(startTime);
+    expectedTotalHours += timeDiff;
+  }
+  return expectedTotalHours;
+}
 exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
