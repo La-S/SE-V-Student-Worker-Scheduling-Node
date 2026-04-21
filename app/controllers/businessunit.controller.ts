@@ -413,7 +413,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
         await employee.update({ semester: semester });
         if (loadClasses) {
             //probably shouldnt await since it shouldn't return and will take a WHILE
-            await loadEmployeeClassUnavailability(employee);
+            await loadEmployeeClassUnavailability(employee, true);
         }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
