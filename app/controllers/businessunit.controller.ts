@@ -18,13 +18,14 @@ import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
-import { getBudgetInformationForDateRange } from './employee.controller.ts';
+import { getBudgetInformationForDateRange, loadEmployeeClassUnavailability } from './employee.controller.ts';
 import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
 import SettingIntMapping from '../models/settingintmapping.model.ts';
 import Setting from '../models/setting.model.ts';
 import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
 import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
+import { NotFoundError } from '../error/notfound.error.ts';
 const exports: any = {}
 
 
@@ -413,7 +414,7 @@ exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
         await employee.update({ semester: semester });
         if (loadClasses) {
             //probably shouldnt await since it shouldn't return and will take a WHILE
-            loadEmployeeClassUnavailability(employee);
+            await loadEmployeeClassUnavailability(employee);
         }
     }
     res.send({ message: `Employees updated to semester ${semester}` });
@@ -555,29 +556,91 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
     const startTime = req.params.starttime;
     const endTime = req.params.endtime;
     const date = req.params.date;
-    const position = req.params.position;
+    const position: number = parseInt(req.params.position, 10);
     const dateObject = createDateFromString(date);
     const dayOfWeek = convertIntDayOfWeek(dateObject.getDay());
-    const preferred = [];
-    const available = [];
-    const notSpecified = [];
-    const unavailable = [];
+    const preferredEmployees = new Set<Model>();
+    const availableEmployees = new Set<Model>();
+    const notSpecifiedEmployees = new Set<Model>();
+    const unavailableEmployees = new Set<Model>();
 
-    const employees = await Position.findAll({
-        where: { id: id },
+    const positionModel = await Position.findOne({
+        where: { id: position },
         include: [{
             model: Employee,
-            where: {currentlyEmployed: true},
+            where: { currentlyEmployed: true,
+                businessUnitId: id
+             },
             include: [User]
-        }]
+        }],
+        order: [[Employee, User, "lastName", 'desc']] //desc because pushing will invert to asc
     });
-    for (const employee of employees){
-        console.log(employee.user);
-        console.log(employee.dataValues.user);
-        const user = employee.user;
-        const 
+    if (!positionModel) {
+        throw new NotFoundError("Position", position);
     }
+    const employees = positionModel.dataValues.employees;
+    for (const employeeModel of employees) {
+        const employee = employeeModel.dataValues;
+        const user = employee.user;
 
+        //unavailable because of approved time off request
+        const timeOffRequest = await TimeOffRequest.findOne({
+            where: {
+                requesterId: employee.id,
+                startDate: { [Op.lte]: date },
+                endDate: { [Op.gte]: date },
+                approval: true
+            }
+        });
+        if (timeOffRequest) {
+            unavailableEmployees.add(employee);
+            continue;
+        }
+        //check via availabilities now
+        const availabilities = await AvailabilityTemplate.findAll({
+            where: {
+                userId: user.dataValues.id,
+                semester: employee.semester,
+                dayOfWeek: dayOfWeek
+            }
+        });
+        const available = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
+        const unavailable = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
+        let pushed = false;
+
+        for (const availability of unavailable) {
+            if (availability.dataValues.startTime < endTime && availability.dataValues.endTime > startTime) {
+                unavailableEmployees.add(employee);
+                pushed = true;
+                break;
+            }
+        }
+        for (const availability of available) {
+            if (availability.dataValues.startTime <= startTime && availability.dataValues.endTime >= endTime) {
+                if (availability.dataValues.preference === "preferred") {
+                    pushed = true;
+                    preferredEmployees.add(employee);
+                }
+                else if (availability.dataValues.preference === "available") {
+                    pushed = true;
+                    availableEmployees.add(employee);
+                }
+            }
+        }
+        if (preferredEmployees.has(employee) && availableEmployees.has(employee)) {
+            availableEmployees.delete(employee);
+        }
+        if (!pushed) {
+            notSpecifiedEmployees.add(employee);
+        }
+    }
+    const responseObject = {
+        "preferred": [...preferredEmployees],
+        "available": [...availableEmployees],
+        "not specified": [...notSpecifiedEmployees],
+        "unavailable": [...unavailableEmployees]
+    }
+    res.send(responseObject);
 }
 
 export default exports;
