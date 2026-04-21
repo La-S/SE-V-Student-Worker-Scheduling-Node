@@ -358,15 +358,14 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
-    const availabilities = await loadEmployeeClassUnavailability(employee);
+    const availabilities = await loadEmployeeClassUnavailability(employee, clear);
     res.send(availabilities);
 }
 
-export async function loadEmployeeClassUnavailability(employee: Model<any, any>) {
+export async function loadEmployeeClassUnavailability(employee: Model<any, any>, clear: boolean): Promise<Model<any, any>[]> {
     const semester = employee.dataValues.semester;
     const user = await employee.getUser();
     const existing = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
-    const clear = req.query.clear === "true";
     let availabilities: Model<any, any>[] = [];
     if (clear) {
         deleteEmployeeAvailabilityTemplates(employee);
