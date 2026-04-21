@@ -53,14 +53,6 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let originalEndTime = originalShift.endTime;
     let originalDate = originalShift.date;
 
-    req.body.id = undefined;
-    const numUpdated = await Shift.update(req.body, {
-        where: { id: id },
-    });
-    if (numUpdated[0] <= 0) {
-        throw new AppError(400, `Update Shift for id ${id} did not update. Check request body.`);
-    }
-
     let employeeId = req.body.employeeId ?? originalShift.employeeId;
     let employee: Model = await getOneForId(Employee, employeeId);
     let user = await getOneForId(User, employee.dataValues.userId);
@@ -72,6 +64,15 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (hoursWorkedForUser > 20 && user.dataValues.isStudent) {
         throw new AppError(403, `The employee is scheduled for ${hoursWorkedForUser} hours this week across all their jobs. This shift would put the employee over 20 hours for the week.`);
     }
+
+    req.body.id = undefined;
+    const numUpdated = await Shift.update(req.body, {
+        where: { id: id },
+    });
+    if (numUpdated[0] <= 0) {
+        throw new AppError(400, `Update Shift for id ${id} did not update. Check request body.`);
+    }
+
     if ((req.body.published === true && isPublishedOriginally === false && employeeId)) {
         // don't wait for this response.
         sendNotificationToEmployee(employeeId, "New Shift", "A new shift has now become published.");
@@ -127,7 +128,7 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
         },
         {
             model: CoverRequest,
-            include: [ { model: Employee, as: "coverAccepter", include: [User] }]
+            include: [{ model: Employee, as: "coverAccepter", include: [User] }]
         }
         ]
     });
@@ -192,16 +193,18 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number){
-    const endDate : Date = new Date(startDate);
+export async function deleteShiftsForWeek(startDate: Date, businessUnitId: number) {
+    const endDate: Date = new Date(startDate);
     endDate.setDate(endDate.getDate() + 6);
     const endDateFormatted: string = getStringFromDate(endDate);
     const startDateFormatted: string = getStringFromDate(startDate);
 
-    await Shift.destroy({where:{
-        businessUnitId: businessUnitId,
-        date: {[Op.between]: [startDateFormatted, endDateFormatted]}
-    }});
+    await Shift.destroy({
+        where: {
+            businessUnitId: businessUnitId,
+            date: { [Op.between]: [startDateFormatted, endDateFormatted] }
+        }
+    });
 }
 
 export default exports;
