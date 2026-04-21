@@ -145,8 +145,7 @@ async function clearSessionByToken(token: string) {
   if (response[0] == 1) {
     logger.log("info", "Logged out a user");
   } else {
-    logger.log("error", "Error logging out a user.");
-    throw Error(`Error logging out user.`);
+    logger.log("info", "Issue deleting a token, but went ahead and returned 200.");
   }
 }
 
