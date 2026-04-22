@@ -4,4 +4,5 @@ export interface SessionType {
     token: string | null,
     expirationDate: Date,
     userId: number,
+    isTerminal: boolean,
 }
