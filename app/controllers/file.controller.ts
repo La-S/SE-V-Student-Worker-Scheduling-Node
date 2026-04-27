@@ -8,17 +8,17 @@ import { NotFoundError } from '../error/notfound.error.ts';
 const exports: any = {};
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const data = await getFile(req.params.id);
+    const data: File = await getFile(req.params.id);
     res.send(data);
 }
 
 
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
-    const id = req.params.id;
+    const id: string = req.params.id;
     await getFile(id);
 
-    const numDeleted = await File.destroy({
+    const numDeleted: number = await File.destroy({
         where: { id: id },
     })
     if (numDeleted <= 0) {
@@ -28,7 +28,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 async function getFile(id: string) {
-    const data = await File.findOne({ where: { id: id } });
+    const data: File | null = await File.findOne({ where: { id: id } });
     if (!data) {
         throw new AppError(404, `File for id ${id} not found`);
     }

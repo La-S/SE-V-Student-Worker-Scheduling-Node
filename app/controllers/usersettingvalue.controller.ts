@@ -13,31 +13,31 @@ const exports: any = {}
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
-    const setting = await getOneForStringId(Setting, req.body.settingCode);
+    const setting: Setting = await getOneForStringId(Setting, req.body.settingCode);
 
     req.body.id = undefined;
 
     if (req.body.settingValue > setting.dataValues.intMax || req.body.settingValue < setting.dataValues.intMin) {
         throw new AppError(400, `settingValue must be between ${setting.dataValues.intMin} and ${setting.dataValues.intMax}`);
     }
-    const data = await UserSettingValue.create(req.body);
+    const data: UserSettingValue = await UserSettingValue.create(req.body);
     res.send(data);
 }
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
-    const userSettingValue = await getOneForId(UserSettingValue, id);
+    const userSettingValue: UserSettingValue = await getOneForId(UserSettingValue, id);
 
     //Should not change the business unit or setting 
     req.body.userId = undefined;
     req.body.settingCode = undefined;
     req.body.id = undefined;
 
-    const setting = await getOneForStringId(Setting, userSettingValue.dataValues.settingCode);
+    const setting: Setting = await getOneForStringId(Setting, userSettingValue.dataValues.settingCode);
 
     if (setting.dataValues.type === "string" && typeof req.body.settingValue == "string") {
-        const settingIntMapping = await SettingIntMapping.findOne({ where: { settingCode: setting.dataValues.code, stringValue: req.body.settingValue } });
+        const settingIntMapping: SettingIntMapping = await SettingIntMapping.findOne({ where: { settingCode: setting.dataValues.code, stringValue: req.body.settingValue } });
         if (!settingIntMapping) {
             throw new AppError(400, `Setting mapping for ${req.body.settingValue} not found`);
         }
@@ -50,20 +50,20 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
 
 
-    const numUpdated = await UserSettingValue.update(req.body, {
+    const numUpdated: number[] = await UserSettingValue.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedUserSettingValue = await getOneForId(UserSettingValue, id);
+    let updatedUserSettingValue: UserSettingValue = await getOneForId(UserSettingValue, id);
     res.send(updatedUserSettingValue);
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const userSettingValue = await getOneForId(UserSettingValue, id);
-    const data = await UserSettingValue.findOne({
+    const id: number = parseInt(req.params.id, 10);
+    const userSettingValue: UserSettingValue = await getOneForId(UserSettingValue, id);
+    const data: UserSettingValue = await UserSettingValue.findOne({
         where: { id: id },
         include: [
             {
@@ -80,7 +80,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
 
 export async function getUserSettingValue(userId: number, settingCode: string): Promise<Model<any, any>> {
-    const userSettingValue = await UserSettingValue.findOne({
+    const userSettingValue: UserSettingValue = await UserSettingValue.findOne({
         where: {
             userId: userId,
             settingCode: settingCode
@@ -89,7 +89,7 @@ export async function getUserSettingValue(userId: number, settingCode: string): 
     if (!userSettingValue) {
         throw new AppError(404, `No setting value found for user ${userId} and setting code ${settingCode}`);
     }
-    const settingValue = await UserSettingValue.findOne({
+    const settingValue: UserSettingValue | null = await UserSettingValue.findOne({
         where: {
             userId: userId,
             settingCode: settingCode

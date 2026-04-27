@@ -22,14 +22,14 @@ const EMPLOYEE_INCLUDES = [
 // Create and Save a new DropRequest
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data = await DropRequest.create(req.body);
+    const data: DropRequest = await DropRequest.create(req.body);
 
     // send notification to managers.
     if (req.body.requesterId) {
-        const employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
-        const businessUnitId = employee?.dataValues.businessUnitId;
-        const firstName = employee?.dataValues.user.firstName;
-        const lastName = employee?.dataValues.user?.lastName ?? "";
+        const employee: Employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const businessUnitId: number = employee?.dataValues.businessUnitId;
+        const firstName: string = employee?.dataValues.user.firstName;
+        const lastName: string = employee?.dataValues.user?.lastName ?? "";
         if (businessUnitId) {
             sendNotificationToManagers(businessUnitId, "New Drop Request", `${firstName} ${lastName} wants to drop an upcoming shift.`);
         } else {
@@ -42,7 +42,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 // Retrieve all DropRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
+    const data: DropRequest[] = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
     res.send(data);
 };
 
@@ -50,7 +50,7 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
-    const data = await getDropRequestForId(id);
+    const data: DropRequest = await getDropRequestForId(id);
     res.send(data);
 };
 
@@ -100,11 +100,11 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 //cannot be replaced with service because of Employee Returns
-async function getDropRequestForId(id: number): Promise<Model<any, any> | null> {
+async function getDropRequestForId(id: number): Promise<DropRequest> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data = await DropRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
+    const data: DropRequest = await DropRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
     }

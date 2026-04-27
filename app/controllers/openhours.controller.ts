@@ -10,17 +10,17 @@ const errorClassName = "Open Hours";
 
 // Update OpenHours by id
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const originalOpenHours = await getOneForId(OpenHours, id);
+    const id: number = parseInt(req.params.id, 10);
+    const originalOpenHours: OpenHours = await getOneForId(OpenHours, id);
 
     // OpenHours should remain associated with original business unit
     req.body.id = undefined;
     req.body.businessUnitId = undefined;
 
     if (req.body.dayOfWeek !== undefined) {
-        const dayInput = req.body.dayOfWeek;
-        const dayIndex = Number(dayInput);
-        const dayOfWeek = Number.isInteger(dayIndex) && dayIndex >= 1 && dayIndex <= daysOfWeek.length
+        const dayInput: string = req.body.dayOfWeek;
+        const dayIndex: number = Number(dayInput);
+        const dayOfWeek: string = Number.isInteger(dayIndex) && dayIndex >= 1 && dayIndex <= daysOfWeek.length
             ? daysOfWeek[dayIndex - 1]
             : dayInput as string;
 
@@ -30,7 +30,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         req.body.dayOfWeek = dayOfWeek;
     }
 
-    const numUpdated = await OpenHours.update(req.body, {
+    const numUpdated: number[] = await OpenHours.update(req.body, {
         where: { id: id },
     });
 
@@ -38,7 +38,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Update ${errorClassName} for id ${id} did not update. Check request body.`);
     }
 
-    const updatedOpenHours = await getOneForId(OpenHours, id);
+    const updatedOpenHours: OpenHours = await getOneForId(OpenHours, id);
     res.send(updatedOpenHours);
 };
 

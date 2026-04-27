@@ -6,43 +6,43 @@ import { getOneForId } from '../services/services.ts';
 const exports: any = {};
 exports.create = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data = await model.create(req.body)
+    const data: Model = await model.create(req.body)
     res.send(data);
 }
 
 exports.findAll = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const data = await model.findAll();
+    const data: Model[] = await model.findAll();
     res.send(data);
 }
 
 exports.findOne = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    const data = await getOneForId(model, id);
+    const id: number = parseInt(req.params.id as string, 10);
+    const data: Model = await getOneForId(model, id);
     res.send(data);
 }
 
 exports.update = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    const id: number = parseInt(req.params.id as string, 10);
     //throws error if not found
     await getOneForId(model, id);
 
     req.body.id = undefined;
-    const numUpdated = await model.update(req.body, {
+    const numUpdated: number[] = await model.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(400, `Update ${model.name} for id ${id} did not update. Check request body.`);
     }
-    let updatedObject = await getOneForId(model, id);
+    let updatedObject: Model = await getOneForId(model, id);
     res.send(updatedObject);
 }
 
 exports.delete = (model: ModelStatic<Model>) => async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    const id: number = parseInt(req.params.id as string, 10);
     //throws error if not found
     await getOneForId(model, id);
 
-    const numDeleted = await model.destroy({
+    const numDeleted: number = await model.destroy({
         where: { id: id },
     })
     if (numDeleted <= 0) {

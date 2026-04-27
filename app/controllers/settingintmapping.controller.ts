@@ -12,15 +12,15 @@ const exports = {} as any;
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     //throws error if not found
-    const setting = await getOneForStringId(Setting, req.body.settingCode);
+    const setting: Setting = await getOneForStringId(Setting, req.body.settingCode);
     if (setting.dataValues.type !== "string") {
         throw new AppError(400, "Setting type must be string for mapping");
     }
 
     req.body.id = undefined;
     req.body.settingValue = setting.dataValues.intMax + 1;
-    const data = await SettingIntMapping.create(req.body);
-    setting.update({ intMax: setting.dataValues.intMax + 1 });
+    const data: SettingIntMapping = await SettingIntMapping.create(req.body);
+    await setting.update({ intMax: setting.dataValues.intMax + 1 });
     res.send(data);
 }
 
@@ -40,13 +40,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedSettingIntMapping = await getOneForId(SettingIntMapping, id);
+    let updatedSettingIntMapping: SettingIntMapping = await getOneForId(SettingIntMapping, id);
     res.send(updatedSettingIntMapping);
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const data = await SettingIntMapping.findOne({
+    const id: number = parseInt(req.params.id, 10);
+    const data: SettingIntMapping = await SettingIntMapping.findOne({
         where: { id: id },
         include: [Setting]
     });
@@ -54,11 +54,11 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const settingIntMapping = await getOneForId(SettingIntMapping, id);
-    const setting = await getOneForStringId(Setting, settingIntMapping.dataValues.settingCode);
+    const id: number = parseInt(req.params.id, 10);
+    const settingIntMapping: SettingIntMapping = await getOneForId(SettingIntMapping, id);
+    const setting: Setting = await getOneForStringId(Setting, settingIntMapping.dataValues.settingCode);
     await SettingIntMapping.destroy({where: {id: id}});
-    setting.update({ intMax: setting.dataValues.intMax - 1 });
+    await setting.update({ intMax: setting.dataValues.intMax - 1 });
     res.send({message: "setting int mapping deleted"});
 }
 

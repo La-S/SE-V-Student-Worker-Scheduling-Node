@@ -8,21 +8,21 @@ import { Model } from "sequelize";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 
 const exports: any = {};
-const errorClassName = "Task";
+const errorClassName: string = "Task";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const task = await Task.create(req.body);
-    const taskId = task.id;
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
-    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const task: Task = await Task.create(req.body);
+    const taskId: number = task.id;
+    const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+    const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const taskList = await TaskList.findOne({ where: { id: task.taskListId } });
+    const taskList: TaskList | null = await TaskList.findOne({ where: { id: task.taskListId } });
     //despite the name, it returns multiple. getShifts doesnt exist.
-    const shifts: Model<any, any>[] = await taskList!.getShift();
-    const futureShifts = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
+    const shifts: Shift[] = await taskList!.getShift();
+    const futureShifts: Shift[] = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
     for (let shift of futureShifts) {
-        const taskCompletion = {
+        const taskCompletion: TaskCompletion = {
             "checkedOff": "false",
             "taskId": taskId,
             "shiftId": shift.dataValues.id
@@ -33,7 +33,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Task, id);
 
@@ -41,13 +41,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.taskListId = undefined;
     req.body.id = undefined;
 
-    const numUpdated = await Task.update(req.body, {
+    const numUpdated: number[] = await Task.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedTask = await getOneForId(Task, id);
+    let updatedTask: Task = await getOneForId(Task, id);
     res.send(updatedTask);
 };
 

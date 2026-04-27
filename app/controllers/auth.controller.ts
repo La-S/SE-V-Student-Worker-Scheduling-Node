@@ -10,8 +10,8 @@ import { AppError } from "../error/app.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { logger } from "../logger/logger.ts";
 
-const User = db.User;
-const Session = db.Session;
+const User: User = db.User;
+const Session: Session = db.Session;
 
 let googleUser: TokenPayload | undefined;
 

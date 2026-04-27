@@ -12,44 +12,43 @@ import { Model } from "sequelize";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 
 const exports: any = {};
-const errorClassName = "AnnouncementReceipt";
+const errorClassName: string = "AnnouncementReceipt";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data = await AnnouncementReceipt.create(req.body);
-    const receipt = await getReceiptForId(data.dataValues.id);
-    res.send(receipt);
+    const data: AnnouncementReceipt = await AnnouncementReceipt.create(req.body);
+    res.send(data);
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const data = await getReceiptForId(id);
+    const data: AnnouncementReceipt = await getReceiptForId(id);
     res.send(data);
 };
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     await getReceiptForId(id);
 
     req.body.id = undefined;
     req.body.employeeId = undefined;
     req.body.announcementId = undefined;
 
-    const numUpdated = await AnnouncementReceipt.update(req.body, {
+    const numUpdated: number[] = await AnnouncementReceipt.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`);
     }
-    const updatedReceipt = await getReceiptForId(id);
+    const updatedReceipt: AnnouncementReceipt = await getReceiptForId(id);
     res.send(updatedReceipt);
 };
 
 exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     await getReceiptForId(id);
 
-    const numUpdated = await AnnouncementReceipt.update(
+    const numUpdated: number[] = await AnnouncementReceipt.update(
         { deleted: true },
         { where: { id: id } }
     );
@@ -61,18 +60,18 @@ exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.setRead = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
-    const readValue = !(req.query.read === "false");
+    const id: number = parseInt(req.params.id, 10);
+    const readValue: boolean = !(req.query.read === "false");
     await getReceiptForId(id);
 
-    const numUpdated = await AnnouncementReceipt.update(
+    const numUpdated: number[] = await AnnouncementReceipt.update(
         { read: readValue },
         { where: { id: id } }
     );
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Could not mark receipt ${id} as read.`);
     }
-    const updatedReceipt = await getReceiptForId(id);
+    const updatedReceipt: AnnouncementReceipt = await getReceiptForId(id);
     res.send(updatedReceipt);
 };
 
@@ -80,7 +79,7 @@ async function getReceiptForId(id: number) {
     if (!id) {
         throw new AppError(400, "id provided must be an integer");
     }
-    const data = await AnnouncementReceipt.findByPk(id, {
+    const data: AnnouncementReceipt = await AnnouncementReceipt.findByPk(id, {
         include: [
             { model: Announcement, include: [{ model: Employee, include: [User] }, {model: BusinessUnit}]},
             

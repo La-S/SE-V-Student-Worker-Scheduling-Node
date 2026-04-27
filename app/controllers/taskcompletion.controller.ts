@@ -9,18 +9,18 @@ import { NotFoundError } from "../error/notfound.error.ts";
 import Employee from "../models/employee.model.ts";
 
 const exports: any = {};
-const errorClassName = "TaskCompletion";
+const errorClassName: string = "TaskCompletion";
 
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
 
-    const data = await getTaskCompletionForId(id);
+    const data: TaskCompletion = await getTaskCompletionForId(id);
     res.send(data);
 };
 
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(TaskCompletion, id);
 
@@ -28,22 +28,22 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.taskId = undefined;
     req.body.id = undefined;
 
-    const numUpdated = await TaskCompletion.update(req.body, {
+    const numUpdated: number[] = await TaskCompletion.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedEmployee = await getOneForId(TaskCompletion, id);
+    let updatedEmployee: TaskCompletion = await getOneForId(TaskCompletion, id);
     res.send(updatedEmployee);
 };
 
 
-async function getTaskCompletionForId(id: number): Promise<Model<any, any> | null> {
+async function getTaskCompletionForId(id: number): Promise<TaskCompletion | null> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data = await TaskCompletion.findByPk(id, { include: [Task, Employee] });
+    const data: TaskCompletion | null = await TaskCompletion.findByPk(id, { include: [Task, Employee] });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
     }

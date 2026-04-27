@@ -16,13 +16,13 @@ import { deleteShiftsForWeek } from "./shift.controller.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 
 const exports: any = {};
-const errorClassName = "Weekly Schedule Template";
+const errorClassName: string = "Weekly Schedule Template";
 
 // Find a single User with an id
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
 
-    const data = await WeeklyScheduleTemplate.findByPk(id,
+    const data: WeeklyScheduleTemplate | null = await WeeklyScheduleTemplate.findByPk(id,
         {
             include:
                 [{
@@ -47,7 +47,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
 // Update a Employee by the id in the request
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(WeeklyScheduleTemplate, id);
 
@@ -55,13 +55,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.businessUnitId = undefined;
     req.body.id = undefined;
 
-    const numUpdated = await WeeklyScheduleTemplate.update(req.body, {
+    const numUpdated: number[] = await WeeklyScheduleTemplate.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedWeeklySchedule = await getOneForId(WeeklyScheduleTemplate, id);
+    let updatedWeeklySchedule: WeeklyScheduleTemplate = await getOneForId(WeeklyScheduleTemplate, id);
     res.send(updatedWeeklySchedule);
 };
 
@@ -69,7 +69,7 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
     const businessUnitId: number = req.body.businessUnitId;
     await getOneForId(BusinessUnit, businessUnitId);
     const startDate: string = req.body.startDate;
-    const name: String = req.body.name;
+    const name: string = req.body.name;
 
     const shiftsForWeek: Model<any, any>[][] = []
     let currentDay: Date = createDateFromString(startDate);
@@ -92,18 +92,18 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
             weeklyScheduleTemplateId: weeklyScheduleTemplateId,
             dayOfWeek: dayOfWeek
         }
-        const dailyScheduleTemplate = await DailyScheduleTemplate.create(dailyScheduleTemplateBody);
-        const dailyScheduleTemplateId = dailyScheduleTemplate.id;
+        const dailyScheduleTemplate: DailyScheduleTemplate = await DailyScheduleTemplate.create(dailyScheduleTemplateBody);
+        const dailyScheduleTemplateId: number = dailyScheduleTemplate.id;
 
-        const shiftsForDay = await Shift.findAll({
+        const shiftsForDay: Shift[] = await Shift.findAll({
             where: {
                 businessUnitId: businessUnitId,
                 date: dateFormatted
             }
         });
         //maintain startTime, endTime, businessUnitId, employeeId, positionId
-        shiftsForDay.forEach(async (shift) => {
-            const shiftValues = { ...shift.dataValues };
+        shiftsForDay.forEach(async (shift: Shift) => {
+            const shiftValues: any = { ...shift.dataValues };
             shiftValues.id = undefined;
             shiftValues.date = null;
             shiftValues.dailyScheduleTemplateId = dailyScheduleTemplateId;
@@ -127,16 +127,16 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     //get weekly schedule, get daily schedules. First day is Sunday.
     //duplicate shifts from daily schedule to currentDate, change date. 
     // Duplicate shifts-tasklists
-    const id = req.body.id;
-    const weeklyScheduleTemplate = await getOneForId(WeeklyScheduleTemplate, id);
+    const id: number = req.body.id;
+    const weeklyScheduleTemplate: WeeklyScheduleTemplate = await getOneForId(WeeklyScheduleTemplate, id);
     //HAS TO BE A SUNDAY!
-    const startDate = req.body.startDate;
+    const startDate: string = req.body.startDate;
     let currentDate: Date = createDateFromString(startDate);
     if (!isSunday(currentDate)) {
         throw new AppError(400, "startDate must be a Sunday")
     }
     const deleteShifts: boolean = req.body.delete;
-    const businessUnitId = req.body.businessUnitId;
+    const businessUnitId: number = req.body.businessUnitId;
     await getOneForId(BusinessUnit, businessUnitId);
     if (deleteShifts) {
         deleteShiftsForWeek(currentDate, businessUnitId)
@@ -144,15 +144,15 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
 
     //sunday-sat
     for (const dayOfWeek of daysOfWeek) {
-        const shiftsForDay = await getShiftsFromDailyScheduleTemplate(id, dayOfWeek);
-        shiftsForDay.forEach(async (shift: Model<any, any>) => {
-            const shiftValues = { ...shift.dataValues };
+        const shiftsForDay: Shift[] = await getShiftsFromDailyScheduleTemplate(id, dayOfWeek);
+        shiftsForDay.forEach(async (shift: Shift) => {
+            const shiftValues: any = { ...shift.dataValues };
             shiftValues.id = undefined;
             shiftValues.date = getStringFromDate(currentDate);
             shiftValues.dailyScheduleTemplateId = null;
-            const newShift = await Shift.create(shiftValues);
+            const newShift: Shift = await Shift.create(shiftValues);
             //despite the name it returns multiple. Sequelize-made, cannot change
-            const taskLists = await shift.getTaskList();
+            const taskLists: TaskList[] = await shift.getTaskList();
             copyTaskListsToNewShift(taskLists, newShift);
             makeTaskCompletionsForNewShift(taskLists, newShift);
         })
@@ -161,13 +161,13 @@ exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
     res.send({ message: "shifts created" });
 }
 
-async function copyTaskListsToNewShift(taskLists: Model<any, any>[], shift: Model<any, any>) {
+async function copyTaskListsToNewShift(taskLists: TaskList[], shift: Shift) {
     taskLists.forEach((taskList) => {
         taskList.addShift(shift);
     })
 }
 
-async function makeTaskCompletionsForNewShift(taskLists: Model<any, any>[], shift: Model<any, any>) {
+async function makeTaskCompletionsForNewShift(taskLists: TaskList[], shift: Shift) {
     taskLists.forEach(async (taskList) => {
         const tasks = await taskList.getTasks();
         tasks.forEach((task) => {
@@ -182,7 +182,7 @@ async function makeTaskCompletionsForNewShift(taskLists: Model<any, any>[], shif
 }
 
 async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: number, dayOfWeek: string) {
-    const dailyScheduleTemplate: Model<any, any> | null = await DailyScheduleTemplate.findOne({
+    const dailyScheduleTemplate: DailyScheduleTemplate | null = await DailyScheduleTemplate.findOne({
         where: {
             weeklyScheduleTemplateId: weeklyScheduleTemplateId,
             dayOfWeek: dayOfWeek
@@ -191,7 +191,7 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
     if (!dailyScheduleTemplate) {
         throw new AppError(400, `DailyScheduleTemplate not found for weekly schedule template with id ${weeklyScheduleTemplateId}`)
     }
-    const shifts = await dailyScheduleTemplate.getShifts();
+    const shifts: Shift[] = await dailyScheduleTemplate.getShifts();
     return shifts;
 }
 export default exports;

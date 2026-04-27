@@ -17,7 +17,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
     req.body.id = undefined;
 
-    const existing = await Setting.findOne({
+    const existing: Setting | null = await Setting.findOne({
         where: { code: req.body.code }
     });
 
@@ -78,7 +78,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
 
 
-    const data = await Setting.create(req.body);
+    const data: Setting = await Setting.create(req.body);
     if (type === "string") {
         for (let i = req.body.intMin; i <= req.body.intMax; i++) {
             await SettingIntMapping.create({
@@ -89,7 +89,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     if (req.body.isForBusinessUnit) {
-        const businessUnits = await BusinessUnit.findAll();
+        const businessUnits: BusinessUnit[] = await BusinessUnit.findAll();
         for (const businessUnit of businessUnits) {
             await BusinessUnitSettingValue.create({
                 businessUnitId: businessUnit.dataValues.id,
@@ -100,7 +100,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
     //is for users
     else if (req.body.isForBusinessUnit == false) {
-        const users = await User.findAll();
+        const users: User[] = await User.findAll();
         for (const user of users) {
             await UserSettingValue.create({
                 userId: user.dataValues.id,
@@ -115,7 +115,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data = await Setting.findAll({
+    const data: Setting[] = await Setting.findAll({
         include: [{
             model: SettingIntMapping,
             required: false
@@ -127,24 +127,24 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 // Find a single setting by code
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
-    const code = req.params.code;
+    const code: string = req.params.code;
 
-    const data = await getSettingForCode(code);
+    const data: Setting | null = await getSettingForCode(code);
     res.send(data);
 
 };
 
 // Update a setting by code
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const code = req.params.code;
-    const setting = await getSettingForCode(code);
+    const code: string = req.params.code;
+    const setting: Setting | null = await getSettingForCode(code);
     req.body.id = undefined;
     req.body.code = undefined;
 
-    let intMin = setting!.dataValues.intMin;
-    let intMax = setting!.dataValues.intMax;
-    let defaultValue = setting!.dataValues.defaultValue;
-    let type = setting!.dataValues.type;
+    let intMin: number | null = setting!.dataValues.intMin;
+    let intMax: number | null = setting!.dataValues.intMax;
+    let defaultValue: number | null = setting!.dataValues.defaultValue;
+    let type: string = setting!.dataValues.type;
     if (req.body.intMin !== undefined){
         intMin = req.body.intMin;
     }
@@ -188,23 +188,23 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
 
-    const numUpdated = await Setting.update(req.body, { where: { code } });
+    const numUpdated: number[] = await Setting.update(req.body, { where: { code } });
     if (numUpdated[0] <= 0) {
         throw new AppError(400, `Update Setting for code ${code} did not update.`);
     }
 
-    const updatedObject = await getSettingForCode(code);
+    const updatedObject: Setting | null = await getSettingForCode(code);
     res.send(updatedObject);
 };
 
 // Delete a setting by code
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 
-    const code = req.params.code;
+    const code: string = req.params.code;
 
     await getSettingForCode(code);
 
-    const numDeleted = await Setting.destroy({
+    const numDeleted: number = await Setting.destroy({
         where: { code: code }
     });
 
@@ -217,13 +217,13 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 // Helper function
-async function getSettingForCode(code: string): Promise<Model<any, any> | null> {
+async function getSettingForCode(code: string): Promise<Setting | null> {
 
     if (!code) {
         throw new AppError(400, "code must be provided");
     }
 
-    const data = await Setting.findOne({
+    const data: Setting | null = await Setting.findOne({
         where: { code },
         include: [{
             model: SettingIntMapping,

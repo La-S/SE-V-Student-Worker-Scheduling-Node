@@ -23,15 +23,15 @@ const EMPLOYEE_INCLUDES = [
 // Create and Save a new CoverRequest
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data = await CoverRequest.create(req.body);
+    const data: CoverRequest = await CoverRequest.create(req.body);
 
     // send notification to required parties.
     if (req.body.requesterId) {
         // don't wait for this response.
-        const employee = await Employee.findByPk(req.body.requesterId, { include: [User] });
-        const businessUnitId = employee?.dataValues.businessUnitId;
-        const firstName = employee?.dataValues.user.firstName;
-        const lastName = employee?.dataValues.user?.lastName ?? "";
+        const employee: Employee = await Employee.findByPk(req.body.requesterId, { include: [User] });
+        const businessUnitId: number = employee?.dataValues.businessUnitId;
+        const firstName: string = employee?.dataValues.user.firstName;
+        const lastName: string = employee?.dataValues.user?.lastName ?? "";
         if (businessUnitId) {
             sendNotificationToOtherEmployees(req.body.requesterId, businessUnitId, "New Cover Request", `${firstName} ${lastName} needs someone to cover an upcoming shift.`);
         } else {
@@ -44,7 +44,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 // Retrieve all Cover Requests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data = await CoverRequest.findAll({ include: EMPLOYEE_INCLUDES })
+    const data: CoverRequest[] = await CoverRequest.findAll({ include: EMPLOYEE_INCLUDES })
     res.send(data);
 };
 
@@ -52,7 +52,7 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
-    const data = await getCoverRequestForId(id);
+    const data: CoverRequest = await getCoverRequestForId(id);
     res.send(data);
 };
 
@@ -143,11 +143,11 @@ exports.approveCoverRequest = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 //cannot be replaced with service because of user in return
-async function getCoverRequestForId(id: number): Promise<Model<any, any> | null> {
+async function getCoverRequestForId(id: number): Promise<CoverRequest | null> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data = await CoverRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
+    const data: CoverRequest | null = await CoverRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
     }
