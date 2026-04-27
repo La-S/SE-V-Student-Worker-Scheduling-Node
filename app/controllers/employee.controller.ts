@@ -620,7 +620,7 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 //cannot be replaced with service because of user in return
-async function getEmployeeForId(id: number): Promise<Employee> | null> {
+async function getEmployeeForId(id: number): Promise<Employee | null> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
