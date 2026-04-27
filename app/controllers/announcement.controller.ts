@@ -19,7 +19,7 @@ import BusinessUnit from '../models/businessunit.model.ts';
 
 const { Request, Response } = pkg;
 
-exports.create = async (req: typeof Request.prototype, res: typeof Response.prototype): Promise<void> => {
+exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow: boolean = false;
 
     const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
@@ -92,7 +92,7 @@ exports.create = async (req: typeof Request.prototype, res: typeof Response.prot
     res.send(announcement);
 };
 
-exports.createSpecificEmployees = async (req: typeof Request.prototype, res: typeof Response.prototype): Promise<void> => {
+exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow: boolean = false;
 
     const employeeIds: number[] = req.body.employeeIds;
@@ -158,7 +158,7 @@ exports.createSpecificEmployees = async (req: typeof Request.prototype, res: typ
     res.send(announcement);
 };
 
-exports.sendEmail = async (req: typeof Request.prototype, res: typeof Response.prototype): Promise<void> => {
+exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
     const announcement: Announcement | null = await getOneForId(Announcement, id);
@@ -189,7 +189,7 @@ exports.sendEmail = async (req: typeof Request.prototype, res: typeof Response.p
     res.send({ message: 'Announcement email sent.' });
 };
 
-exports.update = async (req: typeof Request.prototype, res: typeof Response.prototype): Promise<void> => {
+exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
     await getOneForId(Announcement, id);
@@ -212,7 +212,7 @@ exports.update = async (req: typeof Request.prototype, res: typeof Response.prot
     res.send(updatedAnnouncement);
 };
 
-exports.findOne = async (req: typeof Request.prototype, res: typeof Response.prototype): Promise<void> => {
+exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
     const data: Announcement | null = await Announcement.findOne({
