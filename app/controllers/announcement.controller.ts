@@ -64,20 +64,13 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     for (const employeeId of employeeIds) {
-        const announcementReceiptBody: {
-            employeeId: number;
-            announcementId: number;
-            read: boolean;
-            deleted: boolean;
-            notified: boolean;
-        } = {
-            employeeId: employeeId,
-            announcementId: announcementId,
-            read: false,
-            deleted: false,
-            notified: sendNotifNow,
+        const announcementReceiptBody = {
+            "employeeId": employeeId,
+            "announcementId": announcementId,
+            "read": false,
+            "deleted": false,
+            "notified": sendNotifNow,
         };
-
         await AnnouncementReceipt.create(announcementReceiptBody);
 
         if (sendNotifNow) {
@@ -130,20 +123,13 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
     }
 
     for (const employeeId of employeeIds) {
-        const announcementReceiptBody: {
-            employeeId: number;
-            announcementId: number;
-            read: boolean;
-            deleted: boolean;
-            notified: boolean;
-        } = {
-            employeeId: employeeId,
-            announcementId: announcementId,
-            read: false,
-            deleted: false,
-            notified: sendNotifNow,
+        const announcementReceiptBody = {
+            "employeeId": employeeId,
+            "announcementId": announcementId,
+            "read": false,
+            "deleted": false,
+            "notified": sendNotifNow,
         };
-
         await AnnouncementReceipt.create(announcementReceiptBody);
 
         if (sendNotifNow) {
