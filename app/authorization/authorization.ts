@@ -24,10 +24,31 @@ export const authenticate = async (req: pkg.Request, res: pkg.Response, next: pk
     foundSession.save();
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again");
   }
+  if (sessionData.isTerminal) {
+    throw new UnauthorizedError("Unauthorized to access this info with a terminal token.");
+  }
 
   next();
   return;
 };
+
+// same as authenticate but it allows both regular users and terminals.
+export const terminalAuthenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
+  let token = getToken(req);
+  let foundSession = await getSession(token);
+  let sessionData = foundSession.dataValues as SessionType;
+
+  if (sessionData == null || sessionData.expirationDate.getTime() < Date.now()) {
+    foundSession.set("token", null);
+    foundSession.set("expirationDate", new Date());
+    foundSession.save();
+    throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again");
+  }
+
+  next();
+  return;
+};
+
 
 //AUTHORIZATION METHOD, DOES NOT REPLACE AUTHENTICATE
 export const isAdminOnly = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
