@@ -223,7 +223,7 @@ def get_task_completion_id(shift_id):
         raise Exception("Sorry, the shift has already started, so we can't add a taskcompletion to shiftId:", shift_id)
     return shift_data['taskList'][0]['tasks'][0]['taskcompletions'][0]['id']
 
-def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off, time):
+def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off, time, date):
     global task_completions_generated
     task_completion_id = 0;
     try:
@@ -238,7 +238,8 @@ def add_task_completion(shift_id, task_id, check_off_employee_id, is_checked_off
         "shiftId": shift_id,
         "checkedOffEmployeeId": check_off_employee_id,
         "checkedOff": 1 if is_checked_off else 0,
-        "time": time
+        "time": time,
+        "date": date
     }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
     if r.status_code == 200:
         task_completions_generated += 1
@@ -453,15 +454,14 @@ def set_open_hours(business_unit_id, day_of_week_int, start_time, end_time):
         print('Hmm, we got an error updating open hours', r.text)
     return r.json()
 
-def create_clockin_out(business_unit_id, day_of_week_int, start_time, end_time):
-    r = requests.post(f'{ENDPOINT}/openhours', json= {
-        "businessUnitId": business_unit_id,
-        "dayOfWeek": day_of_week_int,
-        "startTime": start_time,
-        "endTime": end_time
+def create_clockin_out(shift_id, clock_in_time, clock_out_time):
+    r = requests.post(f'{ENDPOINT}/timeclock', json = {
+        "shiftId": shift_id,
+        "clockIn": clock_in_time,
+        "clockOut": clock_out_time,
         }, verify=False, headers={'Authorization': f'Bearer {ADMIN_KEY}'})
     if r.status_code != 200:
-        print('Hmm, we got an error updating open hours', r.text)
+        print('Hmm, we got an error creating clockin', r.text)
     return r.json()
 
 delete_business_unit("Jedi Fitness Center")
@@ -560,21 +560,28 @@ TODAYS_DATE = str(datetime.today())[0:10]
 TOMORROWS_DATE = str(datetime.today()+timedelta(days=1))[0:10]
 YESTERDAYS_DATE = str(datetime.today()+timedelta(days=-1))[0:10]
 TWO_DAYS_AGO = str(datetime.today()+timedelta(days=-2))[0:10]
+ONE_WEEK_AGO = str(datetime.today()+timedelta(days=-7))[0:10]
 
 num_of_day_of_week = datetime.today().isoweekday()
 MOST_RECENT_SUNDAY = str(datetime.today()-timedelta(days=num_of_day_of_week))[0:10]
 NEXT_SUNDAY = str(datetime.today()-timedelta(days=num_of_day_of_week)+timedelta(days=7))[0:10]
 # BREW
 shift1 = create_shift(leia_employee_id_brew['id'], the_brew['id'], barista['id'], "8:00", "13:00", TODAYS_DATE, True)
+create_clockin_out(shift1['id'], "8:01", "13:02")
 shift2 = create_shift(ben_employee_id_brew['id'], the_brew['id'], cashier['id'], "7:00", "12:00", TODAYS_DATE, True)
+create_clockin_out(shift2['id'], "7:08", "12:00")
 shift3 = create_shift(cody_employee_id_brew['id'], the_brew['id'], bar_back['id'], "8:30", "15:00", TODAYS_DATE, True)
+create_clockin_out(shift3['id'], "8:30", "14:58")
 add_tasklist_to_shift(shift1['id'], clean_up_cafe['id'])
 add_tasklist_to_shift(shift3['id'], clean_up_cafe['id'])
 
 # DUB - front desk
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", TODAYS_DATE, True)
+create_clockin_out(shift1_dub['id'], "5:46", "10:32")
 shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk['id'], "10:15", "16:00", TODAYS_DATE, True)
+create_clockin_out(shift2_dub['id'], "10:24", "15:58")
 shift3_dub = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", TODAYS_DATE, True)
+create_clockin_out(shift3_dub['id'], "15:45", None)
 shift3_dub_tomorrow = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", TOMORROWS_DATE, True)
 shift3_5_dub = create_shift(leia_employee_id_brew['id'], the_dub['id'], front_desk['id'], "19:45", "22:30", TODAYS_DATE, True)
 leia_cover_request = create_cover_request(shift3_5_dub["id"], leia_employee_id_brew['id'], "11:15", TODAYS_DATE, "I need someone to swap with me so I can get my nails done.")
@@ -587,6 +594,7 @@ han_cover_request = create_cover_request(shift3_dub_tomorrow["id"], han_employee
 
 # DUB - personal trainer
 shift5_dub = create_shift(cody_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "7:00", "9:00", TODAYS_DATE, True)
+create_clockin_out(shift5_dub['id'], "7:00", "9:08")
 shift5_dub_tomorrow = create_shift(cody_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "7:00", "9:00", TOMORROWS_DATE, True)
 create_drop_request(shift5_dub_tomorrow["id"], cody_employee_id_dub['id'], "9:45", TODAYS_DATE)
 shift6_dub = create_shift(ben_employee_id_dub['id'], the_dub['id'], personal_trainer['id'], "15:00", "17:30", TODAYS_DATE, True)
@@ -594,14 +602,21 @@ shift6_dub_tomorrow = create_shift(ben_employee_id_dub['id'], the_dub['id'], per
 create_drop_request(shift6_dub_tomorrow["id"], ben_employee_id_dub['id'], "12:30", TODAYS_DATE)
 
 add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
+add_task_completion(shift1_dub['id'], wipe_equipment['id'], cody_employee_id_dub['id'], True, "9:27", TODAYS_DATE)
+add_task_completion(shift1_dub['id'], start_music['id'], cody_employee_id_dub['id'], True, "9:29", TODAYS_DATE)
+add_task_completion(shift1_dub['id'], refill_wipes['id'], cody_employee_id_dub['id'], True, "9:34", TODAYS_DATE)
 add_tasklist_to_shift(shift2_dub['id'], opening_tasks['id'])
-add_tasklist_to_shift(shift3_dub['id'], opening_tasks['id'])
-add_tasklist_to_shift(shift1_dub['id'], closing_tasks['id'])
-add_tasklist_to_shift(shift2_dub['id'], closing_tasks['id'])
+# add_tasklist_to_shift(shift3_dub['id'], opening_tasks['id'])
+# add_tasklist_to_shift(shift1_dub['id'], closing_tasks['id'])
+# add_tasklist_to_shift(shift2_dub['id'], closing_tasks['id'])
 add_tasklist_to_shift(shift3_dub['id'], closing_tasks['id'])
 
 #DUB - filler for other days
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", YESTERDAYS_DATE, True)
+add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
+add_task_completion(shift1_dub['id'], wipe_equipment['id'], cody_employee_id_dub['id'], True, "6:27", YESTERDAYS_DATE)
+add_task_completion(shift1_dub['id'], start_music['id'], han_employee_id_dub['id'], True, "7:43", YESTERDAYS_DATE)
+
 shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk['id'], "10:15", "16:00", YESTERDAYS_DATE, True)
 shift3_dub = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", YESTERDAYS_DATE, True)
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", TOMORROWS_DATE, True)
@@ -609,11 +624,19 @@ shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk[
 # shift3_dub = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", TOMORROWS_DATE, True)
 # the above has already been created above with a covershift Request
 shift1_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", TWO_DAYS_AGO, True)
+add_tasklist_to_shift(shift1_dub['id'], opening_tasks['id'])
+add_task_completion(shift1_dub['id'], wipe_equipment['id'], cody_employee_id_dub['id'], True, "6:27", TWO_DAYS_AGO)
+add_task_completion(shift1_dub['id'], start_music['id'], ben_employee_id_dub['id'], True, "7:43", TWO_DAYS_AGO)
 shift2_dub = create_shift(luke_employee_id_dub['id'], the_dub['id'], front_desk['id'], "10:15", "16:00", TWO_DAYS_AGO, True)
 shift3_dub = create_shift(han_employee_id_dub['id'], the_dub['id'], front_desk['id'], "15:45", "20:00", TWO_DAYS_AGO, True)
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", YESTERDAYS_DATE, True)
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TWO_DAYS_AGO, True)
 shift4_dub = create_shift(brian_employee_id_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TOMORROWS_DATE, True)
+
+shift_old_dub = create_shift(leia_employee_id_dub['id'], the_dub['id'], front_desk['id'], "5:45", "10:30", ONE_WEEK_AGO, True)
+add_tasklist_to_shift(shift_old_dub['id'], opening_tasks['id'])
+add_task_completion(shift_old_dub['id'], wipe_equipment['id'], cody_employee_id_dub['id'], True, "6:27", ONE_WEEK_AGO)
+add_task_completion(shift_old_dub['id'], start_music['id'], ben_employee_id_dub['id'], True, "7:43", ONE_WEEK_AGO)
 
 # set dub open hours:
 set_open_hours(the_dub['id'], 1, "12:30", "16:30")
@@ -655,7 +678,9 @@ if (IS_PROD):
     give_employee_a_position(your_users_employee_dub['id'], personal_trainer['id'])
     give_employee_a_position(your_users_employee_dub['id'], lifeguard['id'])
 
-    shift4_dub = create_shift(your_users_employee_dub['id'], the_dub['id'], lifeguard['id'], "9:00", "13:00", TODAYS_DATE, True)
+    shift4_dub = create_shift(your_users_employee_dub['id'], the_dub['id'], lifeguard['id'], "17:00", "19:00", TODAYS_DATE, True)
+    shift5_dub = create_shift(your_users_employee_dub['id'], the_dub['id'], lifeguard['id'], "08:00", "12:00", TOMORROWS_DATE, True)
+    shift6_dub = create_shift(your_users_employee_dub['id'], the_dub['id'], front_desk['id'], "15:00", "17:00", TOMORROWS_DATE, True)
 
     time_off_request(your_users_employee_dub['id'], '2026-04-21', '11:30', start_date="2026-04-21", end_date="2026-05-21")
 
