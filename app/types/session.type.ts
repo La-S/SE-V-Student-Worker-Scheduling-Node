@@ -1,4 +1,4 @@
-export interface SessionType {
+export interface SessionValuesType {
     id?: number,
     email: string,
     token: string | null,

@@ -13,3 +13,5 @@ const File = SequelizeInstance.define("file", {
     }
 });
 export default File;
+
+export type FileType = InstanceType<typeof File>;

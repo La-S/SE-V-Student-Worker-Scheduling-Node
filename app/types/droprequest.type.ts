@@ -1,4 +1,4 @@
-export interface DropRequestType {
+export interface DropRequestValuesType {
     id?: number,
     shiftId: number,
     requesterId: number,

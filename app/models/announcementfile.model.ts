@@ -15,3 +15,5 @@ const AnnouncementFile = SequelizeInstance.define("announcementFile", {
 });
 
 export default AnnouncementFile;
+
+export type AnnouncementFileType = InstanceType<typeof AnnouncementFile>;

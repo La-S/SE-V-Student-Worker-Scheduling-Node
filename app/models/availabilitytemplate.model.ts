@@ -29,3 +29,5 @@ const AvailabilityTemplate = SequelizeInstance.define("availabilitytemplate", {
 });
 
 export default AvailabilityTemplate;
+
+export type AvailabilityTemplateType = InstanceType<typeof AvailabilityTemplate>;

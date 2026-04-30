@@ -1,4 +1,4 @@
-export interface TaskType {
+export interface TaskValuesType {
     id?: number
     taskListId: number,
     name: string,

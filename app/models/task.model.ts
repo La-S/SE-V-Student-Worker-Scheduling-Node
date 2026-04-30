@@ -1,5 +1,6 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
+import { TaskValuesType } from '../types/tasktype.ts';
 
 //taskListId
 const Task = SequelizeInstance.define("task", {
@@ -18,3 +19,5 @@ const Task = SequelizeInstance.define("task", {
 })
 
 export default Task
+
+export type TaskType = InstanceType<typeof Task>;

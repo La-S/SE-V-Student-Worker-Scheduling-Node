@@ -1,4 +1,4 @@
-export interface TimeClockType {
+export interface TimeClockValuesType {
     id?: number
     shiftId: number,
     clockIn: string,

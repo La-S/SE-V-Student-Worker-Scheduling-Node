@@ -16,3 +16,5 @@ const DailyScheduleTemplate = SequelizeInstance.define("dailyscheduletemplate", 
 });
 
 export default DailyScheduleTemplate;
+
+export type DailyScheduleTemplateType = InstanceType<typeof DailyScheduleTemplate>;

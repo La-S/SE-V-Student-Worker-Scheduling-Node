@@ -15,3 +15,5 @@ const TaskList = SequelizeInstance.define("tasklist", {
 })
 
 export default TaskList
+
+export type TaskListType = InstanceType<typeof TaskList>;

@@ -29,3 +29,5 @@ const Announcement = SequelizeInstance.define("announcement", {
 });
 
 export default Announcement;
+
+export type AnnouncementType = InstanceType<typeof Announcement>;

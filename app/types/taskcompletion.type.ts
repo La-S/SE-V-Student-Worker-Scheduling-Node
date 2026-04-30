@@ -1,9 +1,9 @@
-export interface TaskCompletionType {
+export interface TaskCompletionValuesType {
     id?: number,
     shiftId: number,
-    taskListItemId: number,
-    checkedOffUser: number,
-    checkedOff: boolean,
-    time: string,
-    date: string
+    taskId: number,
+    checkedOffUser?: number,
+    checkedOff?: boolean,
+    time?: string,
+    date?: string
 }

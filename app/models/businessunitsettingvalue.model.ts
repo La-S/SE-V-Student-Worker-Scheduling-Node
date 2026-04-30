@@ -16,3 +16,5 @@ const BusinessUnitSettingValue = SequelizeInstance.define("businessunitsettingva
 });
 
 export default BusinessUnitSettingValue;
+
+export type BusinessUnitSettingValueType = InstanceType<typeof BusinessUnitSettingValue>;

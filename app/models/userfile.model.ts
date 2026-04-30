@@ -15,3 +15,5 @@ const UserFile = SequelizeInstance.define("userFile", {
 });
 
 export default UserFile;
+
+export type UserFileType = InstanceType<typeof UserFile>;

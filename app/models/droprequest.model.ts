@@ -30,3 +30,5 @@ const DropRequest = SequelizeInstance.define("droprequest", {
 });
 
 export default DropRequest
+
+export type DropRequestType = InstanceType<typeof DropRequest>;

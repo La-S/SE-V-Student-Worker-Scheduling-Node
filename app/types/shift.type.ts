@@ -1,4 +1,4 @@
-export interface ShiftType {
+export interface ShiftValuesType {
     id?: number,
     employeeId?: number,
     positionId?: number,

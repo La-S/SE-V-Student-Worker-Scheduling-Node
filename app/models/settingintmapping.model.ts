@@ -20,3 +20,4 @@ const SettingIntMapping = SequelizeInstance.define("settingintmapping", {
 });
 
 export default SettingIntMapping;
+export type SettingIntMappingType = InstanceType<typeof SettingIntMapping>;

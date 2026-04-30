@@ -1,4 +1,4 @@
-export interface EmployeeType {
+export interface EmployeeValuesType {
   id?: number,
   userId: number,
   businessUnitId: number,

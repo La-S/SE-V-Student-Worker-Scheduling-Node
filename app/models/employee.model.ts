@@ -34,3 +34,5 @@ const Employee = SequelizeInstance.define("employee", {
 });
 
 export default Employee;
+
+export type EmployeeType = InstanceType<typeof Employee>;

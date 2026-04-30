@@ -27,3 +27,5 @@ const OpenHours = SequelizeInstance.define("openhours", {
 });
 
 export default OpenHours;
+
+export type OpenHoursType = InstanceType<typeof OpenHours>;

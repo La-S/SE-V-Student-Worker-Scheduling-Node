@@ -1,4 +1,4 @@
-export interface PositionType {
+export interface PositionValuesType {
     id?: number,
     businessUnitId: number,
     name: String,

@@ -35,3 +35,5 @@ const TimeOffRequest = SequelizeInstance.define("timeoffrequest", {
 });
 
 export default TimeOffRequest;
+
+export type TimeOffRequestType = InstanceType<typeof TimeOffRequest>;
