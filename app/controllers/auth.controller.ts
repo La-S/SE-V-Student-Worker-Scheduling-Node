@@ -65,7 +65,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
 
   if (!sessionToken) {
     // create a new Session with an expiration date and save to database
-    let token = jwt.sign({ id: googleUserInfo.email }, process.env.JWT_SECRET, {
+    let token = jwt.sign({ id: googleUserInfo.email }, process.env.JWT_SECRET as string, {
       expiresIn: 3600 * 24 * 31, // expires once every 31 days.
     });
     let tempExpirationDate = new Date();
