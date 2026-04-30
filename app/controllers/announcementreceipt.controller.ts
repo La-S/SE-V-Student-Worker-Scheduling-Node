@@ -10,7 +10,7 @@ import { getOneForId } from "../services/services.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { Model } from "sequelize";
 import AnnouncementFile from "../models/announcementfile.model.ts";
-import { AnnouncementReceiptType } from "../models/announcementreceipt.model.ts";
+import { type AnnouncementReceiptType } from "../models/announcementreceipt.model.ts";
 
 const exports: any = {};
 const errorClassName: string = "AnnouncementReceipt";

@@ -1,6 +1,6 @@
 import db from "../models/index.ts";
 import pkg from 'express';
-import type { SessionType } from "../types/session.type.ts";
+import type { SessionValuesType } from "../types/session.type.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
@@ -16,7 +16,7 @@ const Session = db.Session;
 export const authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
-  let sessionData = foundSession.dataValues as SessionType;
+  let sessionData = foundSession.dataValues as SessionValuesType;
 
   if (sessionData == null || sessionData.expirationDate.getTime() < Date.now()) {
     foundSession.set("token", null);

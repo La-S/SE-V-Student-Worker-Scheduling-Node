@@ -1,4 +1,4 @@
-export interface TaskCompletionValuesType {
+export type TaskCompletionValuesType = {
     id?: number,
     shiftId: number,
     taskId: number,

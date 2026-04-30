@@ -7,10 +7,10 @@ import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { logger } from "../logger/logger.ts";
-import User, { UserType } from "../models/user.model.ts";
-import Session, { SessionType } from "../models/session.model.ts";
-import { UserValuesType } from "../types/user.type.ts";
-import { SessionValuesType } from "../types/session.type.ts";
+import User, { type UserType } from "../models/user.model.ts";
+import Session from "../models/session.model.ts";
+import type { UserValuesType } from "../types/user.type.ts";
+import type { SessionValuesType } from "../types/session.type.ts";
 
 let googleUser: TokenPayload | undefined;
 

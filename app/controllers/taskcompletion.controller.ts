@@ -7,7 +7,7 @@ import { Model } from "sequelize";
 import Task from "../models/task.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import Employee from "../models/employee.model.ts";
-import { TaskCompletionType } from "../models/taskcompletion.model.ts";
+import { type TaskCompletionType } from "../models/taskcompletion.model.ts";
 
 const exports: any = {};
 const errorClassName: string = "TaskCompletion";

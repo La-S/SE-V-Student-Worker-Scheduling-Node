@@ -1,13 +1,13 @@
 import { Model, Op } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import TimeOffRequest, { TimeOffRequestType } from "../models/timeoffrequest.model.ts";
-import Employee, { EmployeeType } from "../models/employee.model.ts";
+import TimeOffRequest, { type TimeOffRequestType } from "../models/timeoffrequest.model.ts";
+import Employee, { type EmployeeType } from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
-import Shift, { ShiftType } from "../models/shift.model.ts";
+import Shift, { type ShiftType } from "../models/shift.model.ts";
 import { getShiftsForDateRange } from "./employee.controller.ts";
 import { logger } from "../logger/logger.ts";
 
@@ -129,7 +129,7 @@ async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequestTy
     if (!timeOffRequest) {
         throw new NotFoundError("Time Off Request", id);
     }
-    const data: TimeOffRequestType = await TimeOffRequest.findByPk(id, {
+    const data: TimeOffRequestType | null = await TimeOffRequest.findByPk(id, {
         include: [
             {
                 model: Employee,
@@ -151,6 +151,9 @@ async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequestTy
             }
         ]
     });
+    if (!data) {
+        throw new NotFoundError("Time Off Request", id);
+    }
     return data;
 }
 

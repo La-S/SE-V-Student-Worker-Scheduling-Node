@@ -1,6 +1,6 @@
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import OpenHours, { OpenHoursType } from "../models/openhours.model.ts";
+import OpenHours, { type OpenHoursType } from "../models/openhours.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 

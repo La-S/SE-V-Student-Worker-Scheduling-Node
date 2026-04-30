@@ -1,4 +1,4 @@
-export interface AnnouncementValuesType {
+export type AnnouncementValuesType = {
     id?: number,
     subject: string,
     body: string,

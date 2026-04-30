@@ -1,4 +1,4 @@
-export interface BusinessUnitValuesType {
+export type BusinessUnitValuesType = {
   id?: number,
   name: string
 }

@@ -4,10 +4,10 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId, getOneForStringId } from "../services/services.ts";
-import Setting, { SettingType } from "../models/setting.model.ts";
+import Setting, { type SettingType } from "../models/setting.model.ts";
 import { parse } from "node:path";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
-import { SettingIntMappingType } from "../models/settingintmapping.model.ts";
+import { type SettingIntMappingType } from "../models/settingintmapping.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 
 const exports = {} as any;

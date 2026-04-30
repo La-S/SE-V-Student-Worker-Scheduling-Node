@@ -2,7 +2,7 @@ import pkg from 'express';
 import { Model, type ModelStatic, Op } from 'sequelize';
 import { AppError } from '../error/app.error.ts';
 import { getOneForId } from '../services/services.ts';
-import File, { FileType } from "../models/file.model.ts"
+import File, { type FileType } from "../models/file.model.ts"
 import { NotFoundError } from '../error/notfound.error.ts';
 
 const exports: any = {};

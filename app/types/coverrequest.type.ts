@@ -1,4 +1,4 @@
-export interface CoverRequestValuesType {
+export type CoverRequestValuesType = {
     id?: number,
     shiftId: number,
     requesterId: number,

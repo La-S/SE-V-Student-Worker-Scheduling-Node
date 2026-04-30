@@ -1,7 +1,7 @@
 import { AppError } from "../error/app.error.ts";
 import Employee from "../models/employee.model.ts";
 import db from "../models/index.ts";
-import { PositionType } from "../models/position.model.ts";
+import { type PositionType } from "../models/position.model.ts";
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import pkg from 'express'

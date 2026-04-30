@@ -10,11 +10,11 @@ import { sendNotificationToEmployee } from "../services/notifications.ts";
 import DropRequest from "../models/droprequest.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
-import { EmployeeType } from "../models/employee.model.ts";
-import { UserType } from "../models/user.model.ts";
-import { ShiftType } from "../models/shift.model.ts";
-import { TaskListType } from "../models/tasklist.model.ts";
-import { TaskType } from "../models/task.model.ts";
+import { type EmployeeType } from "../models/employee.model.ts";
+import { type UserType } from "../models/user.model.ts";
+import { type ShiftType } from "../models/shift.model.ts";
+import { type TaskListType } from "../models/tasklist.model.ts";
+import { type TaskType } from "../models/task.model.ts";
 
 
 const exports: any = {};

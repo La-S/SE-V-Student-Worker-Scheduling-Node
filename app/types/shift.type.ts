@@ -1,8 +1,8 @@
-export interface ShiftValuesType {
+export type ShiftValuesType = {
     id?: number,
     employeeId?: number,
     positionId?: number,
-    dailyScheduleTemplateId?: number
+    dailyScheduleTemplateId?: number,
     businessUnitId: number,
     startTime: string,
     endTime: string,

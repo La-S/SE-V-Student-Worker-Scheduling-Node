@@ -4,11 +4,11 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId, getOneForStringId } from "../services/services.ts";
-import Setting, { SettingType } from "../models/setting.model.ts";
+import Setting, { type SettingType } from "../models/setting.model.ts";
 import { parse } from "node:path";
-import SettingIntMapping, { SettingIntMappingType } from "../models/settingintmapping.model.ts";
+import SettingIntMapping, { type SettingIntMappingType } from "../models/settingintmapping.model.ts";
 import User from "../models/user.model.ts";
-import { UserSettingValueType } from "../models/usersettingvalue.model.ts";
+import { type UserSettingValueType } from "../models/usersettingvalue.model.ts";
 
 const exports: any = {}
 

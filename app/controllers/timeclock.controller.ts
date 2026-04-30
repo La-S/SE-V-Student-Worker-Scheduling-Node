@@ -3,12 +3,12 @@ const TaskList = db.TaskList;
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
-import Shift, { ShiftType } from "../models/shift.model.ts"
-import Timeclock, { TimeclockType } from "../models/timeclock.model.ts";
+import Shift, { type ShiftType } from "../models/shift.model.ts"
+import Timeclock, { type TimeclockType } from "../models/timeclock.model.ts";
 import { Model } from "sequelize";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { EmployeeType } from "../models/employee.model.ts";
-import { UserType } from "../models/user.model.ts";
+import { type EmployeeType } from "../models/employee.model.ts";
+import { type UserType } from "../models/user.model.ts";
 
 const exports: any = {};
 

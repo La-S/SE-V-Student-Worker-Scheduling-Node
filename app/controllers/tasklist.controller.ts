@@ -6,7 +6,7 @@ import { getOneForId } from "../services/services.ts";
 import Task from "../models/task.model.ts";
 import { Model } from "sequelize";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { TaskListType } from "../models/tasklist.model.ts";
+import { type TaskListType } from "../models/tasklist.model.ts";
 
 const exports: any = {};
 const errorClassName: string = "Task List";

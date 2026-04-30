@@ -1,6 +1,5 @@
 import Sequelize from "sequelize";
 import SequelizeInstance from "../config/sequelizeInstance.ts";
-import { TaskCompletionValuesType } from '../types/taskcompletion.type.ts';
 
 //taskId
 //shiftId,

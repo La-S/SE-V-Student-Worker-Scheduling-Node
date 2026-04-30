@@ -4,12 +4,12 @@ const Setting = db.Setting;
 import { Model } from "sequelize";
 import pkg from "express";
 import { AppError } from "../error/app.error.ts";
-import BusinessUnit, { BusinessUnitType } from "../models/businessunit.model.ts";
+import BusinessUnit, { type BusinessUnitType } from "../models/businessunit.model.ts";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
-import User, { UserType } from "../models/user.model.ts";
+import User, { type UserType } from "../models/user.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
-import { SettingType } from "../models/setting.model.ts";
+import { type SettingType } from "../models/setting.model.ts";
 
 const exports: any = {};
 

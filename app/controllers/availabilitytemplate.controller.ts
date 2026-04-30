@@ -4,7 +4,7 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
-import { AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
+import { type AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
 
 const exports: any = {};
 

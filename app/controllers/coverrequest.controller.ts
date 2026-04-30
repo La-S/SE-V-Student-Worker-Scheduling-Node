@@ -1,8 +1,8 @@
 import { Model } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import CoverRequest, { CoverRequestType } from "../models/coverrequest.model.ts";
-import Employee, { EmployeeType } from "../models/employee.model.ts";
+import CoverRequest, { type CoverRequestType } from "../models/coverrequest.model.ts";
+import Employee, { type EmployeeType } from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId, toHours } from "../services/services.ts";

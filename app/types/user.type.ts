@@ -1,4 +1,4 @@
-export interface UserValuesType {
+export type UserValuesType = {
   id?: number,
   firstName: string,
   lastName: string,

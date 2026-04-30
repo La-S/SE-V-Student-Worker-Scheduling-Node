@@ -1,6 +1,6 @@
-export interface PositionValuesType {
+export type PositionValuesType = {
     id?: number,
     businessUnitId: number,
-    name: String,
+    name: string,
     payRate: number
 }

@@ -5,11 +5,11 @@ import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { Model } from "sequelize";
-import TaskCompletion, { TaskCompletionType } from "../models/taskcompletion.model.ts";
-import { TaskType } from "../models/task.model.ts";
-import { ShiftType } from "../models/shift.model.ts";
-import { TaskListType } from "../models/tasklist.model.ts";
-import { TaskCompletionValuesType } from "../types/taskcompletion.type.ts";
+import TaskCompletion, { type TaskCompletionType } from "../models/taskcompletion.model.ts";
+import { type TaskType } from "../models/task.model.ts";
+import { type ShiftType } from "../models/shift.model.ts";
+import { type TaskListType } from "../models/tasklist.model.ts";
+import { type TaskCompletionValuesType } from "../types/taskcompletion.type.ts";
 
 const exports: any = {};
 const errorClassName: string = "Task";

@@ -1,9 +1,9 @@
 const exports: any = {};
 
 import { Op } from 'sequelize';
-import Employee, { EmployeeType } from '../models/employee.model.ts';
-import Announcement, { AnnouncementType } from '../models/announcement.model.ts';
-import AnnouncementReceipt, { AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
+import Employee, { type EmployeeType } from '../models/employee.model.ts';
+import Announcement, { type AnnouncementType } from '../models/announcement.model.ts';
+import AnnouncementReceipt, { type AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
@@ -15,8 +15,8 @@ import { sendNotificationToEmployee } from '../services/notifications.ts';
 import {
     sendAnnouncementEmailToEmployeeIds,
 } from '../services/mailer.ts';
-import BusinessUnit, { BusinessUnitType } from '../models/businessunit.model.ts';
-import { AnnouncementValuesType } from '../types/announcement.type.ts';
+import BusinessUnit, { type BusinessUnitType } from '../models/businessunit.model.ts';
+import { type AnnouncementValuesType } from '../types/announcement.type.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow: boolean = false;
