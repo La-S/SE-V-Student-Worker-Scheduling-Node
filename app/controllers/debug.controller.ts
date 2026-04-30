@@ -1,5 +1,5 @@
 import pkg from 'express';
-import type { SessionType } from "../types/session.type.ts";
+import type { SessionValuesType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import Session from "../models/session.model.ts";
 import users from "../controllers/user.controller.ts";
@@ -22,7 +22,7 @@ exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
 
   let tempExpirationDate = new Date();
   tempExpirationDate.setDate(tempExpirationDate.getDate() + 150); // expires once every 5 months
-  const session: SessionType = {
+  const session: SessionValuesType = {
     token: req.body.newToken,
     email: req.body.email,
     userId: req.body.userId,

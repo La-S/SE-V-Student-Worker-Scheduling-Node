@@ -2,31 +2,32 @@ import db from "../models/index.ts";
 const User = db.User;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import type { UserType } from "../types/user.type.ts";
+import type { UserValuesType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import { getOneForId, createDateFromString, getStringFromDate, getSundayOfWeek, getSaturdayOfWeek, toHours } from "../services/services.ts";
+import { getOneForId, createDateFromString, getStringFromDate, getSundayOfWeek, getSaturdayOfWeek, toHours, getOneForStringId } from "../services/services.ts";
 import { getShiftsForDateRange } from "./employee.controller.ts";
-import Employee from "../models/employee.model.ts";
-import Shift from "../models/shift.model.ts";
-import Position from "../models/position.model.ts";
+import Employee, { EmployeeType } from "../models/employee.model.ts";
+import Shift, { ShiftType } from "../models/shift.model.ts";
+import Position, { PositionType } from "../models/position.model.ts";
 import Task from "../models/task.model.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
-import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
-import CoverRequest from '../models/coverrequest.model.ts';
+import AvailabilityTemplate, { AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
+import CoverRequest, { CoverRequestType } from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
 import Announcement from "../models/announcement.model.ts";
-import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
-import UserFile from "../models/userfile.model.ts";
+import AnnouncementReceipt, { AnnouncementReceiptType } from "../models/announcementreceipt.model.ts";
+import UserFile, { UserFileType } from "../models/userfile.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
-import UserSettingValue from "../models/usersettingvalue.model.ts";
+import UserSettingValue, { UserSettingValueType } from "../models/usersettingvalue.model.ts";
 import { getUserSettingValue } from "./usersettingvalue.controller.ts";
-import Setting from "../models/setting.model.ts";
-import TimeOffRequest from "../models/timeoffrequest.model.ts";
+import Setting, { SettingType } from "../models/setting.model.ts";
+import TimeOffRequest, { TimeOffRequestType } from "../models/timeoffrequest.model.ts";
+import { UserType } from "../models/user.model.ts";
 
 const exports: any = {};
 const errorClassName: string = "User";
@@ -38,8 +39,8 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
   }
 
   // Save User in the database
-  const data: User = await User.create(req.body);
-  const settings: Setting[] = await Setting.findAll({ where: { isForBusinessUnit: false } });
+  const data: UserType = await User.create(req.body);
+  const settings: SettingType[] = await Setting.findAll({ where: { isForBusinessUnit: false } });
   for (const setting of settings) {
     await UserSettingValue.create({
       userId: data.dataValues.id,
@@ -52,7 +53,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   const id = parseInt(req.params.id, 10);
-  const data: User | null = await User.findOne({
+  const data: UserType | null = await User.findOne({
     where: { id: id },
     include: [UserFile]
   });
@@ -63,14 +64,14 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-  const data: User[] = await User.findAll({ order: [["lastName", "asc"]] });
+  const data: UserType[] = await User.findAll({ order: [["lastName", "asc"]] });
   res.send(data);
 }
 
 // Find a single User with an email
 exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email: string = req.params.email;
-  const data: User | null = await getUserForEmail(email);
+  const data: UserType | false = await getUserForEmail(email);
   if (!data) {
     throw new AppError(404, `User for email: ${email} not found`);
   }
@@ -81,8 +82,8 @@ exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
   if (req.body.email) {
-    let userForEmail: User | null = await getUserForEmail(req.body.email)
-    let userForId: User = await getOneForId(User, id)
+    let userForEmail: UserType | false = await getUserForEmail(req.body.email)
+    let userForId: UserType = await getOneForId(User, id)
     if (userForEmail && (JSON.stringify(userForEmail) !== JSON.stringify(userForId))) {
       throw new AppError(409, `${req.body.email} is already in use by another user. Use a different email.`)
     }
@@ -102,7 +103,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Unable to update user with id ${id}. Check request body`)
   }
-  const updatedUser: User = await getOneForId(User, id);
+  const updatedUser: UserType = await getOneForId(User, id);
   res.send(updatedUser);
 };
 
@@ -115,13 +116,13 @@ exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Update for id ${id} failed. Check request body.`)
   }
-  const updatedUser: User = await getOneForId(User, id);
+  const updatedUser: UserType = await getOneForId(User, id);
   res.send(updatedUser);
 }
 
 
-async function getUserForEmail(email: string) {
-  const data: User | null = await User.findOne({
+async function getUserForEmail(email: string): Promise<UserType | false> {
+  const data: UserType | null = await User.findOne({
     where: { // could be this one
       email: email,
     },
@@ -135,14 +136,14 @@ async function getUserForEmail(email: string) {
 exports.findActiveEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id, 10);
 
-  const data: Employee[] = await Employee.findAll({ where: { userId: id, currentlyEmployed: true } });
+  const data: EmployeeType[] = await Employee.findAll({ where: { userId: id, currentlyEmployed: true } });
   res.send(data);
 };
 
 exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id, 10);
 
-  const data: Employee[] = await Employee.findAll({ where: { userId: id } });
+  const data: EmployeeType[] = await Employee.findAll({ where: { userId: id } });
   res.send(data);
 };
 
@@ -150,22 +151,22 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
   const id: number = parseInt(req.params.id, 10);
   //should provide date foe central time. CA format is YYYY-mm-dd
   const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-  let startDate: string = req.query.start ?? today;
-  let endDate: string = req.query.end ?? today;
+  let startDate: string = req.query.start as string ?? today;
+  let endDate: string = req.query.end as string ?? today;
 
   await getOneForId(User, id);
 
-  let employeesForUser: Employee[] = await Employee.findAll({ where: { userId: id } });
+  let employeesForUser: EmployeeType[] = await Employee.findAll({ where: { userId: id } });
   if (!employeesForUser) {
     throw new AppError(404, `Employees not found for user with id ${id}`)
   }
 
-  let employeeIds = employeesForUser.map((employee: Employee) => {
+  let employeeIds = employeesForUser.map((employee: EmployeeType) => {
     return employee.dataValues.id
   })
 
 
-  const data: Shift[] = await Shift.findAll({
+  const data: ShiftType[] = await Shift.findAll({
     where: {
       employeeId: { [Op.in]: employeeIds },
       date: { [Op.between]: [startDate, endDate] }
@@ -205,7 +206,7 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id, 10);
   await getOneForId(User, id);
-  const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: id } });
+  const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: id } });
   res.send(data);
 }
 
@@ -213,13 +214,13 @@ exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg
   const id: number = parseInt(req.params.id, 10);
   const semester: string = req.params.semester;
 
-  const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
+  const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: id, semester: semester } });
   res.send(data);
 }
 
 exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
+  const user: UserType = await getOneForId(User, id);
   const userId: number = id;
   const semester: string = req.params.semester;
   await AvailabilityTemplate.destroy({ where: { userId: id, semester: semester } })
@@ -235,7 +236,7 @@ exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response)
 
 exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
   const email: string = req.params.email;
-  const data: User[] = await User.findAll({
+  const data: UserType[] = await User.findAll({
     where: {
       email: { [Op.like]: `%${email}%` }
     },
@@ -247,15 +248,17 @@ exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
-  const employeesForUser: Employee[] = await user.getEmployees();
+  const user: UserType = await getOneForId(User, id);
+  //@ts-ignore
+  const employeesForUser: EmployeeType[] = await user.getEmployees();
   const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
   const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
   const businessUnitIds: number[] = employeesForUser.map((employee) => { return employee.dataValues.businessUnitId });
 
   const combinedPositions: number[] = [];
   for (const employee of employeesForUser) {
-    const positions: Position[] = await employee.getPositions();
+    //@ts-ignore
+    const positions: PositionType[] = await employee.getPositions();
     for (const position of positions) {
       combinedPositions.push(position.dataValues.id);
     }
@@ -284,7 +287,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
       }
     }
   ];
-  const data: CoverRequest[] = await CoverRequest.findAll({
+  const data: CoverRequestType[] = await CoverRequest.findAll({
     where: { accepterId: null },
     include: includeCondition
   });
@@ -293,8 +296,9 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
 
 exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
-  const employeesForUser: Employee[] = await user.getEmployees();
+  const user: UserType = await getOneForId(User, id);
+  //@ts-ignore
+  const employeesForUser: EmployeeType[] = await user.getEmployees();
   const employeeIds: number[] = [];
   for (const employee of employeesForUser) {
     employeeIds.push(employee.dataValues.id);
@@ -303,7 +307,7 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
   const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
   const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-  const data: AnnouncementReceipt[] = await AnnouncementReceipt.findAll({
+  const data: AnnouncementReceiptType[] = await AnnouncementReceipt.findAll({
     where: {
       employeeId: { [Op.in]: employeeIds },
       deleted: false
@@ -342,36 +346,38 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
 
 exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
-  const employeesForUser: Employee[] = await user.getEmployees();
+  const user: UserType = await getOneForId(User, id);
+  //@ts-ignore
+  const employeesForUser: EmployeeType[] = await user.getEmployees();
   const employeeIds: number[] = [];
   for (const employee of employeesForUser) {
     employeeIds.push(employee.dataValues.id);
   }
-  const data: TimeOffRequest[] = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
+  const data: TimeOffRequestType[] = await TimeOffRequest.findAll({ where: { requesterId: { [Op.in]: employeeIds } }, order: [["startDate", "desc"]] });
   res.send(data);
 }
 
 exports.getHoursForWeek = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
+  const user: UserType = await getOneForId(User, id);
   const expectedTotalHours: number = await getUserExpectedHoursForWeek(id, req.params.startdate);
   res.send({ expectedTotalHours: expectedTotalHours });
 }
 
 export async function getUserExpectedHoursForWeek(userId: number, queryDate: string): Promise<number> {
-  const user: User = await getOneForId(User, userId);
-  const employees: Employee[] = await user.getEmployees();
+  const user: UserType = await getOneForId(User, userId);
+  //@ts-ignore
+  const employees: EmployeeType[] = await user.getEmployees();
   const employeeIds: number[] = [];
   const dateObj: Date = createDateFromString(queryDate);
   const startDateObj: Date = getSundayOfWeek(dateObj);
   const endDateObj: Date = getSaturdayOfWeek(dateObj);
   const startDate: string = getStringFromDate(startDateObj);
   const endDate: string = getStringFromDate(endDateObj);
-  const shifts: Shift[] = [];
+  const shifts: ShiftType[] = [];
   let expectedTotalHours: number = 0;
   for (const employee of employees) {
-    const employeeShifts: Shift[] = await getShiftsForDateRange(employee.dataValues.id, startDate, endDate);
+    const employeeShifts: ShiftType[] = await getShiftsForDateRange(employee.dataValues.id, startDate, endDate);
     for (const shift of employeeShifts) {
       shifts.push(shift);
     }
@@ -388,8 +394,8 @@ export async function getUserExpectedHoursForWeek(userId: number, queryDate: str
 }
 exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
-  const user: User = await getOneForId(User, id);
-  const data: UserFile[] = await UserFile.findAll({ where: { userId: id } });
+  const user: UserType = await getOneForId(User, id);
+  const data: UserFileType[] = await UserFile.findAll({ where: { userId: id } });
   res.send(data);
 }
 
@@ -406,14 +412,14 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
 exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
   const id: number = parseInt(req.params.id as string, 10);
   await getOneForId(User, id);
-  const data: UserSettingValue[] = [];
+  const data: UserSettingValueType[] = [];
   const userSettings = await UserSettingValue.findAll({
     where: {
       userId: id,
     }
   });
   for (const userSettingValue of userSettings) {
-    const settingValue: UserSettingValue = await getUserSettingValue(id, userSettingValue.dataValues.settingCode);
+    const settingValue: UserSettingValueType = await getUserSettingValue(id, userSettingValue.dataValues.settingCode);
     data.push(settingValue);
   }
   res.send(data);

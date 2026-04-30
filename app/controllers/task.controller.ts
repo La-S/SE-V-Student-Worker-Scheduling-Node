@@ -5,28 +5,34 @@ import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { Model } from "sequelize";
-import TaskCompletion from "../models/taskcompletion.model.ts";
+import TaskCompletion, { TaskCompletionType } from "../models/taskcompletion.model.ts";
+import { TaskType } from "../models/task.model.ts";
+import { ShiftType } from "../models/shift.model.ts";
+import { TaskListType } from "../models/tasklist.model.ts";
+import { TaskCompletionValuesType } from "../types/taskcompletion.type.ts";
 
 const exports: any = {};
 const errorClassName: string = "Task";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const task: Task = await Task.create(req.body);
-    const taskId: number = task.id;
+    const task: TaskType = await Task.create(req.body);
+    const taskId: number = task.dataValues.id;
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const taskList: TaskList | null = await TaskList.findOne({ where: { id: task.taskListId } });
+    const taskList: TaskListType | null = await TaskList.findOne({ where: { id: task.dataValues.taskListId } });
     //despite the name, it returns multiple. getShifts doesnt exist.
-    const shifts: Shift[] = await taskList!.getShift();
-    const futureShifts: Shift[] = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
+    //@ts-ignore
+    const shifts: ShiftType[] = await taskList!.getShift();
+    const futureShifts: ShiftType[] = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
     for (let shift of futureShifts) {
-        const taskCompletion: TaskCompletion = {
-            "checkedOff": "false",
+        const taskCompletion: TaskCompletionValuesType = {
+            "checkedOff": false,
             "taskId": taskId,
             "shiftId": shift.dataValues.id
         }
+        //@ts-ignore
         await TaskCompletion.create(taskCompletion);
     }
     res.send(task);
@@ -47,7 +53,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedTask: Task = await getOneForId(Task, id);
+    let updatedTask: TaskType = await getOneForId(Task, id);
     res.send(updatedTask);
 };
 

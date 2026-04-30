@@ -1,6 +1,6 @@
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
-import OpenHours from "../models/openhours.model.ts";
+import OpenHours, { OpenHoursType } from "../models/openhours.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 
@@ -11,7 +11,7 @@ const errorClassName = "Open Hours";
 // Update OpenHours by id
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const originalOpenHours: OpenHours = await getOneForId(OpenHours, id);
+    const originalOpenHours: OpenHoursType = await getOneForId(OpenHours, id);
 
     // OpenHours should remain associated with original business unit
     req.body.id = undefined;
@@ -38,7 +38,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(409, `Update ${errorClassName} for id ${id} did not update. Check request body.`);
     }
 
-    const updatedOpenHours: OpenHours = await getOneForId(OpenHours, id);
+    const updatedOpenHours: OpenHoursType = await getOneForId(OpenHours, id);
     res.send(updatedOpenHours);
 };
 

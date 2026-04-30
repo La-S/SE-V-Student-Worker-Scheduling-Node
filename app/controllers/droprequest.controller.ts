@@ -1,8 +1,8 @@
 import { Model } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import DropRequest from "../models/droprequest.model.ts";
-import Employee from "../models/employee.model.ts";
+import DropRequest, { DropRequestType } from "../models/droprequest.model.ts";
+import Employee, { EmployeeType } from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
@@ -22,11 +22,11 @@ const EMPLOYEE_INCLUDES = [
 // Create and Save a new DropRequest
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data: DropRequest = await DropRequest.create(req.body);
+    const data: DropRequestType = await DropRequest.create(req.body);
 
     // send notification to managers.
     if (req.body.requesterId) {
-        const employee: Employee = await Employee.findByPk(req.body.requesterId, {include: [User]});
+        const employee: EmployeeType | null = await Employee.findByPk(req.body.requesterId, {include: [User]});
         const businessUnitId: number = employee?.dataValues.businessUnitId;
         const firstName: string = employee?.dataValues.user.firstName;
         const lastName: string = employee?.dataValues.user?.lastName ?? "";
@@ -42,21 +42,21 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 // Retrieve all DropRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data: DropRequest[] = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
+    const data: DropRequestType[] = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
     res.send(data);
 };
 
 // Find a single DropRequest with an id
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
 
-    const data: DropRequest = await getDropRequestForId(id);
+    const data: DropRequestType = await getDropRequestForId(id);
     res.send(data);
 };
 
 // Update a DropRequest by the id in the request
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getDropRequestForId(id);
     
@@ -75,11 +75,11 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id as string, 10);
-    const approverId = parseInt(req.params.approverId as string, 10);
+    const id: number = parseInt(req.params.id as string, 10);
+    const approverId: number = parseInt(req.params.approverId as string, 10);
     const approve: Boolean = req.query.approve === "true"; //converts to boolean
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
     const dropRequest = await getOneForId(DropRequest, id);
 
@@ -100,11 +100,11 @@ exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 //cannot be replaced with service because of Employee Returns
-async function getDropRequestForId(id: number): Promise<DropRequest> {
+async function getDropRequestForId(id: number): Promise<DropRequestType> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data: DropRequest = await DropRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
+    const data: DropRequestType | null = await DropRequest.findByPk(id, { include: EMPLOYEE_INCLUDES });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
     }

@@ -4,14 +4,13 @@ import { google } from "googleapis";
 import jwt from "jsonwebtoken";
 import { Op } from 'sequelize';
 import pkg from 'express';
-import type { UserType } from "../types/user.type.ts";
-import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { logger } from "../logger/logger.ts";
-
-const User: User = db.User;
-const Session: Session = db.Session;
+import User, { UserType } from "../models/user.model.ts";
+import Session, { SessionType } from "../models/session.model.ts";
+import { UserValuesType } from "../types/user.type.ts";
+import { SessionValuesType } from "../types/session.type.ts";
 
 let googleUser: TokenPayload | undefined;
 
@@ -31,9 +30,8 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
 
   let googleUserInfo = await getGoogleUserInfo(googleToken, googleAccessToken);
 
-  let user: UserType;
-  let session = {};
-  let data = await User.findOne({
+  let user: UserValuesType;
+  let data: UserType | null = await User.findOne({
     where: { // could be this one
       email: googleUserInfo.email,
     },
@@ -42,9 +40,9 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     user = data.dataValues;
   } else {
     // create a new User and save to database
-    let isAdmin = false;
-    let emailParts = (googleUserInfo.email.split("@"));
-    let emailDomain = emailParts[1];
+    let isAdmin: boolean = false;
+    let emailParts: string[] = (googleUserInfo.email.split("@"));
+    let emailDomain: string = emailParts[1];
     if (emailDomain == "oc.edu") {
       // could do special stuff if they're a faculty/staff
     }
@@ -72,7 +70,7 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     });
     let tempExpirationDate = new Date();
     tempExpirationDate.setDate(tempExpirationDate.getDate() + 31);
-    const session: SessionType = {
+    const session: SessionValuesType = {
       token: token,
       email: googleUserInfo.email,
       userId: user.id!,
@@ -105,14 +103,14 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
   let response = await Session.findOne({ where: { token: req.body.token } })
-  let session = response?.dataValues as SessionType | undefined;
+  let session = response?.dataValues as SessionValuesType | undefined;
   if (!session || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
   return res.status(200).send({ message: "token not expired" });
 }
 
-async function createSession(session: SessionType) {
+async function createSession(session: SessionValuesType) {
   await Session.create(session as any);
 }
 
@@ -125,7 +123,7 @@ async function getExistingSessionToken(email: string) {
   });
 
   if (sessionObj) {
-    let session = sessionObj.dataValues as SessionType;
+    let session = sessionObj.dataValues as SessionValuesType;
     if (session.expirationDate.getTime() < Date.now()) {
       // clear session's token if it's expired
       clearSessionByToken(session.token!);
@@ -149,7 +147,7 @@ async function clearSessionByToken(token: string) {
   }
 }
 
-async function upsertUser(user: UserType): Promise<UserType> {
+async function upsertUser(user: UserValuesType): Promise<UserValuesType> {
   if (!user.id) {
     let createdRow = await User.create(user as any);
     return createdRow.dataValues;

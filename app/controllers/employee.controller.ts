@@ -2,41 +2,42 @@ import db from "../models/index.ts";
 const Employee = db.Employee;
 import { Model, Op } from 'sequelize';
 import pkg from 'express';
-import type { EmployeeType } from "../types/employee.type.ts";
-import User from "../models/user.model.ts";
+import type { EmployeeValuesType } from "../types/employee.type.ts";
+import User, { UserType } from "../models/user.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
-import Shift from "../models/shift.model.ts";
-import Position from "../models/position.model.ts";
+import Shift, { ShiftType } from "../models/shift.model.ts";
+import Position, { PositionType } from "../models/position.model.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { convertDayOfWeek, convertTime, createDateFromString, getDateRange, getOneForId, toHours } from "../services/services.ts";
-import AvailabilityTemplate from "../models/availabilitytemplate.model.ts";
-import CoverRequest from "../models/coverrequest.model.ts";
-import DropRequest from "../models/droprequest.model.ts";
-import AnnouncementReceipt from "../models/announcementreceipt.model.ts";
-import Announcement from "../models/announcement.model.ts";
+import AvailabilityTemplate, { AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
+import CoverRequest, { CoverRequestType } from "../models/coverrequest.model.ts";
+import DropRequest, { DropRequestType } from "../models/droprequest.model.ts";
+import AnnouncementReceipt, { AnnouncementReceiptType } from "../models/announcementreceipt.model.ts";
+import Announcement, { AnnouncementType } from "../models/announcement.model.ts";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 import File from "../models/file.model.ts"
 import Timeclock from "../models/timeclock.model.ts";
-import TimeOffRequest from "../models/timeoffrequest.model.ts";
+import TimeOffRequest, { TimeOffRequestType } from "../models/timeoffrequest.model.ts";
 import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
 import { logger } from "../logger/logger.ts";
+import { EmployeeType } from "../models/employee.model.ts";
 
 const exports: any = {};
 const errorClassName = "Employee";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const existingEmployee: Employee = await Employee.findOne({
+    const existingEmployee: EmployeeType | null = await Employee.findOne({
         where: {
             userId: req.body.userId,
             businessUnitId: req.body.businessUnitId
         }
     });
     if (existingEmployee) {
-        if (existingEmployee.currentlyEmployed == false) {
+        if (existingEmployee.dataValues.currentlyEmployed == false) {
             await existingEmployee.update({ "currentlyEmployed": true })
-            const updatedEmployee: Employee = await getOneForId(Employee, existingEmployee.dataValues.id);
+            const updatedEmployee: EmployeeType = await getOneForId(Employee, existingEmployee.dataValues.id);
             res.send(updatedEmployee);
             return;
         }
@@ -44,7 +45,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
             throw new AppError(409, `Employee for user ${req.body.userId} already exists at business ${req.body.businessUnitId}`)
         }
     }
-    const data: Employee = await Employee.create(req.body)
+    const data: EmployeeType = await Employee.create(req.body)
     if (req.body.currentlyEmployed !== false) {
         if (req.body.isManager === true) {
             void sendManagerAssignmentEmail(data.dataValues.id, req.body.businessUnitId);
@@ -58,7 +59,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 // Retrieve all Employees from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data: Employee[] = await Employee.findAll({ include: [User], order: [[User, "lastName", "asc"]] })
+    const data: EmployeeType[] = await Employee.findAll({ include: [User], order: [[User, "lastName", "asc"]] })
     res.send(data);
 };
 
@@ -66,16 +67,18 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
 
-    const data: Employee = await getEmployeeForId(id);
+    const data: EmployeeType = await getEmployeeForId(id);
     res.send(data);
 };
 
 exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const employee: Employee = await getEmployeeForId(id);
+    const employee: EmployeeType = await getEmployeeForId(id);
     await employee.update({ "currentlyEmployed": false });
+    //@ts-ignore
     const positions = await employee.getPositions();
     for (const position of positions) {
+        //@ts-ignore
         await employee.removePosition(position);
     }
     res.send({ message: "employee set as not currently employed." });
@@ -85,7 +88,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
-    const existingEmployee: Employee = await getEmployeeForId(id);
+    const existingEmployee: EmployeeType = await getEmployeeForId(id);
     //an employee should refer to a userId and businessUnitId, these should not change
     req.body.userId = undefined;
     req.body.businessUnitId = undefined;
@@ -97,7 +100,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedEmployee: Employee = await getEmployeeForId(id);
+    let updatedEmployee: EmployeeType = await getEmployeeForId(id);
     if (existingEmployee?.dataValues.isManager !== true && req.body.isManager === true) {
         const businessUnitId = existingEmployee?.dataValues.businessUnitId;
         if (businessUnitId) {
@@ -110,9 +113,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
-    const startDate: string = req.query.start;
-    const endDate: string = req.query.end;
-    const data: Shift[] = await getShiftsForDateRange(id, startDate, endDate);
+    const startDate: string = req.query.start as string;
+    const endDate: string = req.query.end as string;
+    const data: ShiftType[] = await getShiftsForDateRange(id, startDate, endDate);
     res.send(data);
 }
 
@@ -122,18 +125,20 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const employee: Employee = await Employee.findOne({
+    //@ts-ignore, getOneForId checks employee exists
+    const employee: EmployeeType = await Employee.findOne({
         where: { id },
         include: [{ model: Position, as: "positions" }]
     });
-    const positions = employee.positions;
+    //@ts-ignore
+    const positions: PositionValuesType[] = employee.positions;
     if (positions.length == 0) {
         res.status(400).send({ message: "No positions for employee. No requests available" });
         return;
     }
     const positionIds = positions.map((position) => position.id);
 
-    const data: Shift[] = await Shift.findAll({
+    const data: ShiftType[] = await Shift.findAll({
         where: {
             employeeId: null,
             [Op.or]: [
@@ -153,36 +158,36 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
 
 exports.findAllAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const employee: Employee = await getOneForId(Employee, id);
+    const employee: EmployeeType = await getOneForId(Employee, id);
 
     //@ts-ignore
     const userId: number = employee.userId
 
-    const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: userId } });
+    const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: userId } });
     res.send(data);
 }
 
 exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const employee: Employee = await getOneForId(Employee, id);
+    const employee: EmployeeType = await getOneForId(Employee, id);
     const semester: string = employee.dataValues.semester;
 
     //@ts-ignore
     const userId: number = employee.userId
 
-    const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
+    const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
     res.send(data);
 }
 
 exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const employee: Employee = await getOneForId(Employee, id);
+    const employee: EmployeeType = await getOneForId(Employee, id);
     const semester: string = req.params.semester;
 
     //@ts-ignore
     const userId: number = employee.userId
 
-    const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
+    const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: userId, semester: semester } });
     res.send(data);
 }
 
@@ -194,11 +199,11 @@ exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, "one of the entered ids is not a number")
     }
 
-    const employee: Employee = await Employee.findByPk(employeeId);
+    const employee: EmployeeType | null = await Employee.findByPk(employeeId);
     if (!employee) {
         throw new NotFoundError(errorClassName, employeeId);
     }
-    const position: Position = await Position.findByPk(positionId);
+    const position: PositionType | null = await Position.findByPk(positionId);
     if (!position) {
         throw new NotFoundError("Position", positionId);
     }
@@ -221,11 +226,11 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, "one of the entered ids is not a number")
     }
 
-    const employee: Employee = await Employee.findByPk(employeeId);
+    const employee: EmployeeType | null = await Employee.findByPk(employeeId);
     if (!employee) {
         throw new NotFoundError(errorClassName, employeeId);
     }
-    const position: Position = await Position.findByPk(positionId);
+    const position: PositionType | null = await Position.findByPk(positionId);
     if (!position) {
         throw new NotFoundError("Position", positionId);
     }
@@ -241,7 +246,7 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const employee: Employee = await getOneForId(Employee, id);
+    const employee: EmployeeType = await getOneForId(Employee, id);
     //@ts-ignore
     const data: any = await employee.getPositions()
     res.send(data);
@@ -250,7 +255,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
 exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
-    const requester: string = req.query.requester;
+    const requester: string = req.query.requester as string;
     let whereCondition = {};
     if (requester === 'true') {
         whereCondition = { requesterId: id };
@@ -267,7 +272,7 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
             model: Shift, include: [Position]
         }
     ];
-    const data: CoverRequest[] = await CoverRequest.findAll({
+    const data: CoverRequestType[] = await CoverRequest.findAll({
         where: whereCondition,
         include: includeCondition,
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
@@ -281,11 +286,12 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const employee: Employee = await Employee.findOne({
+    const employee: EmployeeType | null = await Employee.findOne({
         where: { id },
         include: [{ model: Position, as: "positions" }]
     });
-    const positions: Position[] = employee.positions;
+    //@ts-ignore
+    const positions: PositionValuesType[] = employee?.positions || [];
     if (positions.length == 0)
         res.status(400).send({ message: "No positions for employee. No requests available" });
     const positionIds: number[] = positions.map((position) => position.id);
@@ -311,7 +317,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
             include: [Position]
         }
     ];
-    const data: CoverRequest[] = await CoverRequest.findAll({
+    const data: CoverRequestType[] = await CoverRequest.findAll({
         where: { accepterId: null },
         include: includeCondition,
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
@@ -323,13 +329,13 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
 exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
-    const requester: string = req.query.requester;
+    const requester: string = req.query.requester as string;
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
         { model: Employee, as: "dropReviewer", required: false, include: [User] },
         { model: Shift, include: [Position] }
     ];
-    const data: DropRequest[] = await DropRequest.findAll({
+    const data: DropRequestType[] = await DropRequest.findAll({
         where: { requesterId: id },
         include: includeCondition,
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
@@ -339,15 +345,16 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const employee: Employee = await getOneForId(Employee, id);
+    const employee: EmployeeType = await getOneForId(Employee, id);
     deleteEmployeeAvailabilityTemplates(employee)
     res.send({ message: "Availability Templates cleared!" });
 }
 
 exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const employee: Employee = await getOneForId(Employee, id);
-    const user: User = await employee.getUser();
+    const employee: EmployeeType = await getOneForId(Employee, id);
+    //@ts-ignore
+    const user: UserType = await employee.getUser();
     const userId: number = user.dataValues.id;
     const semester: string = req.query.semester ?? employee.dataValues.semester;
     await AvailabilityTemplate.destroy({ where: { userId: userId, semester: semester } });
@@ -355,10 +362,10 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
 }
 
 exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
-    const clear: Boolean = req.query.clear === "true";
+    const clear: boolean = req.query.clear === "true";
     const id: number = parseInt(req.params.id as string, 10);
-    const employee: Employee = await getOneForId(Employee, id);
-    const availabilities: AvailabilityTemplate[] = await loadEmployeeClassUnavailability(employee, clear);
+    const employee: EmployeeType = await getOneForId(Employee, id);
+    const availabilities: AvailabilityTemplateType[] = await loadEmployeeClassUnavailability(employee, clear);
     if (availabilities.length == 0) {
         res.send({ message: "No class data found for employee. No availability templates created." });
         return;
@@ -368,8 +375,9 @@ exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
 
 export async function loadEmployeeClassUnavailability(employee: Model<any, any>, clear: boolean): Promise<Model<any, any>[]> {
     const semester: string = employee.dataValues.semester;
-    const user: User = await employee.getUser();
-    const existing: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
+    //@ts-ignore
+    const user: UserType = await employee.getUser();
+    const existing: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({ where: { userId: user.dataValues.id, semester: semester } });
     let availabilities: Model<any, any>[] = [];
     if (clear) {
         deleteEmployeeAvailabilityTemplates(employee);
@@ -407,7 +415,7 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>,
                 "semester": semester
             };
 
-            const newAvailability: AvailabilityTemplate = await AvailabilityTemplate.create(availabilityTemplateBody);
+            const newAvailability: AvailabilityTemplateType = await AvailabilityTemplate.create(availabilityTemplateBody);
             availabilities.push(newAvailability);
         }
     }
@@ -415,13 +423,15 @@ export async function loadEmployeeClassUnavailability(employee: Model<any, any>,
 }
 
 async function deleteEmployeeAvailabilityTemplates(employee: Model<any, any>) {
-    const user: User = await employee.getUser();
+    //@ts-ignore
+    const user: UserType = await employee.getUser();
     const userId: number = user.dataValues.id;
     const data: number = await AvailabilityTemplate.destroy({ where: { userId: userId } });
 }
 
 async function getClassData(employee: Model<any, any>) {
-    const user: User = await employee.getUser();
+    //@ts-ignore
+    const user: UserType = await employee.getUser();
     //i.e. SP26
     const unformattedSemester: string = employee.dataValues.semester;
     //i.e. SP2026, will not work at year 2100.
@@ -449,19 +459,19 @@ async function getClassData(employee: Model<any, any>) {
     return classData;
 }
 
-async function updateUserInfo(classData: any, user: Model<any, any>) {
+async function updateUserInfo(classData: any, user: UserType) {
     const email: string = classData.Email;
     const ocId: string = classData.UserID;
     const updateBody: any = {};
     if (classData.Success === "False")
         return;
-    if (!user.email) {
+    if (!user.dataValues.email) {
         updateBody.email = email;
     }
-    if (!user.ocId) {
+    if (!user.dataValues.ocId) {
         updateBody.ocId = ocId;
     }
-    const updateSucceed: boolean = await user.update(updateBody);
+    const updateSucceed: UserType = await user.update(updateBody);
     if (updateSucceed)
         return;
     else
@@ -475,7 +485,7 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const data: AnnouncementReceipt[] = await AnnouncementReceipt.findAll({
+    const data: AnnouncementReceiptType[] = await AnnouncementReceipt.findAll({
         where: {
             employeeId: id,
             deleted: false
@@ -516,7 +526,7 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
     const id: number = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
 
-    const data: Announcement[] = await Announcement.findAll({
+    const data: AnnouncementType[] = await Announcement.findAll({
         where: {
             authorId: id,
         },
@@ -545,13 +555,13 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
 
 exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const data: any = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
+    const data: any = await getBudgetInformationForDateRange(id, req.query.start as string, req.query.end as string);
     res.send(data);
 }
 
 export async function getBudgetInformationForDateRange(employeeId: number, startDate: string, endDate: string) {
-    const employee: Model = await getEmployeeForId(employeeId);
-    const shifts: Model[] = await getShiftsForDateRange(employeeId, startDate, endDate);
+    const employee: EmployeeType = await getEmployeeForId(employeeId);
+    const shifts: ShiftType[] = await getShiftsForDateRange(employeeId, startDate, endDate);
     let expectedTotalCost: number = 0;
     let expectedTotalHours: number = 0;
     let actualTotalCost: number = 0;
@@ -562,11 +572,13 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
         const endTime: string = shift.dataValues.endTime;
         //difference in ms -> hours
         const timeDiff: number = toHours(endTime) - toHours(startTime);
-        const position: Model = shift.position;
+        //@ts-ignore
+        const position: PositionType = shift.position;
         if (!position) {
             continue;
         }
         const payRate: number = position.dataValues.payRate;
+        //@ts-ignore
         for (const timeclock of shift.timeclocks) {
             const clockIn: string = timeclock.clockIn;
             const clockOut: string = timeclock.clockOut;
@@ -581,10 +593,12 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
         expectedTotalHours += timeDiff;
         expectedTotalCost += timeDiff * payRate;
     }
+    //@ts-ignore
+    const user: UserType = employee.user;
     const returnObject = {
         "employeeId": employeeId,
-        "firstName": employee.user.dataValues.firstName,
-        "lastName": employee.user.dataValues.lastName,
+        "firstName": user.dataValues.firstName,
+        "lastName": user.dataValues.lastName,
         "expectedHoursWorked": expectedTotalHours,
         "expectedCost": expectedTotalCost,
         "actualHoursWorked": actualTotalHours,
@@ -593,8 +607,8 @@ export async function getBudgetInformationForDateRange(employeeId: number, start
     return returnObject;
 }
 
-export async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<Shift[]> {
-    const data: Shift[] = await Shift.findAll({
+export async function getShiftsForDateRange(id: number, startDate: string, endDate: string): Promise<ShiftType[]> {
+    const data: ShiftType[] = await Shift.findAll({
         where: {
             employeeId: id, ...getDateRange(startDate, endDate)
         },
@@ -611,7 +625,7 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, as: "timeOffRequester", include: [User] },
         { model: Employee, as: "timeOffReviewer", include: [User] },
     ];
-    const data: TimeOffRequest[] = await TimeOffRequest.findAll({
+    const data: TimeOffRequestType[] = await TimeOffRequest.findAll({
         where: { requesterId: id },
         include: includeCondition,
         order: [["startDate", "asc"]]
@@ -620,11 +634,11 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 //cannot be replaced with service because of user in return
-async function getEmployeeForId(id: number): Promise<Employee | null> {
+async function getEmployeeForId(id: number): Promise<EmployeeType> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data: Employee | null = await Employee.findByPk(id, { include: [User] });
+    const data: EmployeeType | null = await Employee.findByPk(id, { include: [User] });
     if (!data) {
         throw new NotFoundError(errorClassName, id);
     }

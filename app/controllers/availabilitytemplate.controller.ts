@@ -4,6 +4,7 @@ import { Model, Op } from 'sequelize';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
+import { AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
 
 const exports: any = {};
 
@@ -23,7 +24,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedAvailabilityTemplate: AvailabilityTemplate = await getOneForId(AvailabilityTemplate, id);
+    let updatedAvailabilityTemplate: AvailabilityTemplateType = await getOneForId(AvailabilityTemplate, id);
     res.send(updatedAvailabilityTemplate);
 };
 

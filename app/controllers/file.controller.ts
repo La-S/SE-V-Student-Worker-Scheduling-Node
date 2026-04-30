@@ -2,13 +2,13 @@ import pkg from 'express';
 import { Model, type ModelStatic, Op } from 'sequelize';
 import { AppError } from '../error/app.error.ts';
 import { getOneForId } from '../services/services.ts';
-import File from "../models/file.model.ts"
+import File, { FileType } from "../models/file.model.ts"
 import { NotFoundError } from '../error/notfound.error.ts';
 
 const exports: any = {};
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const data: File = await getFile(req.params.id);
+    const data: FileType = await getFile(req.params.id);
     res.send(data);
 }
 
@@ -28,7 +28,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 async function getFile(id: string) {
-    const data: File | null = await File.findOne({ where: { id: id } });
+    const data: FileType | null = await File.findOne({ where: { id: id } });
     if (!data) {
         throw new AppError(404, `File for id ${id} not found`);
     }

@@ -1,13 +1,13 @@
 import { Model, Op } from "sequelize";
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
-import TimeOffRequest from "../models/timeoffrequest.model.ts";
-import Employee from "../models/employee.model.ts";
+import TimeOffRequest, { TimeOffRequestType } from "../models/timeoffrequest.model.ts";
+import Employee, { EmployeeType } from "../models/employee.model.ts";
 import pkg from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
-import Shift from "../models/shift.model.ts";
+import Shift, { ShiftType } from "../models/shift.model.ts";
 import { getShiftsForDateRange } from "./employee.controller.ts";
 import { logger } from "../logger/logger.ts";
 
@@ -27,7 +27,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     if (!requesterId) {
         throw new AppError(400, "request must have a requesterId");
     }
-    const employee: Employee = await Employee.findByPk(requesterId, { include: [User] });
+    const employee: EmployeeType | null = await Employee.findByPk(requesterId, { include: [User] });
     if (!employee) {
         throw new NotFoundError("Employee", requesterId);
     }
@@ -39,7 +39,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     if (endDate < startDate) {
         throw new AppError(400, "endDate must be the same day or after startDate.")
     }
-    const data: TimeOffRequest = await TimeOffRequest.create(req.body);
+    const data: TimeOffRequestType = await TimeOffRequest.create(req.body);
 
     // send notification to managers.
     const businessUnitId: number = employee.dataValues.businessUnitId;
@@ -55,7 +55,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 // Retrieve all TimeOffRequests from the database.
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
-    const data: TimeOffRequest[] = await TimeOffRequest.findAll({ include: EMPLOYEE_INCLUDES });
+    const data: TimeOffRequestType[] = await TimeOffRequest.findAll({ include: EMPLOYEE_INCLUDES });
     res.send(data);
 };
 
@@ -63,7 +63,7 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
-    const data: TimeOffRequest | null = await getTimeOffRequestWithShifts(id);
+    const data: TimeOffRequestType = await getTimeOffRequestWithShifts(id);
     res.send(data);
 };
 
@@ -84,7 +84,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`);
     }
-    const updatedRequest: TimeOffRequest | null = await getTimeOffRequestWithShifts(id);
+    const updatedRequest: TimeOffRequestType = await getTimeOffRequestWithShifts(id);
     res.send(updatedRequest);
 };
 
@@ -96,7 +96,7 @@ exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const timeOffRequest: TimeOffRequest = await getOneForId(TimeOffRequest, id);
+    const timeOffRequest: TimeOffRequestType = await getOneForId(TimeOffRequest, id);
 
     await timeOffRequest.update({
         approval: approve,
@@ -106,7 +106,7 @@ exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
     });
 
     if (approve) {
-        const shifts: Shift[] = await getShiftsForDateRange(timeOffRequest.dataValues.requesterId, timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate);
+        const shifts: ShiftType[] = await getShiftsForDateRange(timeOffRequest.dataValues.requesterId, timeOffRequest.dataValues.startDate, timeOffRequest.dataValues.endDate);
         for (const shift of shifts) {
             shift.update({ employeeId: null });
         }
@@ -121,15 +121,15 @@ exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 // cannot be replaced with service because of Employee Returns
-async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequest | null> {
+async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequestType> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer");
     }
-    const timeOffRequest: TimeOffRequest = await TimeOffRequest.findByPk(id);
+    const timeOffRequest: TimeOffRequestType | null = await TimeOffRequest.findByPk(id);
     if (!timeOffRequest) {
         throw new NotFoundError("Time Off Request", id);
     }
-    const data: TimeOffRequest= await TimeOffRequest.findByPk(id, {
+    const data: TimeOffRequestType = await TimeOffRequest.findByPk(id, {
         include: [
             {
                 model: Employee,

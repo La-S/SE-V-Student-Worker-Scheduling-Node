@@ -4,11 +4,12 @@ const Setting = db.Setting;
 import { Model } from "sequelize";
 import pkg from "express";
 import { AppError } from "../error/app.error.ts";
-import BusinessUnit from "../models/businessunit.model.ts";
+import BusinessUnit, { BusinessUnitType } from "../models/businessunit.model.ts";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
-import User from "../models/user.model.ts";
+import User, { UserType } from "../models/user.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
+import { SettingType } from "../models/setting.model.ts";
 
 const exports: any = {};
 
@@ -17,7 +18,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
     req.body.id = undefined;
 
-    const existing: Setting | null = await Setting.findOne({
+    const existing: SettingType | null = await Setting.findOne({
         where: { code: req.body.code }
     });
 
@@ -78,7 +79,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
 
 
-    const data: Setting = await Setting.create(req.body);
+    const data: SettingType = await Setting.create(req.body);
     if (type === "string") {
         for (let i = req.body.intMin; i <= req.body.intMax; i++) {
             await SettingIntMapping.create({
@@ -89,7 +90,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     if (req.body.isForBusinessUnit) {
-        const businessUnits: BusinessUnit[] = await BusinessUnit.findAll();
+        const businessUnits: BusinessUnitType[] = await BusinessUnit.findAll();
         for (const businessUnit of businessUnits) {
             await BusinessUnitSettingValue.create({
                 businessUnitId: businessUnit.dataValues.id,
@@ -100,7 +101,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
     //is for users
     else if (req.body.isForBusinessUnit == false) {
-        const users: User[] = await User.findAll();
+        const users: UserType[] = await User.findAll();
         for (const user of users) {
             await UserSettingValue.create({
                 userId: user.dataValues.id,
@@ -115,7 +116,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
 
-    const data: Setting[] = await Setting.findAll({
+    const data: SettingType[] = await Setting.findAll({
         include: [{
             model: SettingIntMapping,
             required: false
@@ -129,7 +130,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 
     const code: string = req.params.code;
 
-    const data: Setting | null = await getSettingForCode(code);
+    const data: SettingType = await getSettingForCode(code);
     res.send(data);
 
 };
@@ -137,14 +138,14 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 // Update a setting by code
 exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const code: string = req.params.code;
-    const setting: Setting | null = await getSettingForCode(code);
+    const setting: SettingType = await getSettingForCode(code);
     req.body.id = undefined;
     req.body.code = undefined;
 
-    let intMin: number | null = setting!.dataValues.intMin;
-    let intMax: number | null = setting!.dataValues.intMax;
-    let defaultValue: number | null = setting!.dataValues.defaultValue;
-    let type: string = setting!.dataValues.type;
+    let intMin: number = setting.dataValues.intMin;
+    let intMax: number = setting.dataValues.intMax;
+    let defaultValue: number = setting.dataValues.defaultValue;
+    let type: string = setting.dataValues.type;
     if (req.body.intMin !== undefined){
         intMin = req.body.intMin;
     }
@@ -193,7 +194,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, `Update Setting for code ${code} did not update.`);
     }
 
-    const updatedObject: Setting | null = await getSettingForCode(code);
+    const updatedObject: SettingType | null = await getSettingForCode(code);
     res.send(updatedObject);
 };
 
@@ -217,13 +218,13 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 };
 
 // Helper function
-async function getSettingForCode(code: string): Promise<Setting | null> {
+async function getSettingForCode(code: string): Promise<SettingType> {
 
     if (!code) {
         throw new AppError(400, "code must be provided");
     }
 
-    const data: Setting | null = await Setting.findOne({
+    const data: SettingType | null = await Setting.findOne({
         where: { code },
         include: [{
             model: SettingIntMapping,

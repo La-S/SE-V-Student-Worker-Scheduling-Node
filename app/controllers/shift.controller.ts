@@ -5,12 +5,16 @@ import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { getStringFromDate, getOneForId, toHours } from "../services/services.ts";
 const { Shift, TaskList, User, Position, TaskCompletion, Task, Employee } = db;
-import type { ShiftType } from "../types/shift.type.ts";
 import { getUserExpectedHoursForWeek } from "./user.controller.ts";
 import { sendNotificationToEmployee } from "../services/notifications.ts";
 import DropRequest from "../models/droprequest.model.ts";
 import CoverRequest from "../models/coverrequest.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
+import { EmployeeType } from "../models/employee.model.ts";
+import { UserType } from "../models/user.model.ts";
+import { ShiftType } from "../models/shift.model.ts";
+import { TaskListType } from "../models/tasklist.model.ts";
+import { TaskType } from "../models/task.model.ts";
 
 
 const exports: any = {};
@@ -20,8 +24,8 @@ const errorClassName: string = "Shift";
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
     // Save Shift in the database
-    let employee: Employee = await getOneForId(Employee, req.body.employeeId);
-    let user: User = await getOneForId(User, employee.dataValues.userId);
+    let employee: EmployeeType = await getOneForId(Employee, req.body.employeeId);
+    let user: UserType = await getOneForId(User, employee.dataValues.userId);
     if (req.body.published === true && req.body.employeeId) {
         // don't wait for this response.
         sendNotificationToEmployee(req.body.employeeId, "New Shift", "A new shift has now become published.");
@@ -31,14 +35,14 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     if (user.dataValues.isStudent && hoursWorkedForUser + hoursForShift > 20) {
         throw new AppError(403, `The employee is scheduled for ${hoursWorkedForUser} hours this week across all their jobs. This shift would put the employee over 20 hours for the week.`);
     }
-    const data: Shift = await Shift.create(req.body);
+    const data: ShiftType = await Shift.create(req.body);
     res.send(data);
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
-    const data: Shift = await getShiftForId(id);
+    const data: ShiftType = await getShiftForId(id);
     res.send(data);
 };
 
@@ -46,17 +50,17 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
 
     //throws error if not found
-    let originalShift: Shift = await getOneForId(Shift, id);
-    let isPublishedOriginally: boolean = originalShift.published;
-    let originalEmployeeId: number = originalShift.employeeId;
-    let originalStartTime: string = originalShift.startTime;
-    let originalEndTime: string = originalShift.endTime;
-    let originalDate: string = originalShift.date;
+    let originalShift: ShiftType = await getOneForId(Shift, id);
+    let isPublishedOriginally: boolean = originalShift.dataValues.published;
+    let originalEmployeeId: number = originalShift.dataValues.employeeId;
+    let originalStartTime: string = originalShift.dataValues.startTime;
+    let originalEndTime: string = originalShift.dataValues.endTime;
+    let originalDate: string = originalShift.dataValues.date;
 
-    let employeeId: number = req.body.employeeId ?? originalShift.employeeId;
-    let employee: Employee = await getOneForId(Employee, employeeId);
-    let user: User = await getOneForId(User, employee.dataValues.userId);
-    let hoursWorkedForUser: number = await getUserExpectedHoursForWeek(employee.dataValues.userId, req.body.date ?? originalShift.date);
+    let employeeId: number = req.body.employeeId ?? originalShift.dataValues.employeeId;
+    let employee: EmployeeType = await getOneForId(Employee, employeeId);
+    let user: UserType = await getOneForId(User, employee.dataValues.userId);
+    let hoursWorkedForUser: number = await getUserExpectedHoursForWeek(employee.dataValues.userId, req.body.date ?? originalShift.dataValues.date);
     const oldShiftHours: number = toHours(originalEndTime) - toHours(originalStartTime);
     hoursWorkedForUser = hoursWorkedForUser - oldShiftHours;
     const newShiftHours: number = toHours(req.body.endTime ?? originalEndTime) - toHours(req.body.startTime ?? originalStartTime);
@@ -81,7 +85,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     } else if (req.body.date !== originalDate || req.body.startTime !== originalStartTime || req.body.endTime !== originalEndTime) {
         sendNotificationToEmployee(employeeId, "Shift Updated", "Your shift's time has been changed.");
     }
-    let updatedObject: Shift = await getOneForId(Shift, id);
+    let updatedObject: ShiftType = await getOneForId(Shift, id);
 
     res.send(updatedObject);
 };
@@ -90,11 +94,11 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
 
 
-async function getShiftForId(id: number): Promise<Shift | null> {
+async function getShiftForId(id: number): Promise<ShiftType> {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data: Shift | null = await Shift.findByPk(id, {
+    const data: ShiftType | null = await Shift.findByPk(id, {
         include: [{
             model: Employee,
             include: [User]
@@ -142,11 +146,11 @@ exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.id, 10);
     const taskListId: number = parseInt(req.params.tasklistid, 10);
 
-    const shift: Shift | null = await Shift.findByPk(shiftId);
+    const shift: ShiftType | null = await Shift.findByPk(shiftId);
     if (!shift) {
         throw new NotFoundError(errorClassName, shiftId);
     }
-    const taskList: TaskList | null = await TaskList.findByPk(taskListId);
+    const taskList: TaskListType | null = await TaskList.findByPk(taskListId);
     if (!taskList) {
         throw new NotFoundError("Task List", taskListId);
     }
@@ -156,11 +160,12 @@ exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
         res.status(400).send({ message: "Something went wrong adding task list" });
         return;
     }
-    const tasks: Task[] = await taskList.getTasks();
+    //@ts-ignore
+    const tasks: TaskType[] = await taskList.getTasks();
     for (let task of tasks) {
         const taskCompletion: any = {
             "checkedOff": "false",
-            "taskId": task.id,
+            "taskId": task.dataValues.id,
             "shiftId": shift.dataValues.id
         }
         await TaskCompletion.create(taskCompletion);
@@ -174,11 +179,11 @@ exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
     const shiftId: number = parseInt(req.params.id, 10);
     const taskListId: number = parseInt(req.params.tasklistid, 10);
 
-    const shift: Shift | null = await Shift.findByPk(shiftId);
+    const shift: ShiftType | null = await Shift.findByPk(shiftId);
     if (!shift) {
         throw new NotFoundError(errorClassName, shiftId);
     }
-    const taskList: TaskList | null = await TaskList.findByPk(taskListId);
+    const taskList: TaskListType | null = await TaskList.findByPk(taskListId);
     if (!taskList) {
         throw new NotFoundError("Task List", taskListId);
     }

@@ -1,9 +1,9 @@
 const exports: any = {};
 
 import { Op } from 'sequelize';
-import Employee from '../models/employee.model.ts';
-import Announcement from '../models/announcement.model.ts';
-import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
+import Employee, { EmployeeType } from '../models/employee.model.ts';
+import Announcement, { AnnouncementType } from '../models/announcement.model.ts';
+import AnnouncementReceipt, { AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
 import pkg from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
@@ -15,23 +15,22 @@ import { sendNotificationToEmployee } from '../services/notifications.ts';
 import {
     sendAnnouncementEmailToEmployeeIds,
 } from '../services/mailer.ts';
-import BusinessUnit from '../models/businessunit.model.ts';
-
-const { Request, Response } = pkg;
+import BusinessUnit, { BusinessUnitType } from '../models/businessunit.model.ts';
+import { AnnouncementValuesType } from '../types/announcement.type.ts';
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     let sendNotifNow: boolean = false;
 
-    const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
+    const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, req.body.businessUnitId);
 
-    const employees: Employee[] = await Employee.findAll({
+    const employees: EmployeeType[] = await Employee.findAll({
         where: {
             businessUnitId: req.body.businessUnitId,
             currentlyEmployed: true,
         }
     });
 
-    const employeeIds: number[] = employees.map((employee: Employee) => employee.dataValues.id);
+    const employeeIds: number[] = employees.map((employee: EmployeeType) => employee.dataValues.id);
 
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
@@ -43,10 +42,10 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         req.body.postAtTime = currentTime;
     }
 
-    const announcement: Announcement = await Announcement.create(req.body);
+    const announcement: AnnouncementType = await Announcement.create(req.body);
     const announcementId: number = announcement.dataValues.id;
 
-    const isRightNow: Announcement | null = (await Announcement.findOne({
+    const isRightNow: AnnouncementValuesType | null = (await Announcement.findOne({
         where: {
             id: announcementId,
             [Op.or]: [
@@ -90,7 +89,7 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
 
     const employeeIds: number[] = req.body.employeeIds;
 
-    const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
+    const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, req.body.businessUnitId);
 
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
@@ -102,10 +101,10 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
         req.body.postAtTime = currentTime;
     }
 
-    const announcement: Announcement = await Announcement.create(req.body);
+    const announcement: AnnouncementType = await Announcement.create(req.body);
     const announcementId: number = announcement.dataValues.id;
 
-    const isRightNow: Announcement | null = (await Announcement.findOne({
+    const isRightNow: AnnouncementValuesType | null = (await Announcement.findOne({
         where: {
             id: announcementId,
             [Op.or]: [
@@ -147,9 +146,9 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
 exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
-    const announcement: Announcement | null = await getOneForId(Announcement, id);
+    const announcement: AnnouncementType | null = await getOneForId(Announcement, id);
 
-    const receipts: AnnouncementReceipt[] = await AnnouncementReceipt.findAll({
+    const receipts: AnnouncementReceiptType[] = await AnnouncementReceipt.findAll({
         where: {
             announcementId: id,
             deleted: false,
@@ -157,7 +156,7 @@ exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     });
 
     const employeeIds: number[] = receipts
-        .map((receipt: AnnouncementReceipt) => receipt.dataValues.employeeId)
+        .map((receipt: AnnouncementReceiptType) => receipt.dataValues.employeeId)
         .filter((employeeId: number) => Number.isInteger(employeeId));
 
     if (employeeIds.length === 0) {
@@ -193,7 +192,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     await Announcement.update(req.body, { where: { id: id } });
 
-    const updatedAnnouncement: Announcement | null = await getOneForId(Announcement, id);
+    const updatedAnnouncement: AnnouncementType | null = await getOneForId(Announcement, id);
 
     res.send(updatedAnnouncement);
 };
@@ -201,7 +200,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
 
-    const data: Announcement | null = await Announcement.findOne({
+    const data: AnnouncementType | null = await Announcement.findOne({
         where: { id: id },
         include: [
             { model: Employee, include: [User] },

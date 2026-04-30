@@ -1,37 +1,37 @@
 import pkg from 'express'
-import Shift from "../models/shift.model.ts"
-import BusinessUnit from '../models/businessunit.model.ts';
+import Shift, { ShiftType } from "../models/shift.model.ts"
+import BusinessUnit, { BusinessUnitType } from '../models/businessunit.model.ts';
 import { Model, Op } from 'sequelize';
-import Employee from '../models/employee.model.ts';
+import Employee, { EmployeeType } from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
-import Position from '../models/position.model.ts';
-import TaskList from '../models/tasklist.model.ts';
+import Position, { PositionType } from '../models/position.model.ts';
+import TaskList, { TaskListType } from '../models/tasklist.model.ts';
 import { createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
-import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
-import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
-import OpenHours from '../models/openhours.model.ts';
+import AvailabilityTemplate, { AvailabilityTemplateType } from '../models/availabilitytemplate.model.ts';
+import WeeklyScheduleTemplate, { WeeklyScheduleTemplateType } from '../models/weeklyscheduletemplate.model.ts';
+import OpenHours, { OpenHoursType } from '../models/openhours.model.ts';
 import { deleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 import { sendEmailToBusinessUnit } from '../services/mailer.ts';
 import { AppError } from "../error/app.error.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
-import CoverRequest from '../models/coverrequest.model.ts';
-import DropRequest from '../models/droprequest.model.ts';
+import CoverRequest, { CoverRequestType } from '../models/coverrequest.model.ts';
+import DropRequest, { DropRequestType } from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
 import { getBudgetInformationForDateRange, loadEmployeeClassUnavailability } from './employee.controller.ts';
 import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
 import SettingIntMapping from '../models/settingintmapping.model.ts';
-import Setting from '../models/setting.model.ts';
-import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
+import Setting, { SettingType } from '../models/setting.model.ts';
+import BusinessUnitSettingValue, { BusinessUnitSettingValueType } from '../models/businessunitsettingvalue.model.ts';
 import { get } from 'node:http';
-import TimeOffRequest from '../models/timeoffrequest.model.ts';
+import TimeOffRequest, { TimeOffRequestType } from '../models/timeoffrequest.model.ts';
 const exports: any = {}
 
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data: BusinessUnit = await BusinessUnit.create(req.body);
-    const settings: Setting[] = await Setting.findAll({ where: { isForBusinessUnit: true } });
+    const data: BusinessUnitType = await BusinessUnit.create(req.body);
+    const settings: SettingType[] = await Setting.findAll({ where: { isForBusinessUnit: true } });
     for (const setting of settings) {
         await BusinessUnitSettingValue.create({
             businessUnitId: data.dataValues.id,
@@ -53,7 +53,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         { model: TaskList, as: "taskList" },
         { model: Timeclock }
     ];
-    const data: Shift[] = await Shift.findAll({
+    const data: ShiftType[] = await Shift.findAll({
         where: { businessUnitId: id, ...getDateRange(startDate, endDate) },
         include: includeCondition
     });
@@ -65,7 +65,7 @@ exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data: TaskList[] = await TaskList.findAll({ where: { businessUnitId: id } });
+    const data: TaskListType[] = await TaskList.findAll({ where: { businessUnitId: id } });
     res.send(data);
 }
 
@@ -73,7 +73,7 @@ exports.findCurrentEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data: Employee[] = await Employee.findAll({
+    const data: EmployeeType[] = await Employee.findAll({
         where: { businessUnitId: id, currentlyEmployed: true },
         order: [[User, "lastName", "asc"]],
         include: User,
@@ -85,7 +85,7 @@ exports.findAllEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data: Employee[] = await Employee.findAll({
+    const data: EmployeeType[] = await Employee.findAll({
         where: { businessUnitId: id },
         order: [[User, "lastName", "asc"]],
         include: User,
@@ -97,7 +97,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data: Position[] = await Position.findAll({ where: { businessUnitId: id }, order: [["name", "asc"]] });
+    const data: PositionType[] = await Position.findAll({ where: { businessUnitId: id }, order: [["name", "asc"]] });
     res.send(data);
 }
 
@@ -106,7 +106,7 @@ exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
     await getOneForId(BusinessUnit, id);
 
     //I dont think this should include dailyschedules and shifts when getting all but lmk if you disagree
-    const data: WeeklyScheduleTemplate[] = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id }, });
+    const data: WeeklyScheduleTemplateType[] = await WeeklyScheduleTemplate.findAll({ where: { businessUnitId: id }, });
     res.send(data);
 }
 
@@ -114,7 +114,7 @@ exports.findOpenHours = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
-    const data: OpenHours[] = await OpenHours.findAll({
+    const data: OpenHoursType[] = await OpenHours.findAll({
         where: { businessUnitId: id },
         order: [["dayOfWeek", "ASC"], ["startTime", "ASC"]]
     });
@@ -135,7 +135,7 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
         throw new AppError(400, `dayOfWeek must be one of: ${daysOfWeek.join(", ")}`);
     }
 
-    const data: OpenHours[] = await OpenHours.findAll({
+    const data: OpenHoursType[] = await OpenHours.findAll({
         where: { businessUnitId: id, dayOfWeek },
         order: [["startTime", "ASC"]]
     });
@@ -144,14 +144,14 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, id);
-    const employees: Employee[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, id);
+    const employees: EmployeeType[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     let currentSemester: string | null = null;
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!currentSemester) {
         currentSemester = getMostCommonSemester(employees);
     }
-    const data: AvailabilityTemplate[] = await AvailabilityTemplate.findAll({
+    const data: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({
         where: { semester: currentSemester },
         include: [{
             model: User,
@@ -168,18 +168,18 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
 //should include AvailabilityModification later
 exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, id);
-    const date: string | undefined = req.query.date; //not required
-    const dayOfWeek: string | undefined = req.query.dayofweek; //maybe required?
-    const startTime: string | undefined = req.query.start; //required
-    const endTime: string | undefined = req.query.end; //required
+    const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, id);
+    const date: string | undefined = req.query.date as string; //not required
+    const dayOfWeek: string | undefined = req.query.dayofweek as string; //maybe required?
+    const startTime: string | undefined = req.query.start as string; //required
+    const endTime: string | undefined = req.query.end as string; //required
     const acceptablePreferences: string[] = ["available", "preferred"];
 
-    const allEmployees: Employee[] = await Employee.findAll({
+    const allEmployees: EmployeeType[] = await Employee.findAll({
         where: { businessUnitId: id },
         include: User
     });
-    const availableEmployees: Employee[] = await Employee.findAll({
+    const availableEmployees: EmployeeType[] = await Employee.findAll({
         where: { businessUnitId: id },
         include: {
             model: User,
@@ -234,8 +234,8 @@ exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
 exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
-    const startDate: string | undefined = req.query.start;
-    const endDate: string | undefined = req.query.end;
+    const startDate: string | undefined = req.query.start as string;
+    const endDate: string | undefined = req.query.end as string;
     const dateRange: { [key: string]: unknown } = getDateRange(startDate, endDate);
     const includeCondition = [
         { model: Employee, as: "coverRequester", required: false, include: [User] },
@@ -248,7 +248,7 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
             include: [Position]
         }
     ];
-    const data: CoverRequest[] = await CoverRequest.findAll({
+    const data: CoverRequestType[] = await CoverRequest.findAll({
         include: includeCondition,
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
@@ -292,8 +292,8 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
 exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
-    const startDate: string | undefined = req.query.start;
-    const endDate: string | undefined = req.query.end;
+    const startDate: string | undefined = req.query.start as string;
+    const endDate: string | undefined = req.query.end as string;
     const dateRange: { [key: string]: unknown } = getDateRange(startDate, endDate);
     const includeCondition = [
         { model: Employee, as: "dropRequester", include: [User] },
@@ -305,7 +305,7 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
             where: { businessUnitId: id, ...dateRange },
         }
     ];
-    const data: DropRequest[] = await DropRequest.findAll({
+    const data: DropRequestType[] = await DropRequest.findAll({
         include: includeCondition,
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
@@ -363,7 +363,7 @@ exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
         { model: Position },
         { model: TaskList, as: "taskList" }
     ];
-    const data: Shift[] = await Shift.findAll({
+    const data: ShiftType[] = await Shift.findAll({
         where: {
             businessUnitId: id, employeeId: null, published: true,
             [Op.or]: [
@@ -382,10 +382,10 @@ exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const startDate: string = req.query.start;
-    const endDate: string = req.query.end;
+    const startDate: string = req.query.start as string;
+    const endDate: string = req.query.end as string;
     await getOneForId(BusinessUnit, id);
-    const employees: Model[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    const employees: EmployeeType[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     if (employees.length == 0) {
         throw new AppError(400, "No employees currently employed for business");
     }
@@ -400,10 +400,10 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
 
 exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id, 10);
-    const businessUnit: BusinessUnit = await getOneForId(BusinessUnit, id);
-    const employees: Employee[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
+    const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, id);
+    const employees: EmployeeType[] = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
     let loadClasses: boolean = req.query.loadclasses === "true";
-    let semester: string = req.query.semester;
+    let semester: string = req.query.semester as string;
     //if not defined in request, get the current semester and increment it (FA26 -> SP27)
     if (!semester) {
         semester = getMostCommonSemester(employees);
@@ -452,7 +452,7 @@ exports.getAllTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
         { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
         { model: Employee, as: "timeOffReviewer", required: false, include: [User], where: { businessUnitId: id } },
     ];
-    const data: TimeOffRequest[] = await TimeOffRequest.findAll({
+    const data: TimeOffRequestType[] = await TimeOffRequest.findAll({
         include: includeCondition,
         order: [["startDate", "asc"]]
     });
@@ -468,7 +468,7 @@ exports.getTimeOffRequestsDateRange = async (req: pkg.Request, res: pkg.Response
         { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
         { model: Employee, as: "timeOffReviewer", required:false, include: [User], where: { businessUnitId: id } },
     ];
-    const data: TimeOffRequest[] = await TimeOffRequest.findAll({
+    const data: TimeOffRequestType[] = await TimeOffRequest.findAll({
         include: includeCondition,
         where: { startDate: { [Op.lte]: dateRangeEnd }, endDate: { [Op.gte]: dateRangeStart } },
         order: [["startDate", "asc"]]
@@ -486,12 +486,13 @@ exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
 
 exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
-    const business: BusinessUnit = await getOneForId(BusinessUnit, id);
+    const business: BusinessUnitType = await getOneForId(BusinessUnit, id);
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const timeOffRequestsWithShifts = [];
-    const employees: Model[] = await business.getEmployees();
-    const employeeIds: number[] = employees.map((employee: Model) => { return employee.dataValues.id });
-    const timeOffRequests: TimeOffRequest[] = await TimeOffRequest.findAll({
+    //@ts-ignore
+    const employees: EmployeeType[] = await business.getEmployees();
+    const employeeIds: number[] = employees.map((employee: EmployeeType) => { return employee.dataValues.id });
+    const timeOffRequests: TimeOffRequestType[] = await TimeOffRequest.findAll({
         where: {
             requesterId: {
                 [Op.in]: employeeIds
@@ -528,7 +529,7 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
     await getOneForStringId(Setting, req.params.code);
     const businessUnitId: number = parseInt(req.params.id as string, 10);
     const settingCode: string = req.params.code as string;
-    const settingValue: BusinessUnitSettingValue = await getBusinessUnitSettingValue(businessUnitId, settingCode);
+    const settingValue: BusinessUnitSettingValueType = await getBusinessUnitSettingValue(businessUnitId, settingCode);
     res.send(settingValue);
 }
 
@@ -536,14 +537,14 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const businessUnitId: number = parseInt(req.params.id as string, 10);
-    const data: BusinessUnitSettingValue[] = [];
-    const businessUnitSettings: BusinessUnitSettingValue[] = await BusinessUnitSettingValue.findAll({
+    const data: BusinessUnitSettingValueType[] = [];
+    const businessUnitSettings: BusinessUnitSettingValueType[] = await BusinessUnitSettingValue.findAll({
         where: {
             businessUnitId: businessUnitId,
         }
     });
     for (const businessUnitSettingValue of businessUnitSettings) {
-        const settingValue: BusinessUnitSettingValue = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
+        const settingValue: BusinessUnitSettingValueType = await getBusinessUnitSettingValue(businessUnitId, businessUnitSettingValue.dataValues.settingCode);
         data.push(settingValue);
     }
     res.send(data);

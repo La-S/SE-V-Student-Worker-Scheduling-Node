@@ -10,19 +10,20 @@ import { getOneForId } from "../services/services.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import { Model } from "sequelize";
 import AnnouncementFile from "../models/announcementfile.model.ts";
+import { AnnouncementReceiptType } from "../models/announcementreceipt.model.ts";
 
 const exports: any = {};
 const errorClassName: string = "AnnouncementReceipt";
 
 exports.create = async (req: pkg.Request, res: pkg.Response) => {
     req.body.id = undefined;
-    const data: AnnouncementReceipt = await AnnouncementReceipt.create(req.body);
+    const data: AnnouncementReceiptType = await AnnouncementReceipt.create(req.body);
     res.send(data);
 };
 
 exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     const id = parseInt(req.params.id, 10);
-    const data: AnnouncementReceipt = await getReceiptForId(id);
+    const data: AnnouncementReceiptType = await getReceiptForId(id);
     res.send(data);
 };
 
@@ -40,7 +41,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`);
     }
-    const updatedReceipt: AnnouncementReceipt = await getReceiptForId(id);
+    const updatedReceipt: AnnouncementReceiptType = await getReceiptForId(id);
     res.send(updatedReceipt);
 };
 
@@ -55,7 +56,7 @@ exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Could not mark receipt ${id} as deleted.`);
     }
-    const updatedReceipt = await getReceiptForId(id);
+    const updatedReceipt: AnnouncementReceiptType = await getReceiptForId(id);
     res.send(updatedReceipt);
 };
 
@@ -71,7 +72,7 @@ exports.setRead = async (req: pkg.Request, res: pkg.Response) => {
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Could not mark receipt ${id} as read.`);
     }
-    const updatedReceipt: AnnouncementReceipt = await getReceiptForId(id);
+    const updatedReceipt: AnnouncementReceiptType = await getReceiptForId(id);
     res.send(updatedReceipt);
 };
 
@@ -79,7 +80,7 @@ async function getReceiptForId(id: number) {
     if (!id) {
         throw new AppError(400, "id provided must be an integer");
     }
-    const data: AnnouncementReceipt = await AnnouncementReceipt.findByPk(id, {
+    const data: AnnouncementReceiptType | null = await AnnouncementReceipt.findByPk(id, {
         include: [
             { model: Announcement, include: [{ model: Employee, include: [User] }, {model: BusinessUnit}]},
             
