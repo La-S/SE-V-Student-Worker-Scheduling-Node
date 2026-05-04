@@ -26,6 +26,7 @@ import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.t
 import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
+import { AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
 const exports: any = {}
 
 
@@ -618,14 +619,15 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
             }
         }
         if (!pushed) {
-            pushed = checkAvailabilityOverlap(
-                available,
-                startTime,
-                endTime,
-                preferredEmployees,
-                availableEmployees,
-                employee
-            );
+            const availability: AvailabilityPreference = checkAvailabilityOverlap(availabilities, startTime, endTime, preferredEmployees, availableEmployees, employee);
+            if (availability === "preferred") {
+                preferredEmployees.add(employee);
+                pushed = true;
+            }
+            else if (availability === "available") {
+                availableEmployees.add(employee);
+                pushed = true;
+            }
         }
         if (preferredEmployees.has(employee) && availableEmployees.has(employee)) {
             availableEmployees.delete(employee);
@@ -650,7 +652,7 @@ function checkAvailabilityOverlap(
     preferredEmployees: Set<Model>,
     availableEmployees: Set<Model>,
     employee: object
-): boolean {
+): AvailabilityPreference {
     //number of minutes between availabilitys allowed as overlap
     const GAP_MINUTES = 10;
     const toMinutes = (t: string): number => {
@@ -671,7 +673,7 @@ function checkAvailabilityOverlap(
             toMinutes(a.dataValues.startTime) - toMinutes(b.dataValues.startTime)
         );
 
-    if (!relevant.length) return false;
+    if (!relevant.length) return "unavailable";
 
     // If any single preferred block fully covers the shift, preferred wins outright
     const preferredFullCover = relevant.some(a =>
@@ -698,15 +700,14 @@ function checkAvailabilityOverlap(
         //availability covers entire shift, stop checking.
         if (covered >= shiftEnd) {
             if (preferredFullCover || (hasPreferred && !hasAvailable)) {
-                preferredEmployees.add(employee);
+                return "preferred";
             } else {
-                availableEmployees.add(employee);
+                return "available";
             }
-            return true;
         }
     }
 
-    return false;
+    return "unavailable";
 }
 
 export default exports;
