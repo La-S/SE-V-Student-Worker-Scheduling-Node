@@ -551,14 +551,15 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id as string, 10);
+    //TODO - add types from other branch.
+    const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
-    const startTime = req.params.starttime;
-    const endTime = req.params.endtime;
-    const date = req.params.date;
+    const startTime: string = req.params.starttime;
+    const endTime: string = req.params.endtime;
+    const date: string = req.params.date;
     const position: number = parseInt(req.params.position, 10);
-    const dateObject = createDateFromString(date);
-    const dayOfWeek = convertIntDayOfWeek(dateObject.getDay());
+    const dateObject: Date = createDateFromString(date);
+    const dayOfWeek: string = convertIntDayOfWeek(dateObject.getDay());
     const preferredEmployees = new Set<Model>();
     const availableEmployees = new Set<Model>();
     const notSpecifiedEmployees = new Set<Model>();
@@ -568,9 +569,10 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
         where: { id: position },
         include: [{
             model: Employee,
-            where: { currentlyEmployed: true,
+            where: {
+                currentlyEmployed: true,
                 businessUnitId: id
-             },
+            },
             include: [User]
         }],
         order: [[Employee, User, "lastName", 'desc']] //desc because pushing will invert to asc
@@ -615,17 +617,15 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
                 break;
             }
         }
-        for (const availability of available) {
-            if (availability.dataValues.startTime <= startTime && availability.dataValues.endTime >= endTime) {
-                if (availability.dataValues.preference === "preferred") {
-                    pushed = true;
-                    preferredEmployees.add(employee);
-                }
-                else if (availability.dataValues.preference === "available") {
-                    pushed = true;
-                    availableEmployees.add(employee);
-                }
-            }
+        if (!pushed) {
+            pushed = checkAvailabilityCoversShift(
+                available,
+                startTime,
+                endTime,
+                preferredEmployees,
+                availableEmployees,
+                employee
+            );
         }
         if (preferredEmployees.has(employee) && availableEmployees.has(employee)) {
             availableEmployees.delete(employee);
@@ -641,6 +641,71 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
         "unavailable": [...unavailableEmployees]
     }
     res.send(responseObject);
+}
+
+function checkAvailabilityCoversShift(
+    availabilities: Model[],
+    startTime: string,
+    endTime: string,
+    preferredEmployees: Set<Model>,
+    availableEmployees: Set<Model>,
+    employee: object
+): boolean {
+    const GAP_MINUTES = 10;
+    const toMinutes = (t: string): number => {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    };
+
+    const shiftStart = toMinutes(startTime);
+    const shiftEnd = toMinutes(endTime);
+
+    const relevant = availabilities
+        .filter(a => {
+            const bStart = toMinutes(a.dataValues.startTime);
+            const bEnd = toMinutes(a.dataValues.endTime);
+            return bStart < shiftEnd && bEnd > shiftStart;
+        })
+        .sort((a, b) =>
+            toMinutes(a.dataValues.startTime) - toMinutes(b.dataValues.startTime)
+        );
+
+    if (!relevant.length) return false;
+
+    // If any single preferred block fully covers the shift, preferred wins outright
+    const preferredFullCover = relevant.some(a =>
+        a.dataValues.preference === "preferred" &&
+        toMinutes(a.dataValues.startTime) <= shiftStart &&
+        toMinutes(a.dataValues.endTime) >= shiftEnd
+    );
+
+    let covered = shiftStart;
+    let hasPreferred = false;
+    let hasAvailable = false;
+
+    for (const block of relevant) {
+        const bStart = toMinutes(block.dataValues.startTime);
+        const bEnd = toMinutes(block.dataValues.endTime);
+
+        if (bStart - covered > GAP_MINUTES) break;
+
+        if (bEnd > covered) {
+            covered = bEnd;
+            if (block.dataValues.preference === "preferred") hasPreferred = true;
+            if (block.dataValues.preference === "available") hasAvailable = true;
+        }
+
+        if (covered >= shiftEnd) {
+            if (preferredFullCover || (hasPreferred && !hasAvailable)) {
+                preferredEmployees.add(employee);
+            } else {
+                availableEmployees.add(employee);
+            }
+            return true;
+        }
+    }
+
+    return false;
 }
 
 export default exports;

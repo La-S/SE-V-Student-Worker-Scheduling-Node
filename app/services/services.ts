@@ -97,7 +97,7 @@ export function convertTime(time: String) {
     return hours + mins + ":00"
 }
 
-export function toHours (time: string): number {
+export function toHours(time: string): number {
     const [hours, minutes, seconds] = time.split(":").map(Number);
     return hours + minutes / 60 + (seconds || 0) / 3600;
 };
@@ -114,7 +114,7 @@ export function convertDayOfWeek(dayOfWeek: String) {
     }
 }
 
-export function convertIntDayOfWeek(dayOfWeek: number) {
+export function convertIntDayOfWeek(dayOfWeek: number): string {
     switch (dayOfWeek) {
         case 0: return "Sunday";
         case 1: return "Monday";
@@ -123,6 +123,7 @@ export function convertIntDayOfWeek(dayOfWeek: number) {
         case 4: return "Thursday";
         case 5: return "Friday";
         case 6: return "Saturday";
+        default: throw new AppError(400, "Invalid day of week integer. Must be between 0 and 6 inclusive.");
     }
 }
 
