@@ -618,7 +618,7 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
             }
         }
         if (!pushed) {
-            pushed = checkAvailabilityCoversShift(
+            pushed = checkAvailabilityOverlap(
                 available,
                 startTime,
                 endTime,
@@ -643,7 +643,7 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
     res.send(responseObject);
 }
 
-function checkAvailabilityCoversShift(
+function checkAvailabilityOverlap(
     availabilities: Model[],
     startTime: string,
     endTime: string,
@@ -651,6 +651,7 @@ function checkAvailabilityCoversShift(
     availableEmployees: Set<Model>,
     employee: object
 ): boolean {
+    //number of minutes between availabilitys allowed as overlap
     const GAP_MINUTES = 10;
     const toMinutes = (t: string): number => {
         const [h, m] = t.split(":").map(Number);
@@ -659,7 +660,7 @@ function checkAvailabilityCoversShift(
 
     const shiftStart = toMinutes(startTime);
     const shiftEnd = toMinutes(endTime);
-
+    //availbilities that are within the timeframe of the shift
     const relevant = availabilities
         .filter(a => {
             const bStart = toMinutes(a.dataValues.startTime);
@@ -686,15 +687,15 @@ function checkAvailabilityCoversShift(
     for (const block of relevant) {
         const bStart = toMinutes(block.dataValues.startTime);
         const bEnd = toMinutes(block.dataValues.endTime);
-
+        //gap too large, not considered overlapping
         if (bStart - covered > GAP_MINUTES) break;
-
+        //extend cover to where availability ends
         if (bEnd > covered) {
             covered = bEnd;
             if (block.dataValues.preference === "preferred") hasPreferred = true;
             if (block.dataValues.preference === "available") hasAvailable = true;
         }
-
+        //availability covers entire shift, stop checking.
         if (covered >= shiftEnd) {
             if (preferredFullCover || (hasPreferred && !hasAvailable)) {
                 preferredEmployees.add(employee);
