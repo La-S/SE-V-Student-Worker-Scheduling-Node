@@ -4,4 +4,5 @@ export type SessionValuesType = {
     token: string | null,
     expirationDate: Date,
     userId: number,
+    isTerminal: boolean,
 }

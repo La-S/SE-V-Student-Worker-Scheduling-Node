@@ -21,6 +21,11 @@ const Session = SequelizeInstance.define("session", {
         type: Sequelize.DATE,
         allowNull: false,
     },
+    isTerminal: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
 });
 
 export default Session;

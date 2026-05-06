@@ -44,7 +44,7 @@ cron.schedule("*/1 * * * *", async () => {
                 { postAtDate: { [Op.lt]: today } },
                 {
                     postAtDate: { [Op.eq]: today },
-                    postAtTime: { [Op.lt]: currentTime }
+                    postAtTime: { [Op.lte]: currentTime }
                 }
             ],
         }

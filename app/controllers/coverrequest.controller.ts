@@ -84,7 +84,7 @@ export async function acceptCoverRequest(req: Request, res: Response) {
     }
     const employeeId = parseInt(req.params.employeeId as string, 10);
     const employee = await getOneForId(Employee, employeeId);
-    const user = await getOneForId(User, employee.dataValues.id);
+    const user = await getOneForId(User, employee.dataValues.userId);
     const businessUnitId = employee.dataValues.businessUnitId; // a little sketchy getting businessUnitId from employee, but it should work.
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });

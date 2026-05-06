@@ -72,4 +72,6 @@ router.get("/:id/settings", [authenticate, authorizeById("businessUnit")], busin
 
 router.get("/:id/setting/:code", [authenticate, authorizeById("businessUnit")], businessunits.getSingleSettingValue);
 
+router.get("/:id/availabilities/date/:date/starttime/:starttime/endtime/:endtime/position/:position", [authenticate, managerOrAdminOnly], businessunits.getEmployeeAvailabilityForShift);
+
 export default router;
