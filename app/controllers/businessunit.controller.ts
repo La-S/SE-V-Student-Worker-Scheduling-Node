@@ -26,7 +26,7 @@ import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.t
 import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
-import { AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
+import type { AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
 const exports: any = {}
 
 
