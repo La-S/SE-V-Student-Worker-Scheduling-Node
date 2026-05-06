@@ -611,15 +611,15 @@ exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Resp
         const unavailable = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
         let pushed = false;
 
-        for (const availability of unavailable) {
-            if (availability.dataValues.startTime < endTime && availability.dataValues.endTime > startTime) {
+        for (const unavailability of unavailable) {
+            if (unavailability.dataValues.startTime < endTime && unavailability.dataValues.endTime > startTime) {
                 unavailableEmployees.add(employee);
                 pushed = true;
                 break;
             }
         }
         if (!pushed) {
-            const availability: AvailabilityPreference = checkAvailabilityOverlap(availabilities, startTime, endTime, preferredEmployees, availableEmployees, employee);
+            const availability: AvailabilityPreference = checkAvailabilityOverlap(available, startTime, endTime, preferredEmployees, availableEmployees, employee);
             if (availability === "preferred") {
                 preferredEmployees.add(employee);
                 pushed = true;
