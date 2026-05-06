@@ -1,6 +1,6 @@
 import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import UserFileModel from "../models/userfile.model.ts"
 import { Router } from "express";
 var router = Router()

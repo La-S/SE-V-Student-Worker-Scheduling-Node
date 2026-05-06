@@ -1,11 +1,10 @@
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from '../error/app.error.ts';
 import { logger } from '../logger/logger.ts';
 
-const exports: any = {};
 
-exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
+export async function globalNotification(req: Request, res: Response) {
     if (!req.body.title || !req.body.body) {
         throw new AppError(400, `request body requires title and message`)
     }
@@ -23,9 +22,9 @@ exports.globalNotification = async (req: pkg.Request, res: pkg.Response) => {
         logger.log("info", "Successfully sent a push notification");
     }
     res.send("ok");
-};
+}
 
-exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
+export async function notificationByToken(req: Request, res: Response) {
     if (!req.body.title || !req.body.body || !req.body.pushToken) {
         throw new AppError(400, `request body requires title, message, and pushToken`)
     }
@@ -43,9 +42,8 @@ exports.notificationByToken = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     res.send("ok");
-};
+}
 
 
 
 
-export default exports;

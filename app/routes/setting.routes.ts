@@ -1,6 +1,6 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import setting from "../controllers/setting.controller.ts";
+import * as setting from "../controllers/setting.controller.ts";
 import SettingModel from "../models/setting.model.ts";
 
 import { Router } from "express";

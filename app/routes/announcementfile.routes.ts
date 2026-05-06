@@ -1,6 +1,6 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import AnnouncementFileModel from "../models/announcementfile.model.ts"
 import { Router } from "express";
 var router = Router()

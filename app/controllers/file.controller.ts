@@ -1,19 +1,18 @@
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { Model, type ModelStatic, Op } from 'sequelize';
 import { AppError } from '../error/app.error.ts';
 import { getOneForId } from '../services/services.ts';
 import File, { type FileType } from "../models/file.model.ts"
 import { NotFoundError } from '../error/notfound.error.ts';
 
-const exports: any = {};
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const data: FileType = await getFile(req.params.id);
     res.send(data);
 }
 
 
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+export async function delete(req: Request, res: Response) {
     //throws error if not found
     const id: string = req.params.id;
     await getFile(id);
@@ -35,4 +34,3 @@ async function getFile(id: string) {
     return data;
 }
 
-export default exports;

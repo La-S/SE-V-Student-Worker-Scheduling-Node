@@ -4,13 +4,12 @@ import db from "../models/index.ts";
 import { type PositionType } from "../models/position.model.ts";
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
-import pkg from 'express'
+import { type Request, type Response } from 'express';
 const Position = db.Position
 
-const exports: any = {};
 const errorClassName: string = "Position";
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Position,id);
@@ -27,9 +26,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedEmployee: PositionType = await getOneForId(Position, id);
     res.send(updatedEmployee);
-};
+}
 
-exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function findEmployees(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
     await getOneForId(Position, id);
 
@@ -43,4 +42,3 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-export default exports;

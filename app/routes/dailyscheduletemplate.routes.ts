@@ -1,6 +1,6 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import DailyScheduleTemplateModel from "../models/dailyscheduletemplate.model.ts";
 // import dailyscheduletemplates from "../controllers/dailyscheduletemplate.controller.ts"
 import { Router } from "express";

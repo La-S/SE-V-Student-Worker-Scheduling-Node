@@ -3,7 +3,7 @@ import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import TimeOffRequest, { type TimeOffRequestType } from "../models/timeoffrequest.model.ts";
 import Employee, { type EmployeeType } from "../models/employee.model.ts";
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { sendNotificationToEmployee, sendNotificationToManagers } from "../services/notifications.ts";
@@ -12,7 +12,6 @@ import { getShiftsForDateRange } from "./employee.controller.ts";
 import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Time Off Request";
-const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "timeOffRequester", include: [User] },
@@ -21,7 +20,7 @@ const EMPLOYEE_INCLUDES = [
 
 
 // Create and Save a new TimeOffRequest
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const requesterId: number = parseInt(req.body.requesterId);
     if (!requesterId) {
@@ -51,24 +50,24 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         logger.log('warn', `No businessUnit Id for employee ${req.body.requesterId}...`)
     }
     res.send(data);
-};
+}
 
 // Retrieve all TimeOffRequests from the database.
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAll(req: Request, res: Response) {
     const data: TimeOffRequestType[] = await TimeOffRequest.findAll({ include: EMPLOYEE_INCLUDES });
     res.send(data);
-};
+}
 
 // Find a single TimeOffRequest with an id
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
 
     const data: TimeOffRequestType = await getTimeOffRequestWithShifts(id);
     res.send(data);
-};
+}
 
 // Update a TimeOffRequest by the id in the request
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
     // throws error if not found
     await getOneForId(TimeOffRequest, id);
@@ -86,10 +85,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     const updatedRequest: TimeOffRequestType = await getTimeOffRequestWithShifts(id);
     res.send(updatedRequest);
-};
+}
 
 // Approve or Deny a TimeOffRequest
-exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
+export async function approveTimeOffRequest(req: Request, res: Response) {
     const id: number = parseInt(req.params.id as string, 10);
     const approverId: number = parseInt(req.params.approverId as string, 10);
     const approve: Boolean = req.query.approve === "true"; // converts to boolean
@@ -118,7 +117,7 @@ exports.approveTimeOffRequest = async (req: pkg.Request, res: pkg.Response) => {
         `A manager has reviewed and ${approve ? "approved" : "denied"} your time off request.`
     );
     res.send(timeOffRequest);
-};
+}
 
 // cannot be replaced with service because of Employee Returns
 async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequestType> {
@@ -157,4 +156,3 @@ async function getTimeOffRequestWithShifts(id: number): Promise<TimeOffRequestTy
     return data;
 }
 
-export default exports;

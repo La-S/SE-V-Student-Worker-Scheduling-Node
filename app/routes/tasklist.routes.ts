@@ -1,8 +1,8 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import TaskListModel from "../models/tasklist.model.ts";
-import taskLists from "../controllers/tasklist.controller.ts"
+import * as taskLists from "../controllers/tasklist.controller.ts"
 import { Router } from "express";
 var router = Router()
 

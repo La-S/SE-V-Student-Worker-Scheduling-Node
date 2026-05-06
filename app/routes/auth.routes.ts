@@ -1,4 +1,4 @@
-import auth from "../controllers/auth.controller.ts";
+import * as auth from "../controllers/auth.controller.ts";
 import { Router } from "express";
 var router = Router()
 

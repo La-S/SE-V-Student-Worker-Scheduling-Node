@@ -1,10 +1,9 @@
-const exports: any = {};
 
 import { Op } from 'sequelize';
 import Employee, { type EmployeeType } from '../models/employee.model.ts';
 import Announcement, { type AnnouncementType } from '../models/announcement.model.ts';
 import AnnouncementReceipt, { type AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { NotFoundError } from '../error/notfound.error.ts';
@@ -18,7 +17,7 @@ import {
 import BusinessUnit, { type BusinessUnitType } from '../models/businessunit.model.ts';
 import { type AnnouncementValuesType } from '../types/announcement.type.ts';
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     let sendNotifNow: boolean = false;
 
     const businessUnit: BusinessUnitType = await getOneForId(BusinessUnit, req.body.businessUnitId);
@@ -82,9 +81,9 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     res.send(announcement);
-};
+}
 
-exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function createSpecificEmployees(req: Request, res: Response) {
     let sendNotifNow: boolean = false;
 
     const employeeIds: number[] = req.body.employeeIds;
@@ -141,9 +140,9 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
     }
 
     res.send(announcement);
-};
+}
 
-exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function sendEmail(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
 
     const announcement: AnnouncementType | null = await getOneForId(Announcement, id);
@@ -172,9 +171,9 @@ exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     });
 
     res.send({ message: 'Announcement email sent.' });
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
 
     await getOneForId(Announcement, id);
@@ -195,9 +194,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     const updatedAnnouncement: AnnouncementType | null = await getOneForId(Announcement, id);
 
     res.send(updatedAnnouncement);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
 
     const data: AnnouncementType | null = await Announcement.findOne({
@@ -213,6 +212,5 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     }
 
     res.send(data);
-};
+}
 
-export default exports;
