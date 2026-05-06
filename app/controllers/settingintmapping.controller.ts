@@ -1,16 +1,15 @@
 import db from "../models/index.ts";
 const SettingIntMapping = db.SettingIntMapping;
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
 
-const exports = {} as any;
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     //throws error if not found
     const setting = await getOneForStringId(Setting, req.body.settingCode);
     if (setting.dataValues.type !== "string") {
@@ -24,7 +23,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(SettingIntMapping, id);
@@ -42,9 +41,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedSettingIntMapping = await getOneForId(SettingIntMapping, id);
     res.send(updatedSettingIntMapping);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const data = await SettingIntMapping.findOne({
         where: { id: id },
@@ -53,7 +52,7 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
     return data;
 }
 
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+export async function delete(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const settingIntMapping = await getOneForId(SettingIntMapping, id);
     const setting = await getOneForStringId(Setting, settingIntMapping.dataValues.settingCode);
@@ -62,4 +61,3 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
     res.send({message: "setting int mapping deleted"});
 }
 
-export default exports;

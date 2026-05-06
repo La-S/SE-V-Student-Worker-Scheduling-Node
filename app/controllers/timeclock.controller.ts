@@ -1,6 +1,6 @@
 import db from "../models/index.ts";
 const TaskList = db.TaskList;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts"
@@ -8,16 +8,15 @@ import Timeclock from "../models/timeclock.model.ts";
 import { Model } from "sequelize";
 import { NotFoundError } from "../error/notfound.error.ts";
 
-const exports: any = {};
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     await getOneForId(Shift, req.body.shiftId);
     const data: Model = await Timeclock.create(req.body);
     res.send(data);
 }
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     req.body.id = undefined;
     req.body.shiftId = undefined;
@@ -26,7 +25,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedTimeClock);
 }
 
-exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
+export async function clockIn(req: Request, res: Response) {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     const shift: Model = await getOneForId(Shift, shiftId);
     const employee: Model = await shift.getEmployee();
@@ -54,9 +53,9 @@ exports.clockIn = async (req: pkg.Request, res: pkg.Response) => {
 
     const data = await Timeclock.create(createBody);
     res.send(data);
-};
+}
 
-exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
+export async function clockOut(req: Request, res: Response) {
     const shiftId: number = parseInt(req.params.shiftId, 10);
     await getOneForId(Shift, shiftId);
     //sort by the clockIn time, most recent first
@@ -73,4 +72,3 @@ exports.clockOut = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedTimeClock);
 }
 
-export default exports;

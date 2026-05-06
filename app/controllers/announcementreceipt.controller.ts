@@ -1,6 +1,6 @@
 import db from "../models/index.ts";
 const AnnouncementReceipt = db.AnnouncementReceipt;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 import Announcement from "../models/announcement.model.ts";
@@ -11,23 +11,22 @@ import BusinessUnit from "../models/businessunit.model.ts";
 import { Model } from "sequelize";
 import AnnouncementFile from "../models/announcementfile.model.ts";
 
-const exports: any = {};
 const errorClassName = "AnnouncementReceipt";
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const data = await AnnouncementReceipt.create(req.body);
     const receipt = await getReceiptForId(data.dataValues.id);
     res.send(receipt);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const data = await getReceiptForId(id);
     res.send(data);
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     await getReceiptForId(id);
 
@@ -43,9 +42,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     const updatedReceipt = await getReceiptForId(id);
     res.send(updatedReceipt);
-};
+}
 
-exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
+export async function setDeleted(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     await getReceiptForId(id);
 
@@ -58,9 +57,9 @@ exports.setDeleted = async (req: pkg.Request, res: pkg.Response) => {
     }
     const updatedReceipt = await getReceiptForId(id);
     res.send(updatedReceipt);
-};
+}
 
-exports.setRead = async (req: pkg.Request, res: pkg.Response) => {
+export async function setRead(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const readValue = !(req.query.read === "false");
     await getReceiptForId(id);
@@ -74,7 +73,7 @@ exports.setRead = async (req: pkg.Request, res: pkg.Response) => {
     }
     const updatedReceipt = await getReceiptForId(id);
     res.send(updatedReceipt);
-};
+}
 
 async function getReceiptForId(id: number) {
     if (!id) {
@@ -92,4 +91,3 @@ async function getReceiptForId(id: number) {
     return data;
 }
 
-export default exports;

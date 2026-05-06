@@ -2,7 +2,7 @@ import db from "../models/index.ts";
 const Setting = db.Setting;
 
 import { Model } from "sequelize";
-import pkg from "express";
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import BusinessUnit from "../models/businessunit.model.ts";
 import BusinessUnitSettingValue from "../models/businessunitsettingvalue.model.ts";
@@ -10,10 +10,9 @@ import User from "../models/user.model.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
 
-const exports: any = {};
 
 // Create a new setting
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
 
     req.body.id = undefined;
 
@@ -111,9 +110,9 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
     res.send(data);
 
-};
+}
 
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAll(req: Request, res: Response) {
 
     const data = await Setting.findAll({
         include: [{
@@ -125,17 +124,17 @@ exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 // Find a single setting by code
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
 
     const code = req.params.code;
 
     const data = await getSettingForCode(code);
     res.send(data);
 
-};
+}
 
 // Update a setting by code
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const code = req.params.code;
     const setting = await getSettingForCode(code);
     req.body.id = undefined;
@@ -195,10 +194,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     const updatedObject = await getSettingForCode(code);
     res.send(updatedObject);
-};
+}
 
 // Delete a setting by code
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+export async function delete(req: Request, res: Response) {
 
     const code = req.params.code;
 
@@ -214,7 +213,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 
     res.send({ message: "Setting deleted successfully" });
 
-};
+}
 
 // Helper function
 async function getSettingForCode(code: string): Promise<Model<any, any> | null> {
@@ -238,4 +237,3 @@ async function getSettingForCode(code: string): Promise<Model<any, any> | null> 
     return data;
 }
 
-export default exports;

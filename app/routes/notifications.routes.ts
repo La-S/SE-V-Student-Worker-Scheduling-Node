@@ -1,6 +1,6 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import notification from "../controllers/notification.controller.ts";
+import * as notification from "../controllers/notification.controller.ts";
 import { Router } from "express";
 var router = Router()
 

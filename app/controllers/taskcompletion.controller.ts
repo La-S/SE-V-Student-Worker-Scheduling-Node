@@ -1,6 +1,6 @@
 import db from "../models/index.ts";
 const TaskCompletion = db.TaskCompletion;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { Model } from "sequelize";
@@ -8,18 +8,17 @@ import Task from "../models/task.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import Employee from "../models/employee.model.ts";
 
-const exports: any = {};
 const errorClassName = "TaskCompletion";
 
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await getTaskCompletionForId(id);
     res.send(data);
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(TaskCompletion, id);
@@ -36,7 +35,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedEmployee = await getOneForId(TaskCompletion, id);
     res.send(updatedEmployee);
-};
+}
 
 
 async function getTaskCompletionForId(id: number): Promise<Model<any, any> | null> {
@@ -50,4 +49,3 @@ async function getTaskCompletionForId(id: number): Promise<Model<any, any> | nul
     return data;
 }
 
-export default exports;

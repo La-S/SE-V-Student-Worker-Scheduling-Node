@@ -1,16 +1,15 @@
 import db from "../models/index.ts";
 const BusinessUnitSettingValue = db.BusinessUnitSettingValue;
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId, getOneForStringId } from "../services/services.ts";
 import Setting from "../models/setting.model.ts";
 import { parse } from "node:path";
 import SettingIntMapping from "../models/settingintmapping.model.ts";
 
-const exports: any = {}
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     //throws error if not found
     const setting = await getOneForStringId(Setting, req.body.settingCode);
 
@@ -23,7 +22,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     const businessUnitSettingValue = await getOneForId(BusinessUnitSettingValue, id);
@@ -55,9 +54,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedBusinessUnitSettingValue = await getOneForId(BusinessUnitSettingValue, id);
     res.send(updatedBusinessUnitSettingValue);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const businessUnitSettingValue = await getOneForId(BusinessUnitSettingValue, id);
     const data = await BusinessUnitSettingValue.findOne({
@@ -103,4 +102,3 @@ export async function getBusinessUnitSettingValue(businessUnitId: number, settin
     return settingValue!;
 }
 
-export default exports;

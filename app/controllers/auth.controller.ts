@@ -3,7 +3,7 @@ import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
 import { Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import type { UserType } from "../types/user.type.ts";
 import type { SessionType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
@@ -17,7 +17,6 @@ let googleUser: TokenPayload | undefined;
 
 const google_id = process.env.CLIENT_ID;
 
-const exports: any = {};
 
 interface GoogleUserInfo {
   email?: string,
@@ -25,7 +24,7 @@ interface GoogleUserInfo {
   lastName?: string
 }
 
-exports.login = async (req: pkg.Request, res: pkg.Response) => {
+export async function login(req: Request, res: Response) {
   var googleToken = req.body.credential;
   var googleAccessToken = req.body.accessToken;
 
@@ -87,9 +86,9 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
   let userInfo = { ...user, token: sessionToken }
 
   res.send(userInfo);
-};
+}
 
-exports.logout = async (req: pkg.Request, res: pkg.Response) => {
+export async function logout(req: Request, res: Response) {
   // if (req.body === null) {
   //   res.status(200).send({ message: "User has already been successfully logged out!" });
   //   return;
@@ -101,9 +100,9 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
   await clearSessionByToken(req.body.token);
   logger.log("info", "successfully logged out");
   res.status(200).send({ message: "User has been successfully logged out!" });
-};
+}
 
-exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
+export async function getSessionValidity(req: Request, res: Response) {
   let response = await Session.findOne({ where: { token: req.body.token } })
   let session = response?.dataValues as SessionType | undefined;
   if (!session || session.expirationDate.getTime() < Date.now()) {
@@ -204,4 +203,3 @@ async function getGoogleUser(googleToken: string) {
 
 
 
-export default exports;

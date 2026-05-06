@@ -1,16 +1,15 @@
 import db from "../models/index.ts";
 const Task = db.Task;
 const TaskList = db.TaskList;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { Model } from "sequelize";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 
-const exports: any = {};
 const errorClassName = "Task";
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const task = await Task.create(req.body);
     const taskId = task.id;
@@ -32,7 +31,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(task);
 }
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Task, id);
@@ -49,6 +48,5 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedTask = await getOneForId(Task, id);
     res.send(updatedTask);
-};
+}
 
-export default exports;

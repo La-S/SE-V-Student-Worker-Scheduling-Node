@@ -1,6 +1,6 @@
-import users from "../controllers/user.controller.ts";
+import * as users from "../controllers/user.controller.ts";
 import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import UserModel from "../models/user.model.ts"
 import { Router } from "express";
 var router = Router()

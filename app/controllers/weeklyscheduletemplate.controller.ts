@@ -1,7 +1,7 @@
 import db from "../models/index.ts";
 const Employee = db.Employee;
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import WeeklyScheduleTemplate from "../models/weeklyscheduletemplate.model.ts";
@@ -15,11 +15,10 @@ import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import { deleteShiftsForWeek } from "./shift.controller.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 
-const exports: any = {};
 const errorClassName = "Weekly Schedule Template";
 
 // Find a single User with an id
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await WeeklyScheduleTemplate.findByPk(id,
@@ -43,10 +42,10 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
         throw new NotFoundError("Weekly Schedule Template", id)
     }
     res.send(data);
-};
+}
 
 // Update a Employee by the id in the request
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(WeeklyScheduleTemplate, id);
@@ -63,9 +62,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedWeeklySchedule = await getOneForId(WeeklyScheduleTemplate, id);
     res.send(updatedWeeklySchedule);
-};
+}
 
-exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function createFromShifts(req: Request, res: Response) {
     const businessUnitId: number = req.body.businessUnitId;
     await getOneForId(BusinessUnit, businessUnitId);
     const startDate: string = req.body.startDate;
@@ -120,9 +119,9 @@ exports.createFromShifts = async (req: pkg.Request, res: pkg.Response) => {
     };
     res.send(weeklyScheduleTemplate);
 
-};
+}
 
-exports.loadShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function loadShifts(req: Request, res: Response) {
 
     //get weekly schedule, get daily schedules. First day is Sunday.
     //duplicate shifts from daily schedule to currentDate, change date. 
@@ -194,5 +193,4 @@ async function getShiftsFromDailyScheduleTemplate(weeklyScheduleTemplateId: numb
     const shifts = await dailyScheduleTemplate.getShifts();
     return shifts;
 }
-export default exports;
 

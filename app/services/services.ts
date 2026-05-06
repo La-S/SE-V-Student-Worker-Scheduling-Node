@@ -98,11 +98,11 @@ export function convertTime(time: String) {
 }
 
 export function toHours(time: string): number {
-    const [hours, minutes, seconds] = time.split(":").map(Number);
-    return hours + minutes / 60 + (seconds || 0) / 3600;
+    const [hours = 0, minutes = 0, seconds = 0] = time.split(":").map(Number);
+    return hours + minutes / 60 + seconds / 3600;
 };
 
-export function convertDayOfWeek(dayOfWeek: String) {
+export function convertDayOfWeek(dayOfWeek: String): string | undefined {
     switch (dayOfWeek) {
         case "M": return "Monday";
         case "T": return "Tuesday";

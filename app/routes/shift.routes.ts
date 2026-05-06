@@ -1,8 +1,8 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import ShiftModel from "../models/shift.model.ts";
-import shifts from "../controllers/shift.controller.ts"
+import * as shifts from "../controllers/shift.controller.ts"
 import { Router } from "express";
 var router = Router()
 

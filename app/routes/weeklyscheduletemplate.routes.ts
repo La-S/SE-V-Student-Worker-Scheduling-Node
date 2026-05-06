@@ -1,8 +1,8 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import WeeklyScheduleTemplateModel from "../models/weeklyscheduletemplate.model.ts";
-import weeklyscheduletemplates from "../controllers/weeklyscheduletemplate.controller.ts"
+import * as weeklyscheduletemplates from "../controllers/weeklyscheduletemplate.controller.ts"
 import { Router } from "express";
 var router = Router()
 

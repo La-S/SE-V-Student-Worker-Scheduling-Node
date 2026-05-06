@@ -1,6 +1,6 @@
 import db from "../models/index.ts";
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { NotFoundError } from "../error/notfound.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { getStringFromDate, getOneForId, toHours } from "../services/services.ts";
@@ -13,11 +13,10 @@ import CoverRequest from "../models/coverrequest.model.ts";
 import Timeclock from "../models/timeclock.model.ts";
 
 
-const exports: any = {};
 const errorClassName = "Shift";
 
 // Create and Save a new Shift
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     // Save Shift in the database
     let employee: Model = await getOneForId(Employee, req.body.employeeId);
@@ -33,16 +32,16 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     }
     const data = await Shift.create(req.body);
     res.send(data);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await getShiftForId(id);
     res.send(data);
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
 
     //throws error if not found
@@ -84,7 +83,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     let updatedObject = await getOneForId(Shift, id);
 
     res.send(updatedObject);
-};
+}
 
 
 
@@ -136,9 +135,9 @@ async function getShiftForId(id: number): Promise<Model<any, any> | null> {
         throw new NotFoundError(errorClassName, id);
     }
     return data;
-};
+}
 
-exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
+export async function addTaskList(req: Request, res: Response) {
     const shiftId = parseInt(req.params.id, 10);
     const taskListId = parseInt(req.params.tasklistid, 10)
 
@@ -170,7 +169,7 @@ exports.addTaskList = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-exports.removeTaskList = async (req: pkg.Request, res: pkg.Response) => {
+export async function removeTaskList(req: Request, res: Response) {
     const shiftId = parseInt(req.params.id, 10);
     const taskListId = parseInt(req.params.tasklistid, 10)
 
@@ -207,4 +206,3 @@ export async function deleteShiftsForWeek(startDate: Date, businessUnitId: numbe
     });
 }
 
-export default exports;

@@ -3,7 +3,7 @@ import { AppError } from "../error/app.error.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
 import DropRequest from "../models/droprequest.model.ts";
 import Employee from "../models/employee.model.ts";
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
 import Shift from "../models/shift.model.ts";
@@ -11,7 +11,6 @@ import { sendNotificationToEmployee, sendNotificationToManagers } from "../servi
 import { logger } from "../logger/logger.ts";
 
 const errorClassName: string = "Drop Request";
-const exports: any = {};
 
 const EMPLOYEE_INCLUDES = [
     { model: Employee, as: "dropRequester", include: [User] },
@@ -20,7 +19,7 @@ const EMPLOYEE_INCLUDES = [
 
 
 // Create and Save a new DropRequest
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const data = await DropRequest.create(req.body);
 
@@ -37,25 +36,25 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     res.send(data);
-};
+}
 
 // Retrieve all DropRequests from the database.
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAll(req: Request, res: Response) {
 
     const data = await DropRequest.findAll({ include: EMPLOYEE_INCLUDES })
     res.send(data);
-};
+}
 
 // Find a single DropRequest with an id
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await getDropRequestForId(id);
     res.send(data);
-};
+}
 
 // Update a DropRequest by the id in the request
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getDropRequestForId(id);
@@ -72,9 +71,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedRequest = await getDropRequestForId(id);
     res.send(updatedRequest);
-};
+}
 
-exports.approveDropRequest = async (req: pkg.Request, res: pkg.Response) => {
+export async function approveDropRequest(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const approverId = parseInt(req.params.approverId as string, 10);
     const approve: Boolean = req.query.approve === "true"; //converts to boolean
@@ -110,4 +109,3 @@ async function getDropRequestForId(id: number): Promise<Model<any, any> | null> 
     }
     return data;
 }
-export default exports;

@@ -1,7 +1,7 @@
 import db from "../models/index.ts";
 const User = db.User;
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import type { UserType } from "../types/user.type.ts";
 import { getMessaging } from "firebase-admin/messaging";
 import { AppError } from "../error/app.error.ts";
@@ -28,11 +28,10 @@ import { getUserSettingValue } from "./usersettingvalue.controller.ts";
 import Setting from "../models/setting.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
 
-const exports: any = {};
 const errorClassName = "User";
 
 // Create and Save a new User
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
   if (req.body.email && await getUserForEmail(req.body.email)) {
     throw new AppError(409, `user with email ${req.body.email} already exists. Use a different email.`)
   }
@@ -48,9 +47,9 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     });
   }
   res.send(data);
-};
+}
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
   const data = await User.findOne({
     where: { id: id },
@@ -62,23 +61,23 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 }
 
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAll(req: Request, res: Response) {
   const data = await User.findAll({ order: [["lastName", "asc"]] });
   res.send(data);
 }
 
 // Find a single User with an email
-exports.findByEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function findByEmail(req: Request, res: Response) {
   const email = req.params.email;
   const data = await getUserForEmail(email);
   if (!data) {
     throw new AppError(404, `User for email: ${email} not found`);
   }
   res.send(data);
-};
+}
 
 // Update a User by the id in the request
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   if (req.body.email) {
     let userForEmail = await getUserForEmail(req.body.email)
@@ -104,10 +103,10 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
   }
   const updatedUser = await getOneForId(User, id);
   res.send(updatedUser);
-};
+}
 
 
-exports.updateIsAdmin = async (req: pkg.Request, res: pkg.Response) => {
+export async function updateIsAdmin(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const numUpdated = await User.update(req.body, {
     where: { id: id },
@@ -132,21 +131,21 @@ async function getUserForEmail(email: string) {
   return data;
 }
 
-exports.findActiveEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+export async function findActiveEmployeesForUser(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
 
   const data = await Employee.findAll({ where: { userId: id, currentlyEmployed: true } });
   res.send(data);
-};
+}
 
-exports.findEmployeesForUser = async (req: pkg.Request, res: pkg.Response) => {
+export async function findEmployeesForUser(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
 
   const data = await Employee.findAll({ where: { userId: id } });
   res.send(data);
-};
+}
 
-exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+export async function findShiftsForDateRange(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
   //should provide date foe central time. CA format is YYYY-mm-dd
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -202,14 +201,14 @@ exports.findShiftsForDateRange = async (req: pkg.Request, res: pkg.Response) => 
   res.send(data);
 }
 
-exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAvailabilityTemplates(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
   await getOneForId(User, id);
   const data = await AvailabilityTemplate.findAll({ where: { userId: id } });
   res.send(data);
 }
 
-exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAvailabilityTemplatesForSemester(req: Request, res: Response) {
   const id = parseInt(req.params.id, 10);
   const semester = req.params.semester;
 
@@ -217,7 +216,7 @@ exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg
   res.send(data);
 }
 
-exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+export async function clearAvailabilityTemplatesForSemester(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const userId = id;
@@ -226,14 +225,14 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
   res.send({ message: `Availability Templates for semester ${semester} cleared!` });
 }
 
-exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function clearAvailabilityTemplates(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const userId = id;
   await AvailabilityTemplate.destroy({ where: { userId: id } })
   res.send({ message: `Availability Templates cleared!` });
 }
 
-exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function findLikeEmail(req: Request, res: Response) {
   const email = req.params.email;
   const data = await User.findAll({
     where: {
@@ -245,7 +244,7 @@ exports.findLikeEmail = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getUpcomingOpenCoverRequests(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const employeesForUser = await user.getEmployees();
@@ -291,7 +290,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
   res.send(data);
 }
 
-exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAnnouncementReceipts(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const employeesForUser = await user.getEmployees();
@@ -340,7 +339,7 @@ exports.getAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) =>
   res.send(data);
 }
 
-exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getTimeOffRequests(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const employeesForUser = await user.getEmployees();
@@ -352,7 +351,7 @@ exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 }
 
-exports.getHoursForWeek = async (req: pkg.Request, res: pkg.Response) => {
+export async function getHoursForWeek(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User,id);
   const expectedTotalHours = await getUserExpectedHoursForWeek(id, req.params.startdate);
@@ -386,14 +385,14 @@ export async function getUserExpectedHoursForWeek(userId: number, queryDate: str
   }
   return expectedTotalHours;
 }
-exports.getUserFiles = async (req: pkg.Request, res: pkg.Response) => {
+export async function getUserFiles(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   const user = await getOneForId(User, id);
   const data = await UserFile.findAll({ where: { userId: id } });
   res.send(data);
 }
 
-exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+export async function getSingleSettingValue(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   await getOneForId(User, id);
   await getOneForStringId(Setting, req.params.code);
@@ -403,7 +402,7 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
   res.send(settingValue);
 }
 
-exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAllSettingsValues(req: Request, res: Response) {
   const id = parseInt(req.params.id as string, 10);
   await getOneForId(User, id);
   const data: Model<any, any>[] = [];
@@ -419,4 +418,3 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
   res.send(data);
 }
 
-export default exports;

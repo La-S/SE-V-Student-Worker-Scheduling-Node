@@ -1,8 +1,8 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import CoverRequestModel from "../models/coverrequest.model.ts";
-import coverrequests from "../controllers/coverrequest.controller.ts"
+import * as coverrequests from "../controllers/coverrequest.controller.ts"
 import { Router } from "express";
 var router = Router()
 

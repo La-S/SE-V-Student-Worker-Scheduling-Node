@@ -1,6 +1,6 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
-import settingIntMappings from "../controllers/settingintmapping.controller.ts"
-import generalcontroller from "../controllers/general.controller.ts"
+import * as settingIntMappings from "../controllers/settingintmapping.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import SettingIntMappingModel from "../models/settingintmapping.model.ts"
 import { Router } from "express";
 var router = Router()

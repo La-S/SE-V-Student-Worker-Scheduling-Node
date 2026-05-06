@@ -1,7 +1,7 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
-import openHours from "../controllers/openhours.controller.ts";
+import * as generalcontroller from "../controllers/general.controller.ts"
+import * as openHours from "../controllers/openhours.controller.ts";
 import OpenHoursModel from "../models/openhours.model.ts";
 import { Router } from "express";
 var router = Router()

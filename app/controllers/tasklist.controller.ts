@@ -1,24 +1,23 @@
 import db from "../models/index.ts";
 const TaskList = db.TaskList;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import Task from "../models/task.model.ts";
 import { Model } from "sequelize";
 import { NotFoundError } from "../error/notfound.error.ts";
 
-const exports: any = {};
 const errorClassName = "Task List";
 
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await getTaskListForId(id);
     res.send(data);
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(TaskList, id);
@@ -35,7 +34,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     }
     let updatedEmployee = await getOneForId(TaskList, id);
     res.send(updatedEmployee);
-};
+}
 
 async function getTaskListForId(id: number): Promise<Model<any, any> | null> {
     if (!id) {
@@ -48,4 +47,3 @@ async function getTaskListForId(id: number): Promise<Model<any, any> | null> {
     return data;
 }
 
-export default exports;

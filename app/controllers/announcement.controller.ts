@@ -1,9 +1,8 @@
-const exports: any = {};
 import { Op } from 'sequelize';
 import Employee from '../models/employee.model.ts';
 import Announcement from '../models/announcement.model.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { NotFoundError } from '../error/notfound.error.ts';
@@ -16,7 +15,7 @@ import {
 } from '../services/mailer.ts';
 import BusinessUnit from '../models/businessunit.model.ts';
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     let sendNotifNow = false;
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
     const employees = await Employee.findAll({
@@ -72,7 +71,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(announcement);
 }
 
-exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function createSpecificEmployees(req: Request, res: Response) {
     let sendNotifNow = false;
     const employeeIds: number[] = req.body.employeeIds;
     const businessUnit = await getOneForId(BusinessUnit, req.body.businessUnitId);
@@ -122,7 +121,7 @@ exports.createSpecificEmployees = async (req: pkg.Request, res: pkg.Response) =>
     res.send(announcement);
 }
 
-exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function sendEmail(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const announcement = await getOneForId(Announcement, id);
 
@@ -149,9 +148,9 @@ exports.sendEmail = async (req: pkg.Request, res: pkg.Response) => {
     });
 
     res.send({ message: 'Announcement email sent.' });
-};
+}
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Announcement, id);
@@ -169,7 +168,7 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     res.send(updatedAnnouncement);
 }
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const data = await Announcement.findOne({
         where: { id: id },
@@ -185,4 +184,3 @@ exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-export default exports;

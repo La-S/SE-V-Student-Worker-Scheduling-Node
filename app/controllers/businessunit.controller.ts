@@ -1,4 +1,4 @@
-import pkg from 'express'
+import { type Request, type Response } from 'express';
 import Shift from "../models/shift.model.ts"
 import BusinessUnit from '../models/businessunit.model.ts';
 import { Model, Op } from 'sequelize';
@@ -27,10 +27,9 @@ import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
 import { NotFoundError } from '../error/notfound.error.ts';
 import type { AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
-const exports: any = {}
 
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const data = await BusinessUnit.create(req.body);
     const settings = await Setting.findAll({ where: { isForBusinessUnit: true } });
@@ -44,7 +43,7 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function findShifts(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
@@ -60,10 +59,10 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
         include: includeCondition
     });
     res.send(data);
-};
+}
 
 
-exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
+export async function findTaskLists(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -71,7 +70,7 @@ exports.findTaskLists = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findCurrentEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function findCurrentEmployees(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -83,7 +82,7 @@ exports.findCurrentEmployees = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findAllEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAllEmployees(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -95,7 +94,7 @@ exports.findAllEmployees = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
+export async function findPositions(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -103,7 +102,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
+export async function findWeeklySchedules(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -112,7 +111,7 @@ exports.findWeeklySchedules = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findOpenHours = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOpenHours(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -123,7 +122,7 @@ exports.findOpenHours = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOpenHoursForDay(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
 
@@ -144,7 +143,7 @@ exports.findOpenHoursForDay = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAvailabilityTemplates(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
@@ -168,7 +167,7 @@ exports.findAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) 
 }
 
 //should include AvailabilityModification later
-exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAvailabilityForDate(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const businessUnit = await getOneForId(BusinessUnit, id);
     const date = req.query.date; //not required
@@ -204,7 +203,7 @@ exports.findAvailabilityForDate = async (req: pkg.Request, res: pkg.Response) =>
     res.send(availableEmployees);
 }
 
-exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+export async function publishShiftsForWeek(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const startDate = req.params.date as string;
     await getOneForId(BusinessUnit, id);
@@ -233,7 +232,7 @@ exports.publishShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     res.send({ message: "shifts published!" });
 }
 
-exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getCoverRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
@@ -255,9 +254,9 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
-};
+}
 
-exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getUpcomingOpenCoverRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -291,7 +290,7 @@ exports.getUpcomingOpenCoverRequests = async (req: pkg.Request, res: pkg.Respons
     res.send(data);
 }
 
-exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getDropRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startDate = req.query.start;
@@ -312,9 +311,9 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
-};
+}
 
-exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+export async function deleteShiftsForWeek(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const dateString: string = req.params.date;
     const startDate: Date = createDateFromString(dateString);
@@ -322,7 +321,7 @@ exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     res.send({ message: "Shifts cleared" });
 }
 
-exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getUpcomingOpenDropRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -355,7 +354,7 @@ exports.getUpcomingOpenDropRequests = async (req: pkg.Request, res: pkg.Response
     res.send(data);
 }
 
-exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOpenShifts(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -380,9 +379,9 @@ exports.findOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
         order: [[Shift, "date", "asc"], [Shift, "startTime", "asc"]]
     });
     res.send(data);
-};
+}
 
-exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+export async function getBudgetInformationForDateRange(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const startDate: string = req.query.start;
     const endDate: string = req.query.end;
@@ -400,7 +399,7 @@ exports.getBudgetInformationForDateRange = async (req: pkg.Request, res: pkg.Res
     res.send(returnObject);
 }
 
-exports.rolloverEmployees = async (req: pkg.Request, res: pkg.Response) => {
+export async function rolloverEmployees(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const businessUnit: Model = await getOneForId(BusinessUnit, id);
     const employees = await Employee.findAll({ where: { businessUnitId: id, currentlyEmployed: true } });
@@ -447,7 +446,7 @@ function getMostCommonSemester(employees: Model[]) {
     return mostCommonSemester;
 }
 
-exports.getAllTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAllTimeOffRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const includeCondition = [
@@ -459,9 +458,9 @@ exports.getAllTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
         order: [["startDate", "asc"]]
     });
     res.send(data);
-};
+}
 
-exports.getTimeOffRequestsDateRange = async (req: pkg.Request, res: pkg.Response) => {
+export async function getTimeOffRequestsDateRange(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const dateRangeStart = req.params.start;
@@ -476,9 +475,9 @@ exports.getTimeOffRequestsDateRange = async (req: pkg.Request, res: pkg.Response
         order: [["startDate", "asc"]]
     });
     res.send(data);
-};
+}
 
-exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
+export async function deleteShiftsForWeek(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const dateString: string = req.params.date;
     const startDate: Date = createDateFromString(dateString);
@@ -486,7 +485,7 @@ exports.deleteShiftsForWeek = async (req: pkg.Request, res: pkg.Response) => {
     res.send({ message: "Shifts cleared" });
 }
 
-exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getUpcomingOpenTimeOffRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const business = await getOneForId(BusinessUnit, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -524,7 +523,7 @@ exports.getUpcomingOpenTimeOffRequests = async (req: pkg.Request, res: pkg.Respo
     res.send(timeOffRequests);
 }
 
-exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
+export async function getSingleSettingValue(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     await getOneForStringId(Setting, req.params.code);
@@ -534,7 +533,7 @@ exports.getSingleSettingValue = async (req: pkg.Request, res: pkg.Response) => {
     res.send(settingValue);
 }
 
-exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAllSettingsValues(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const businessUnitId = parseInt(req.params.id as string, 10);
@@ -551,7 +550,7 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Response) => {
+export async function getEmployeeAvailabilityForShift(req: Request, res: Response) {
     //TODO - add types from other branch.
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
@@ -710,4 +709,3 @@ function checkAvailabilityOverlap(
     return "unavailable";
 }
 
-export default exports;

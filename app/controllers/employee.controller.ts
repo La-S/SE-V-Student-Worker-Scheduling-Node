@@ -1,7 +1,7 @@
 import db from "../models/index.ts";
 const Employee = db.Employee;
 import { Model, Op } from 'sequelize';
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import type { EmployeeType } from "../types/employee.type.ts";
 import User from "../models/user.model.ts";
 import { NotFoundError } from "../error/notfound.error.ts";
@@ -22,10 +22,9 @@ import TimeOffRequest from "../models/timeoffrequest.model.ts";
 import { sendEmployeeAssignmentEmail, sendManagerAssignmentEmail } from "../services/mailer.ts";
 import { logger } from "../logger/logger.ts";
 
-const exports: any = {};
 const errorClassName = "Employee";
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
     const existingEmployee = await Employee.findOne({
         where: {
@@ -56,21 +55,21 @@ exports.create = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 // Retrieve all Employees from the database.
-exports.findAll = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAll(req: Request, res: Response) {
 
     const data = await Employee.findAll({ include: [User], order: [[User, "lastName", "asc"]] })
     res.send(data);
-};
+}
 
 // Find a single User with an id
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
+export async function findOne(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
 
     const data = await getEmployeeForId(id);
     res.send(data);
-};
+}
 
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+export async function delete(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee = await getEmployeeForId(id);
     await employee!.update({ "currentlyEmployed": false });
@@ -82,7 +81,7 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 // Update a Employee by the id in the request
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     //throws error if not found
     const existingEmployee = await getEmployeeForId(id);
@@ -105,9 +104,9 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
         }
     }
     res.send(updatedEmployee);
-};
+}
 
-exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function findShifts(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
     const startDate: string = req.query.start;
@@ -116,7 +115,7 @@ exports.findShifts = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAvailableOpenShifts(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -151,7 +150,7 @@ exports.getAvailableOpenShifts = async (req: pkg.Request, res: pkg.Response) => 
     res.send(data);
 }
 
-exports.findAllAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAllAvailabilityTemplates(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
 
@@ -162,7 +161,7 @@ exports.findAllAvailabilityTemplates = async (req: pkg.Request, res: pkg.Respons
     res.send(data);
 }
 
-exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function findCurrentAvailabilityTemplates(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
     const semester = employee.dataValues.semester;
@@ -174,7 +173,7 @@ exports.findCurrentAvailabilityTemplates = async (req: pkg.Request, res: pkg.Res
     res.send(data);
 }
 
-exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAvailabilityTemplatesForSemester(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
     const semester = req.params.semester;
@@ -186,7 +185,7 @@ exports.findAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg
     res.send(data);
 }
 
-exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
+export async function addPosition(req: Request, res: Response) {
     const employeeId = parseInt(req.params.id, 10);
     const positionId = parseInt(req.params.positionid, 10)
 
@@ -213,7 +212,7 @@ exports.addPosition = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 
-exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
+export async function removePosition(req: Request, res: Response) {
     const employeeId = parseInt(req.params.id, 10);
     const positionId = parseInt(req.params.positionid, 10)
 
@@ -239,7 +238,7 @@ exports.removePosition = async (req: pkg.Request, res: pkg.Response) => {
     }
 }
 
-exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
+export async function findPositions(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee = await getOneForId(Employee, id);
     //@ts-ignore
@@ -247,7 +246,7 @@ exports.findPositions = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getCoverRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const requester = req.query.requester;
@@ -275,7 +274,7 @@ exports.getCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAvailableCoverRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
@@ -320,7 +319,7 @@ exports.getAvailableCoverRequests = async (req: pkg.Request, res: pkg.Response) 
 }
 
 
-exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getDropRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const requester = req.query.requester;
@@ -337,14 +336,14 @@ exports.getDropRequests = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-exports.clearAvailabilityTemplates = async (req: pkg.Request, res: pkg.Response) => {
+export async function clearAvailabilityTemplates(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
     deleteEmployeeAvailabilityTemplates(employee)
     res.send({ message: "Availability Templates cleared!" });
 }
 
-exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pkg.Response) => {
+export async function clearAvailabilityTemplatesForSemester(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
     const user = await employee.getUser();
@@ -354,7 +353,7 @@ exports.clearAvailabilityTemplatesForSemester = async (req: pkg.Request, res: pk
     res.send({ message: `Availability Templates for semester ${semester} cleared!` });
 }
 
-exports.importEmployeeClasses = async (req: pkg.Request, res: pkg.Response) => {
+export async function importEmployeeClasses(req: Request, res: Response) {
     const clear: Boolean = req.query.clear === "true";
     const id = parseInt(req.params.id as string, 10);
     const employee = await getOneForId(Employee, id);
@@ -468,7 +467,7 @@ async function updateUserInfo(classData, user: Model) {
         logger.log("warn", "user info did not update properly.")
 }
 
-exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Response) => {
+export async function getAvailableAnnouncementReceipts(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
 
@@ -510,9 +509,9 @@ exports.getAvailableAnnouncementReceipts = async (req: pkg.Request, res: pkg.Res
         ]
     });
     res.send(data);
-};
+}
 
-exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) => {
+export async function findAuthoredAnnouncements(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     await getOneForId(Employee, id);
 
@@ -541,9 +540,9 @@ exports.findAuthoredAnnouncements = async (req: pkg.Request, res: pkg.Response) 
         ]
     });
     res.send(data);
-};
+}
 
-exports.getBudgetForDateRange = async (req: pkg.Request, res: pkg.Response) => {
+export async function getBudgetForDateRange(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const data = await getBudgetInformationForDateRange(id, req.query.start, req.query.end);
     res.send(data);
@@ -604,7 +603,7 @@ export async function getShiftsForDateRange(id: number, startDate: string, endDa
     return data;
 }
 
-exports.getTimeOffRequests = async (req: pkg.Request, res: pkg.Response) => {
+export async function getTimeOffRequests(req: Request, res: Response) {
     const id = parseInt(req.params.id as string, 10);
     await getOneForId(Employee, id);
     const includeCondition = [
@@ -631,4 +630,3 @@ async function getEmployeeForId(id: number): Promise<Model<any, any> | null> {
     return data;
 }
 
-export default exports;

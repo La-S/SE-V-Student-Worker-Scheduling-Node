@@ -1,7 +1,7 @@
 import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import TimeOffRequestModel from "../models/timeoffrequest.model.ts";
-import timeoffrequests from "../controllers/timeoffrequest.controller.ts"
+import * as timeoffrequests from "../controllers/timeoffrequest.controller.ts"
 import { Router } from "express";
 var router = Router()
 

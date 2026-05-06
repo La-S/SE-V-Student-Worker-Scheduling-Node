@@ -1,15 +1,14 @@
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import OpenHours from "../models/openhours.model.ts";
 import { getOneForId } from "../services/services.ts";
 import { daysOfWeek } from "../types/dayofweek.enum.ts";
 
-const exports: any = {};
 const errorClassName = "Open Hours";
 
 
 // Update OpenHours by id
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
+export async function update(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const originalOpenHours = await getOneForId(OpenHours, id);
 
@@ -40,7 +39,6 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
 
     const updatedOpenHours = await getOneForId(OpenHours, id);
     res.send(updatedOpenHours);
-};
+}
 
 
-export default exports;

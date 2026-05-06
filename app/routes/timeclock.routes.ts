@@ -1,8 +1,8 @@
 import { authenticate, managerOrAdminOnly, terminalAuthenticate } from "../authorization/authorization.ts";
 
-import generalcontroller from "../controllers/general.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import TimeclockModel from "../models/timeclock.model.ts"
-import timeclocks from "../controllers/timeclock.controller.ts"
+import * as timeclocks from "../controllers/timeclock.controller.ts"
 import { Router } from "express";
 var router = Router()
 
