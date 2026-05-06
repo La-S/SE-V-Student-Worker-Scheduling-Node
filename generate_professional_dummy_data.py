@@ -8,9 +8,6 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 load_dotenv()
 
 IS_PROD = True
-YOUR_WORKER_EMAIL = "l.skinner@eagles.oc.edu"  # can be None...
-YOUR_MANAGER_EMAIL = "okcbroncoshomeschool@gmail.com" # can also be None
-
 
 ENDPOINT = "https://127.0.0.1:3133/workerscheduling-t3"
 if (IS_PROD):
@@ -464,28 +461,29 @@ def create_clockin_out(business_unit_id, day_of_week_int, start_time, end_time):
         print('Hmm, we got an error updating open hours', r.text)
     return r.json()
 
-delete_business_unit("Jedi Fitness Center")
-
 
 # light side
-Brian = create_user("Brian", "Smith", "brian.smith@gmail.com", False, "1825558765")
-Ben = create_user("Ben", "Kenobi", "ben.kenobi@gmail.com", False, "1235555678")
-Leia = create_user("Leia", "South", "leia@gmail.com", False, "9235555678")
-Luke = create_user("Luke", "South", "luke@gmail.com", False, "6735555678")
+Brian = create_user("Brian", "Smith", "l.skinner+brian.smith@eagles.oc.edu", False, "1825558765")
+Ben = create_user("Ben", "Kenobi", "l.skinner+ben.kenobi@eagles.oc.edu", False, "1235555678")
+Leia = create_user("Leia", "South", "l.skinner+leia@eagles.oc.edu", False, "9235555678")
+Luke = create_user("Luke", "South", "l.skinner+luke@eagles.oc.edu", True, "6735555678")
+Yoda = create_user("Yoda", "East", "l.skinner+yoda@eagles.oc.edu", True, "6735555678")
 
 # neutral
-Han =create_user("Han", "Solo", "han@gmail.com", False, "5735555683")
+Han =create_user("Han", "Solo", "l.skinner+han@eagles.oc.edu", False, "5735555683")
 
 # dark side
-Cody = create_user("Cody", "Smith", "cody@gmail.com", False, "3285555383")
+Cody = create_user("Cody", "Smith", "l.skinner+cody@eagles.oc.edu", False, "3285555383")
 
-Ezra = create_user("Ezra", "Johnson", "Ezra@gmail.com", False, "2985585383")
-Lando = create_user("Lando", "Calrissian", "lando@gmail.com", False, "4888553883")
+Ezra = create_user("Ezra", "Johnson", "l.skinner+ezra@eagles.oc.edu", False, "2985585383")
+Lando = create_user("Lando", "Calrissian", "l.skinner+lando@eagles.oc.edu", False, "4888553883")
 
 # set up sessions
-create_session("admin", Luke['email'], Luke['id'])
+create_session(ADMIN_KEY, Luke['email'], Luke['id'])
 # create_session("manager", obi_wan['email'], obi_wan['id'])
 # create_session("user", anakin['email'], anakin['id'])
+
+delete_business_unit("Jedi Fitness Center")
 
 
 # BusinessUnits, Employees, and Positions
