@@ -198,7 +198,7 @@ export async function update(req: Request, res: Response) {
 }
 
 // Delete a setting by code
-export async function delete(req: Request, res: Response) {
+async function del(req: Request, res: Response) {
 
     const code: string = req.params.code;
 
@@ -238,3 +238,5 @@ async function getSettingForCode(code: string): Promise<SettingType> {
     return data;
 }
 
+
+export { del as delete };

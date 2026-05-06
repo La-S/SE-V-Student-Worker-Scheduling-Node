@@ -57,7 +57,7 @@ export async function findOne(req: Request, res: Response) {
     return data;
 }
 
-export async function delete(req: Request, res: Response) {
+async function del(req: Request, res: Response) {
     const id: number = parseInt(req.params.id, 10);
     const settingIntMapping: SettingIntMappingType = await getOneForId(SettingIntMapping, id);
     const setting: SettingType = await getOneForStringId(Setting, settingIntMapping.dataValues.settingCode);
@@ -66,3 +66,5 @@ export async function delete(req: Request, res: Response) {
     res.send({ message: "setting int mapping deleted" });
 }
 
+
+export { del as delete };

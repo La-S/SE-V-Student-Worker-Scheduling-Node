@@ -10,7 +10,7 @@ import { createDateFromString, getDateRange, getOneForId, getOneForStringId, get
 import AvailabilityTemplate, { type AvailabilityTemplateType } from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate, { type WeeklyScheduleTemplateType } from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours, { type OpenHoursType } from '../models/openhours.model.ts';
-import { deleteShiftsForWeek } from './shift.controller.ts';
+import { deleteShiftsForWeek as doDeleteShiftsForWeek } from './shift.controller.ts';
 import { sendNotificationToBusinessUnit } from '../services/notifications.ts';
 import { sendEmailToBusinessUnit } from '../services/mailer.ts';
 import { AppError } from "../error/app.error.ts";
@@ -18,7 +18,7 @@ import { daysOfWeek } from "../types/dayofweek.enum.ts";
 import CoverRequest, { type CoverRequestType } from '../models/coverrequest.model.ts';
 import DropRequest, { type DropRequestType } from '../models/droprequest.model.ts';
 import Timeclock from '../models/timeclock.model.ts';
-import { getBudgetInformationForDateRange, loadEmployeeClassUnavailability } from './employee.controller.ts';
+import { getBudgetInformationForDateRange as doGetBudgetInformationForDateRange, loadEmployeeClassUnavailability } from './employee.controller.ts';
 import { getBusinessUnitSettingValue } from './businessunitsettingvalue.controller.ts';
 import SettingIntMapping from '../models/settingintmapping.model.ts';
 import Setting, { type SettingType } from '../models/setting.model.ts';
@@ -315,7 +315,7 @@ export async function deleteShiftsForWeek(req: Request, res: Response) {
     const id: number = parseInt(req.params.id as string, 10);
     const dateString: string = req.params.date;
     const startDate: Date = createDateFromString(dateString);
-    deleteShiftsForWeek(startDate, id);
+    doDeleteShiftsForWeek(startDate, id);
     res.send({ message: "Shifts cleared" });
 }
 
@@ -391,7 +391,7 @@ export async function getBudgetInformationForDateRange(req: Request, res: Respon
     const returnObject: any[] = [];
     for (const employee of employees) {
         const employeeId: number = employee.dataValues.id;
-        const employeeInfo = await (getBudgetInformationForDateRange(employeeId, startDate, endDate));
+        const employeeInfo = await (doGetBudgetInformationForDateRange(employeeId, startDate, endDate));
         returnObject.push(employeeInfo);
     }
     res.send(returnObject);
@@ -473,14 +473,6 @@ export async function getTimeOffRequestsDateRange(req: Request, res: Response) {
         order: [["startDate", "asc"]]
     });
     res.send(data);
-}
-
-export async function deleteShiftsForWeek(req: Request, res: Response) {
-    const id: number = parseInt(req.params.id as string, 10);
-    const dateString: string = req.params.date;
-    const startDate: Date = createDateFromString(dateString);
-    deleteShiftsForWeek(startDate, id);
-    res.send({ message: "Shifts cleared" });
 }
 
 export async function getUpcomingOpenTimeOffRequests(req: Request, res: Response) {

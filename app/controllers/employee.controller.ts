@@ -70,7 +70,7 @@ export async function findOne(req: Request, res: Response) {
     res.send(data);
 }
 
-export async function delete(req: Request, res: Response) {
+async function del(req: Request, res: Response) {
     const id = parseInt(req.params.id, 10);
     const employee: EmployeeType = await getEmployeeForId(id);
     await employee.update({ "currentlyEmployed": false });
@@ -644,3 +644,5 @@ async function getEmployeeForId(id: number): Promise<EmployeeType> {
     return data;
 }
 
+
+export { del as delete };

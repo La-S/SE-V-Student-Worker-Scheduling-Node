@@ -12,7 +12,7 @@ export async function findOne(req: Request, res: Response) {
 }
 
 
-export async function delete(req: Request, res: Response) {
+async function del(req: Request, res: Response) {
     //throws error if not found
     const id: string = req.params.id;
     await getFile(id);
@@ -34,3 +34,5 @@ async function getFile(id: string) {
     return data;
 }
 
+
+export { del as delete };
