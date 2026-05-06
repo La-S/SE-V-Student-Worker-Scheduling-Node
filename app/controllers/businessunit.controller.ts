@@ -6,7 +6,7 @@ import Employee from '../models/employee.model.ts';
 import User from '../models/user.model.ts';
 import Position from '../models/position.model.ts';
 import TaskList from '../models/tasklist.model.ts';
-import { createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
+import { convertIntDayOfWeek, createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
 import AvailabilityTemplate from '../models/availabilitytemplate.model.ts';
 import WeeklyScheduleTemplate from '../models/weeklyscheduletemplate.model.ts';
 import OpenHours from '../models/openhours.model.ts';
@@ -25,6 +25,8 @@ import Setting from '../models/setting.model.ts';
 import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
 import { get } from 'node:http';
 import TimeOffRequest from '../models/timeoffrequest.model.ts';
+import { NotFoundError } from '../error/notfound.error.ts';
+import { AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
 const exports: any = {}
 
 
@@ -549,31 +551,163 @@ exports.getAllSettingsValues = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-async function getUnavailableEmployees(employees: Model<any, any>[]) {
-    // const unavailableEmployees = await Employee.findAll({
-    //     where: { businessUnitId: id },
-    //     include: {
-    //         model: User,
-    //         required: true,
-    //         include: [{
-    //             model: AvailabilityTemplate,
-    //             where: {
-    //                 dayOfWeek: dayOfWeek,
-    //                //TODO: fix inner bound exception (starttime > and endtime <)
-    //                 [Op.or]: {
-    //                     startTime: {[Op.lte]: startTime},
-    //                     endTime: {[Op.gte]: endTime}
-    //                 },
-    //                 //only users where their availability is "available" or "preferred". Unavailable assumed
-    //                 preference: {[Op.in]: acceptablePreferences} 
-    //             }
-    //         }]
-    //     }
-    // });
+exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Response) => {
+    //TODO - add types from other branch.
+    const id: number = parseInt(req.params.id as string, 10);
+    await getOneForId(BusinessUnit, id);
+    const startTime: string = req.params.starttime;
+    const endTime: string = req.params.endtime;
+    const date: string = req.params.date;
+    const position: number = parseInt(req.params.position, 10);
+    const dateObject: Date = createDateFromString(date);
+    const dayOfWeek: string = convertIntDayOfWeek(dateObject.getDay());
+    const preferredEmployees = new Set<Model>();
+    const availableEmployees = new Set<Model>();
+    const notSpecifiedEmployees = new Set<Model>();
+    const unavailableEmployees = new Set<Model>();
 
-    // const unavailableEmployeeIds = unavailableEmployees.map((employee) => {
-    //     return employee.dataValues.id;
-    // })
+    const positionModel = await Position.findOne({
+        where: { id: position },
+        include: [{
+            model: Employee,
+            where: {
+                currentlyEmployed: true,
+                businessUnitId: id
+            },
+            include: [User]
+        }],
+        order: [[Employee, User, "lastName", 'desc']] //desc because pushing will invert to asc
+    });
+    if (!positionModel) {
+        throw new NotFoundError("Position", position);
+    }
+    const employees = positionModel.dataValues.employees;
+    for (const employeeModel of employees) {
+        const employee = employeeModel.dataValues;
+        const user = employee.user;
+
+        //unavailable because of approved time off request
+        const timeOffRequest = await TimeOffRequest.findOne({
+            where: {
+                requesterId: employee.id,
+                startDate: { [Op.lte]: date },
+                endDate: { [Op.gte]: date },
+                approval: true
+            }
+        });
+        if (timeOffRequest) {
+            unavailableEmployees.add(employee);
+            continue;
+        }
+        //check via availabilities now
+        const availabilities = await AvailabilityTemplate.findAll({
+            where: {
+                userId: user.dataValues.id,
+                semester: employee.semester,
+                dayOfWeek: dayOfWeek
+            }
+        });
+        const available = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
+        const unavailable = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
+        let pushed = false;
+
+        for (const unavailability of unavailable) {
+            if (unavailability.dataValues.startTime < endTime && unavailability.dataValues.endTime > startTime) {
+                unavailableEmployees.add(employee);
+                pushed = true;
+                break;
+            }
+        }
+        if (!pushed) {
+            const availability: AvailabilityPreference = checkAvailabilityOverlap(available, startTime, endTime, preferredEmployees, availableEmployees, employee);
+            if (availability === "preferred") {
+                preferredEmployees.add(employee);
+                pushed = true;
+            }
+            else if (availability === "available") {
+                availableEmployees.add(employee);
+                pushed = true;
+            }
+        }
+        if (preferredEmployees.has(employee) && availableEmployees.has(employee)) {
+            availableEmployees.delete(employee);
+        }
+        if (!pushed) {
+            notSpecifiedEmployees.add(employee);
+        }
+    }
+    const responseObject = {
+        "preferred": [...preferredEmployees],
+        "available": [...availableEmployees],
+        "not specified": [...notSpecifiedEmployees],
+        "unavailable": [...unavailableEmployees]
+    }
+    res.send(responseObject);
+}
+
+function checkAvailabilityOverlap(
+    availabilities: Model[],
+    startTime: string,
+    endTime: string,
+    preferredEmployees: Set<Model>,
+    availableEmployees: Set<Model>,
+    employee: object
+): AvailabilityPreference {
+    //number of minutes between availabilitys allowed as overlap
+    const GAP_MINUTES = 10;
+    const toMinutes = (t: string): number => {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+    };
+
+    const shiftStart = toMinutes(startTime);
+    const shiftEnd = toMinutes(endTime);
+    //availbilities that are within the timeframe of the shift
+    const relevant = availabilities
+        .filter(a => {
+            const bStart = toMinutes(a.dataValues.startTime);
+            const bEnd = toMinutes(a.dataValues.endTime);
+            return bStart < shiftEnd && bEnd > shiftStart;
+        })
+        .sort((a, b) =>
+            toMinutes(a.dataValues.startTime) - toMinutes(b.dataValues.startTime)
+        );
+
+    if (!relevant.length) return "unavailable";
+
+    // If any single preferred block fully covers the shift, preferred wins outright
+    const preferredFullCover = relevant.some(a =>
+        a.dataValues.preference === "preferred" &&
+        toMinutes(a.dataValues.startTime) <= shiftStart &&
+        toMinutes(a.dataValues.endTime) >= shiftEnd
+    );
+
+    let covered = shiftStart;
+    let hasPreferred = false;
+    let hasAvailable = false;
+
+    for (const block of relevant) {
+        const bStart = toMinutes(block.dataValues.startTime);
+        const bEnd = toMinutes(block.dataValues.endTime);
+        //gap too large, not considered overlapping
+        if (bStart - covered > GAP_MINUTES) break;
+        //extend cover to where availability ends
+        if (bEnd > covered) {
+            covered = bEnd;
+            if (block.dataValues.preference === "preferred") hasPreferred = true;
+            if (block.dataValues.preference === "available") hasAvailable = true;
+        }
+        //availability covers entire shift, stop checking.
+        if (covered >= shiftEnd) {
+            if (preferredFullCover || (hasPreferred && !hasAvailable)) {
+                return "preferred";
+            } else {
+                return "available";
+            }
+        }
+    }
+
+    return "unavailable";
 }
 
 export default exports;
