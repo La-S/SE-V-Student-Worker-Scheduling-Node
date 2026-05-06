@@ -114,6 +114,19 @@ export function convertDayOfWeek(dayOfWeek: string): string | undefined {
     }
 }
 
+export function convertIntDayOfWeek(dayOfWeek: number): string {
+    switch (dayOfWeek) {
+        case 0: return "Sunday";
+        case 1: return "Monday";
+        case 2: return "Tuesday";
+        case 3: return "Wednesday";
+        case 4: return "Thursday";
+        case 5: return "Friday";
+        case 6: return "Saturday";
+        default: throw new AppError(400, "Invalid day of week integer. Must be between 0 and 6 inclusive.");
+    }
+}
+
 export function incrementSemester(semester: string): string {
     let term: string = semester.slice(0, 2);
     const year: string = semester.slice(2, 4);

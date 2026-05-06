@@ -465,7 +465,7 @@ export async function getTimeOffRequestsDateRange(req: Request, res: Response) {
     const dateRangeEnd: string = req.params.end;
     const includeCondition: any[] = [
         { model: Employee, as: "timeOffRequester", include: [User], where: { businessUnitId: id } },
-        { model: Employee, as: "timeOffReviewer", required:false, include: [User], where: { businessUnitId: id } },
+        { model: Employee, as: "timeOffReviewer", required: false, include: [User], where: { businessUnitId: id } },
     ];
     const data: TimeOffRequestType[] = await TimeOffRequest.findAll({
         include: includeCondition,
@@ -541,7 +541,7 @@ export async function getAllSettingsValues(req: Request, res: Response) {
     res.send(data);
 }
 
-exports.getEmployeeAvailabilityForShift = async (req: pkg.Request, res: pkg.Response) => {
+export async function getEmployeeAvailabilityForShift(req: Request, res: Response) {
     //TODO - add types from other branch.
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
