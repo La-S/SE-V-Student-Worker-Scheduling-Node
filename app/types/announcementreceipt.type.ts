@@ -1,4 +1,4 @@
-export interface AnnouncementReceipt{
+export type AnnouncementReceiptValuesType = {
     id?: number,
     announcementId: number,
     employeeId: number,

@@ -127,7 +127,7 @@ export async function sendEmailToEmployeeId(
     to: email,
     subject,
     text,
-    html,
+    ...(html !== undefined && { html }),
   });
 }
 
@@ -245,8 +245,8 @@ async function sendEmailToAddresses(
         to: email,
         subject,
         text,
-        html,
-        attachments,
+        ...(html !== undefined && { html }),
+        ...(attachments !== undefined && { attachments }),
       }),
     ),
   );

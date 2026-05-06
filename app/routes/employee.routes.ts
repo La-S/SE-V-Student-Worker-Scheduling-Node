@@ -1,7 +1,7 @@
 import { authenticate, authorizeById, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import employees from "../controllers/employee.controller.ts"
-import generalcontroller from "../controllers/general.controller.ts"
+import * as employees from "../controllers/employee.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import EmployeeModel from "../models/employee.model.ts"
 import { Router } from "express";
 var router = Router()

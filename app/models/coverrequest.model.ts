@@ -36,3 +36,5 @@ const CoverRequest = SequelizeInstance.define("coverrequest", {
 });
 
 export default CoverRequest
+
+export type CoverRequestType = InstanceType<typeof CoverRequest>;

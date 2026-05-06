@@ -3,21 +3,19 @@ import { OAuth2Client, type TokenPayload } from "google-auth-library";
 import { google } from "googleapis";
 import jwt from "jsonwebtoken";
 import { Op } from 'sequelize';
-import pkg from 'express';
-import type { UserType } from "../types/user.type.ts";
-import type { SessionType } from "../types/session.type.ts";
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { logger } from "../logger/logger.ts";
-
-const User = db.User;
-const Session = db.Session;
+import User, { type UserType } from "../models/user.model.ts";
+import Session from "../models/session.model.ts";
+import type { UserValuesType } from "../types/user.type.ts";
+import type { SessionValuesType } from "../types/session.type.ts";
 
 let googleUser: TokenPayload | undefined;
 
 const google_id = process.env.CLIENT_ID;
 
-const exports: any = {};
 
 interface GoogleUserInfo {
   email?: string,
@@ -25,15 +23,14 @@ interface GoogleUserInfo {
   lastName?: string
 }
 
-exports.login = async (req: pkg.Request, res: pkg.Response) => {
+export async function login(req: Request, res: Response) {
   var googleToken = req.body.credential;
   var googleAccessToken = req.body.accessToken;
 
   let googleUserInfo = await getGoogleUserInfo(googleToken, googleAccessToken);
 
-  let user: UserType;
-  let session = {};
-  let data = await User.findOne({
+  let user: UserValuesType;
+  let data: UserType | null = await User.findOne({
     where: { // could be this one
       email: googleUserInfo.email,
     },
@@ -42,9 +39,9 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
     user = data.dataValues;
   } else {
     // create a new User and save to database
-    let isAdmin = false;
-    let emailParts = (googleUserInfo.email.split("@"));
-    let emailDomain = emailParts[1];
+    let isAdmin: boolean = false;
+    let emailParts: string[] = (googleUserInfo.email.split("@"));
+    let emailDomain: string = emailParts[1];
     if (emailDomain == "oc.edu") {
       // could do special stuff if they're a faculty/staff
     }
@@ -67,12 +64,12 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
 
   if (!sessionToken) {
     // create a new Session with an expiration date and save to database
-    let token = jwt.sign({ id: googleUserInfo.email }, process.env.JWT_SECRET, {
+    let token = jwt.sign({ id: googleUserInfo.email }, process.env.JWT_SECRET as string, {
       expiresIn: 3600 * 24 * 31, // expires once every 31 days.
     });
     let tempExpirationDate = new Date();
     tempExpirationDate.setDate(tempExpirationDate.getDate() + 31);
-    const session: SessionType = {
+    const session: SessionValuesType = {
       token: token,
       email: googleUserInfo.email,
       userId: user.id!,
@@ -87,9 +84,9 @@ exports.login = async (req: pkg.Request, res: pkg.Response) => {
   let userInfo = { ...user, token: sessionToken }
 
   res.send(userInfo);
-};
+}
 
-exports.logout = async (req: pkg.Request, res: pkg.Response) => {
+export async function logout(req: Request, res: Response) {
   // if (req.body === null) {
   //   res.status(200).send({ message: "User has already been successfully logged out!" });
   //   return;
@@ -101,18 +98,18 @@ exports.logout = async (req: pkg.Request, res: pkg.Response) => {
   await clearSessionByToken(req.body.token);
   logger.log("info", "successfully logged out");
   res.status(200).send({ message: "User has been successfully logged out!" });
-};
+}
 
-exports.getSessionValidity = async (req: pkg.Request, res: pkg.Response) => {
+export async function getSessionValidity(req: Request, res: Response) {
   let response = await Session.findOne({ where: { token: req.body.token } })
-  let session = response?.dataValues as SessionType | undefined;
+  let session = response?.dataValues as SessionValuesType | undefined;
   if (!session || session.expirationDate.getTime() < Date.now()) {
     throw new UnauthorizedError("Unauthorized! Expired Token, Logout and Login again")
   }
   return res.status(200).send({ message: "token not expired" });
 }
 
-async function createSession(session: SessionType) {
+async function createSession(session: SessionValuesType) {
   await Session.create(session as any);
 }
 
@@ -125,7 +122,7 @@ async function getExistingSessionToken(email: string) {
   });
 
   if (sessionObj) {
-    let session = sessionObj.dataValues as SessionType;
+    let session = sessionObj.dataValues as SessionValuesType;
     if (session.expirationDate.getTime() < Date.now()) {
       // clear session's token if it's expired
       clearSessionByToken(session.token!);
@@ -149,7 +146,7 @@ async function clearSessionByToken(token: string) {
   }
 }
 
-async function upsertUser(user: UserType): Promise<UserType> {
+async function upsertUser(user: UserValuesType): Promise<UserValuesType> {
   if (!user.id) {
     let createdRow = await User.create(user as any);
     return createdRow.dataValues;
@@ -204,4 +201,3 @@ async function getGoogleUser(googleToken: string) {
 
 
 
-export default exports;

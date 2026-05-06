@@ -16,3 +16,5 @@ const UserSettingValue = SequelizeInstance.define("usersettingvalue", {
 });
 
 export default UserSettingValue;
+
+export type UserSettingValueType = InstanceType<typeof UserSettingValue>;

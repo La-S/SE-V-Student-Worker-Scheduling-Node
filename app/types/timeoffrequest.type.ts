@@ -1,4 +1,4 @@
-export interface TimeClockType {
+export type TimeOffRequestValuesType = {
     id?: number,
     employeeId: number,
     startDate: string,

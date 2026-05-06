@@ -22,3 +22,5 @@ const AnnouncementReceipt = SequelizeInstance.define("announcementreceipt", {
 });
 
 export default AnnouncementReceipt;
+
+export type AnnouncementReceiptType = InstanceType<typeof AnnouncementReceipt>;

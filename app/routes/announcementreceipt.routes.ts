@@ -1,7 +1,7 @@
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import announcementreceipts from "../controllers/announcementreceipt.controller.ts"
-import generalcontroller from "../controllers/general.controller.ts"
+import * as announcementreceipts from "../controllers/announcementreceipt.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import AnnouncementReceiptModel from "../models/announcementreceipt.model.ts"
 import { Router } from "express";
 var router = Router()

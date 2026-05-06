@@ -14,3 +14,5 @@ const BusinessUnit = SequelizeInstance.define("businessunit", {
 });
 
 export default BusinessUnit;
+
+export type BusinessUnitType = InstanceType<typeof BusinessUnit>;

@@ -41,3 +41,5 @@ const Setting = SequelizeInstance.define("setting", {
 });
 
 export default Setting;
+
+export type SettingType = InstanceType<typeof Setting>;

@@ -18,3 +18,5 @@ const Task = SequelizeInstance.define("task", {
 })
 
 export default Task
+
+export type TaskType = InstanceType<typeof Task>;

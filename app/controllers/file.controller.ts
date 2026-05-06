@@ -1,24 +1,23 @@
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { Model, type ModelStatic, Op } from 'sequelize';
 import { AppError } from '../error/app.error.ts';
 import { getOneForId } from '../services/services.ts';
-import File from "../models/file.model.ts"
+import File, { type FileType } from "../models/file.model.ts"
 import { NotFoundError } from '../error/notfound.error.ts';
 
-const exports: any = {};
 
-exports.findOne = async (req: pkg.Request, res: pkg.Response) => {
-    const data = await getFile(req.params.id);
+export async function findOne(req: Request, res: Response) {
+    const data: FileType = await getFile(req.params.id);
     res.send(data);
 }
 
 
-exports.delete = async (req: pkg.Request, res: pkg.Response) => {
+async function del(req: Request, res: Response) {
     //throws error if not found
-    const id = req.params.id;
+    const id: string = req.params.id;
     await getFile(id);
 
-    const numDeleted = await File.destroy({
+    const numDeleted: number = await File.destroy({
         where: { id: id },
     })
     if (numDeleted <= 0) {
@@ -28,11 +27,12 @@ exports.delete = async (req: pkg.Request, res: pkg.Response) => {
 }
 
 async function getFile(id: string) {
-    const data = await File.findOne({ where: { id: id } });
+    const data: FileType | null = await File.findOne({ where: { id: id } });
     if (!data) {
         throw new AppError(404, `File for id ${id} not found`);
     }
     return data;
 }
 
-export default exports;
+
+export { del as delete };

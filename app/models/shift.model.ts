@@ -30,3 +30,5 @@ const Shift = SequelizeInstance.define("shift", {
 })
 
 export default Shift;
+
+export type ShiftType = InstanceType<typeof Shift>;

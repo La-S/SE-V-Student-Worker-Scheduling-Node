@@ -25,3 +25,5 @@ const Position = SequelizeInstance.define("position", {
 });
 
 export default Position;
+
+export type PositionType = InstanceType<typeof Position>;

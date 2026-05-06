@@ -29,3 +29,5 @@ const Session = SequelizeInstance.define("session", {
 });
 
 export default Session;
+
+export type SessionType = InstanceType<typeof Session>;

@@ -22,5 +22,6 @@ const TaskCompletion = SequelizeInstance.define("taskcompletion", {
     }
 })
 
-
 export default TaskCompletion
+
+export type TaskCompletionType = InstanceType<typeof TaskCompletion>;

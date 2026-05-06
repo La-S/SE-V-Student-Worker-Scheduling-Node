@@ -1,11 +1,11 @@
 import db from "../models/index.ts";
 import pkg from 'express';
-import type { SessionType } from "../types/session.type.ts";
+import type { SessionValuesType } from "../types/session.type.ts";
 import { UnauthorizedError } from "../error/unauthorized.error.ts";
 import { AppError } from "../error/app.error.ts";
 import { Op } from "sequelize";
-import Employee from "../models/employee.model.ts";
-import UserFile from "../models/userfile.model.ts";
+import Employee, { type EmployeeType } from "../models/employee.model.ts";
+import UserFile, { type UserFileType } from "../models/userfile.model.ts";
 import TimeOffRequest from "../models/timeoffrequest.model.ts";
 import { logger } from "../logger/logger.ts";
 import UserSettingValue from "../models/usersettingvalue.model.ts";
@@ -16,7 +16,7 @@ const Session = db.Session;
 export const authenticate = async (req: pkg.Request, res: pkg.Response, next: pkg.NextFunction) => {
   let token = getToken(req);
   let foundSession = await getSession(token);
-  let sessionData = foundSession.dataValues as SessionType;
+  let sessionData = foundSession.dataValues as SessionValuesType;
 
   if (sessionData == null || sessionData.expirationDate.getTime() < Date.now()) {
     foundSession.set("token", null);
@@ -134,7 +134,7 @@ export const authorizeById = (option: any) => {
       }
 
       let employeesForRequestingUser = await (user as any).getEmployees();
-      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      let managerPositions = employeesForRequestingUser.filter((a: EmployeeType) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isUserInBusinessUnit(userSettingsValueTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -151,7 +151,7 @@ export const authorizeById = (option: any) => {
         throw new AppError(404, "request not found");
       }
       let employeesForRequestingUser = await (user as any).getEmployees();
-      let isRequestForEmployee = employeesForRequestingUser.some((a) => { return a.dataValues.id === timeOffRequestTryingToAccess.dataValues.requesterId && a.dataValues.currentlyEmployed === true })
+      let isRequestForEmployee = employeesForRequestingUser.some((a: EmployeeType) => { return a.dataValues.id === timeOffRequestTryingToAccess.dataValues.requesterId && a.dataValues.currentlyEmployed === true })
 
       if (isRequestForEmployee) {
         next();
@@ -159,7 +159,7 @@ export const authorizeById = (option: any) => {
       }
       // console.log(timeOffRequestTryingToAccess.dataValues);
 
-      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      let managerPositions = employeesForRequestingUser.filter((a: EmployeeType) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isEmployeeInBusinessUnit(timeOffRequestTryingToAccess.dataValues.requesterId, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -174,7 +174,7 @@ export const authorizeById = (option: any) => {
 
     if (option == AuthOption.businessUnit) {
       let employeesForRequestingUser = await (user as any).getEmployees();
-      let hasEmployeeInBusinessUnit = employeesForRequestingUser.some((a) => { return a.dataValues.businessUnitId === idToVerify && a.dataValues.currentlyEmployed === true })
+      let hasEmployeeInBusinessUnit = employeesForRequestingUser.some((a: EmployeeType) => { return a.dataValues.businessUnitId === idToVerify && a.dataValues.currentlyEmployed === true })
 
       if (hasEmployeeInBusinessUnit) {
         // console.log("user is in businessUnit")
@@ -198,7 +198,7 @@ export const authorizeById = (option: any) => {
       }
 
       let employeesForRequestingUser = await (user as any).getEmployees();
-      let managerPositions = employeesForRequestingUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      let managerPositions = employeesForRequestingUser.filter((a: EmployeeType) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isUserInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -217,7 +217,7 @@ export const authorizeById = (option: any) => {
         throw new AppError(404, "file not found");
       }
       let employeesForUser = await (user as any).getEmployees();
-      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      let managerPositions = employeesForUser.filter((a: EmployeeType) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         let isAuthorized = await isUserInBusinessUnit(fileTryingToAccess.dataValues.userId, manager.dataValues.businessUnitId);
         if (isAuthorized) {
@@ -230,7 +230,7 @@ export const authorizeById = (option: any) => {
       // console.log(Object.getOwnPropertyNames(user.__proto__));
       let dataFilesForUser = await (user as any).getUserFiles();
 
-      if (dataFilesForUser.some((a) => {return a.dataValues.id === idToVerify})) {
+      if (dataFilesForUser.some((a: UserFileType) => {return a.dataValues.id === idToVerify})) {
         next();
         return;
       }
@@ -242,7 +242,7 @@ export const authorizeById = (option: any) => {
     if (option === AuthOption.employee) {
       let employeesForUser = await (user as any).getEmployees();
 
-      let managerPositions = employeesForUser.filter((a) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
+      let managerPositions = employeesForUser.filter((a: EmployeeType) => { return a.dataValues.isManager === true && a.dataValues.currentlyEmployed === true })
       for (let manager of managerPositions) {
         // console.log('managers buID', manager.dataValues.businessUnitId);
         let isAuthorized = await isEmployeeInBusinessUnit(idToVerify, manager.dataValues.businessUnitId);
@@ -253,7 +253,7 @@ export const authorizeById = (option: any) => {
       }
 
       // if the employee is not a manager, they can still call the route as long as they're not an admin and they're still employeed
-      let requesterIsSelf = employeesForUser.some((a) => { return a.dataValues.id === idToVerify && a.dataValues.currentlyEmployed === true})
+      let requesterIsSelf = employeesForUser.some((a: EmployeeType) => { return a.dataValues.id === idToVerify && a.dataValues.currentlyEmployed === true})
       if (requesterIsSelf) {
         // console.log("the requester was himself")
 

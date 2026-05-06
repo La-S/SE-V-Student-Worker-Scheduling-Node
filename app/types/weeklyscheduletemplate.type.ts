@@ -1,6 +1,6 @@
 
-export interface WeeklyScheduleTemplateType {
+export type WeeklyScheduleTemplateValuesType = {
   id?: number,
-  businessUnitId: number
+  businessUnitId: number,
   name: string
 }

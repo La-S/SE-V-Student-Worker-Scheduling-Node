@@ -1,15 +1,14 @@
-import pkg from 'express';
-import type { SessionType } from "../types/session.type.ts";
+import { type Request, type Response } from 'express';
+import type { SessionValuesType } from "../types/session.type.ts";
 import { AppError } from "../error/app.error.ts";
 import Session from "../models/session.model.ts";
-import users from "../controllers/user.controller.ts";
+import * as users from "../controllers/user.controller.ts";
 import { sendEmail } from "../services/mailer.ts";
 import { logger } from '../logger/logger.ts';
 
-const exports: any = {}
 
 
-exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
+export async function debugCreateSession(req: Request, res: Response) {
   // This function breaks the coding patterns of other functions since it's for debugging.
   // If you want to use this as an example, please don't!
   if (!req.body || !req.body.newToken || !req.body.email || !req.body.userId || !req.body.password){
@@ -22,7 +21,7 @@ exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
 
   let tempExpirationDate = new Date();
   tempExpirationDate.setDate(tempExpirationDate.getDate() + 150); // expires once every 5 months
-  const session: SessionType = {
+  const session: SessionValuesType = {
     token: req.body.newToken,
     email: req.body.email,
     userId: req.body.userId,
@@ -34,23 +33,23 @@ exports.debugCreateSession = async (req: pkg.Request, res: pkg.Response) => {
   await Session.create(session as any);
 
   res.status(200).send({ token: session.token });
-};
+}
 
-exports.debugCreateUser = async (req: pkg.Request, res: pkg.Response) => {
+export async function debugCreateUser(req: Request, res: Response) {
   if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
      throw new AppError(400,  "Sorry, wrong token bub.");
   }
   return users.create(req, res);
-};
+}
 
-exports.debugFindUserByEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function debugFindUserByEmail(req: Request, res: Response) {
   if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
     throw new AppError(400,  "Sorry, wrong token bub.");
   }
   return users.findByEmail(req, res);
-};
+}
 
-exports.debugSendEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function debugSendEmail(req: Request, res: Response) {
   if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
     throw new AppError(400, "Sorry, wrong token bub.");
   }
@@ -71,13 +70,12 @@ exports.debugSendEmail = async (req: pkg.Request, res: pkg.Response) => {
   }
 
   res.status(200).send({ message: "Debug email sent." });
-};
+}
 
-exports.debugDeleteEmail = async (req: pkg.Request, res: pkg.Response) => {
+export async function debugDeleteEmail(req: Request, res: Response) {
   if (!process.env.SECRET_PASSWORD || req.body.password !== process.env.SECRET_PASSWORD) {
     throw new AppError(400,  "Sorry, wrong token bub.");
   }
   return users.findByEmail(req, res);
-};
+}
 
-export default exports;

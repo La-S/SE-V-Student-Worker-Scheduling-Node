@@ -44,3 +44,4 @@ const User = SequelizeInstance.define("user", {
 
 export default User;
 
+export type UserType = InstanceType<typeof User>;

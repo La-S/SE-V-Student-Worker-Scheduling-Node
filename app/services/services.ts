@@ -13,7 +13,7 @@ export async function getOneForId(model: ModelStatic<Model>, id: number) {
     if (!id) {
         throw new AppError(400, "id provided must be an integer")
     }
-    const data = await model.findByPk(id);
+    const data: Model | null = await model.findByPk(id);
     if (!data) {
         throw new NotFoundError(model.name, id);
     }
@@ -24,7 +24,7 @@ export async function getOneForStringId(model: ModelStatic<Model>, id: string) {
     if (!id) {
         throw new AppError(400, "id provided must be a string")
     }
-    const data = await model.findByPk(id);
+    const data: Model | null = await model.findByPk(id);
     if (!data) {
         throw new AppError(404, `${model.name} for id ${id} not found`);
     }
@@ -32,26 +32,26 @@ export async function getOneForStringId(model: ModelStatic<Model>, id: string) {
 }
 
 export function isSunday(date: Date) {
-    const dayOfWeek = date.getDay();
+    const dayOfWeek: number = date.getDay();
     return (dayOfWeek == 0)
 }
 
 export function getSundayOfWeek(date: Date) {
     //https://stackoverflow.com/questions/4156434/javascript-get-the-first-day-of-the-week-from-current-date
-    const dayOfWeek = date.getDay();
-    const diff = date.getDate() - dayOfWeek;
+    const dayOfWeek: number = date.getDay();
+    const diff: number = date.getDate() - dayOfWeek;
     return new Date(date.setDate(diff));
 }
 
 export function getSaturdayOfWeek(date: Date) {
     //modified from stackoverflow answer in getSunday function
-    const dayOfWeek = date.getDay();
-    const diff = date.getDate() + (6 - dayOfWeek);
+    const dayOfWeek: number = date.getDay();
+    const diff: number = date.getDate() + (6 - dayOfWeek);
     return new Date(date.setDate(diff));
 }
 
 export function createDateFromString(dateString: string) {
-    const date = new Date(dateString + 'T00:00:00');
+    const date: Date = new Date(dateString + 'T00:00:00');
     if (!date || (date as any) == "Invalid Date") {
         throw new AppError(400, "Invalid date entered. Please enter YYYY-mm-dd format");
     }
@@ -66,7 +66,7 @@ export function getStringFromDate(dateObject: Date) {
 }
 
 
-export function getDateRange(startDate: String, endDate: String) {
+export function getDateRange(startDate: string, endDate: string) {
     if (!startDate && !endDate) {
         return {};
     }
@@ -82,7 +82,7 @@ export function getDateRange(startDate: String, endDate: String) {
     return { date: { [Op.between]: [startDate, endDate] } };
 }
 
-export function convertTime(time: String) {
+export function convertTime(time: string) {
     //answer modified from https://stackoverflow.com/questions/15083548/convert-12-hour-hhmm-am-pm-to-24-hour-hhmm
     const hoursMins: string = time.slice(0, 5);
     const modifier: string = time.slice(5, 7);
@@ -97,12 +97,12 @@ export function convertTime(time: String) {
     return hours + mins + ":00"
 }
 
-export function toHours(time: string): number {
-    const [hours, minutes, seconds] = time.split(":").map(Number);
-    return hours + minutes / 60 + (seconds || 0) / 3600;
+export function toHours (time: string): number {
+    const [hours = 0, minutes = 0, seconds = 0] = time.split(":").map(Number);
+    return hours + minutes / 60 + seconds / 3600;
 };
 
-export function convertDayOfWeek(dayOfWeek: String) {
+export function convertDayOfWeek(dayOfWeek: string): string | undefined {
     switch (dayOfWeek) {
         case "M": return "Monday";
         case "T": return "Tuesday";
@@ -114,20 +114,7 @@ export function convertDayOfWeek(dayOfWeek: String) {
     }
 }
 
-export function convertIntDayOfWeek(dayOfWeek: number): string {
-    switch (dayOfWeek) {
-        case 0: return "Sunday";
-        case 1: return "Monday";
-        case 2: return "Tuesday";
-        case 3: return "Wednesday";
-        case 4: return "Thursday";
-        case 5: return "Friday";
-        case 6: return "Saturday";
-        default: throw new AppError(400, "Invalid day of week integer. Must be between 0 and 6 inclusive.");
-    }
-}
-
-export function incrementSemester(semester: string) {
+export function incrementSemester(semester: string): string {
     let term: string = semester.slice(0, 2);
     const year: string = semester.slice(2, 4);
     let yearInt: number = parseInt(year, 10);

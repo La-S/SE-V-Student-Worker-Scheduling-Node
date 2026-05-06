@@ -1,16 +1,16 @@
 import { AppError } from "../error/app.error.ts";
 import Employee from "../models/employee.model.ts";
 import db from "../models/index.ts";
+import { type PositionType } from "../models/position.model.ts";
 import User from "../models/user.model.ts";
 import { getOneForId } from "../services/services.ts";
-import pkg from 'express'
+import { type Request, type Response } from 'express';
 const Position = db.Position
 
-const exports: any = {};
-const errorClassName = "Position";
+const errorClassName: string = "Position";
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+export async function update(req: Request, res: Response) {
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Position,id);
 
@@ -18,21 +18,21 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.businessUnitId = undefined;
     req.body.id = undefined;
 
-    const numUpdated = await Position.update(req.body, {
+    const numUpdated: number[] = await Position.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedEmployee = await getOneForId(Position, id);
+    let updatedEmployee: PositionType = await getOneForId(Position, id);
     res.send(updatedEmployee);
-};
+}
 
-exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+export async function findEmployees(req: Request, res: Response) {
+    const id: number = parseInt(req.params.id, 10);
     await getOneForId(Position, id);
 
-    const data = await Position.findAll({
+    const data: PositionType[] = await Position.findAll({
         where:{id: id},
         include: [{
                 model: Employee,
@@ -42,4 +42,3 @@ exports.findEmployees = async (req: pkg.Request, res: pkg.Response) => {
     res.send(data);
 }
 
-export default exports;

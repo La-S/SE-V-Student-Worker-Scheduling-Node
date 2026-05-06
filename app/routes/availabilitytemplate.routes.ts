@@ -2,8 +2,8 @@
 
 import { authenticate, isAdminOnly, managerOrAdminOnly } from "../authorization/authorization.ts";
 
-import availabilityTemplates from "../controllers/availabilitytemplate.controller.ts"
-import generalcontroller from "../controllers/general.controller.ts"
+import * as availabilityTemplates from "../controllers/availabilitytemplate.controller.ts"
+import * as generalcontroller from "../controllers/general.controller.ts"
 import AvailabilityTemplateModel from "../models/availabilitytemplate.model.ts"
 import { Router } from "express";
 var router = Router()

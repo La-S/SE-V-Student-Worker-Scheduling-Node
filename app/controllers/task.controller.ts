@@ -1,39 +1,44 @@
 import db from "../models/index.ts";
 const Task = db.Task;
 const TaskList = db.TaskList;
-import pkg from 'express';
+import { type Request, type Response } from 'express';
 import { AppError } from "../error/app.error.ts";
 import { getOneForId } from "../services/services.ts";
 import { Model } from "sequelize";
-import TaskCompletion from "../models/taskcompletion.model.ts";
+import TaskCompletion, { type TaskCompletionType } from "../models/taskcompletion.model.ts";
+import { type TaskType } from "../models/task.model.ts";
+import { type ShiftType } from "../models/shift.model.ts";
+import { type TaskListType } from "../models/tasklist.model.ts";
+import { type TaskCompletionValuesType } from "../types/taskcompletion.type.ts";
 
-const exports: any = {};
-const errorClassName = "Task";
+const errorClassName: string = "Task";
 
-exports.create = async (req: pkg.Request, res: pkg.Response) => {
+export async function create(req: Request, res: Response) {
     req.body.id = undefined;
-    const task = await Task.create(req.body);
-    const taskId = task.id;
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
-    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const task: TaskType = await Task.create(req.body);
+    const taskId: number = task.dataValues.id;
+    const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' })
+    const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const taskList = await TaskList.findOne({ where: { id: task.taskListId } });
+    const taskList: TaskListType | null = await TaskList.findOne({ where: { id: task.dataValues.taskListId } });
     //despite the name, it returns multiple. getShifts doesnt exist.
-    const shifts: Model<any, any>[] = await taskList!.getShift();
-    const futureShifts = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
+    //@ts-ignore
+    const shifts: ShiftType[] = await taskList!.getShift();
+    const futureShifts: ShiftType[] = shifts.filter((shift) => (shift.dataValues.date > today) || (shift.dataValues.date == today && shift.dataValues.startTime >= currentTime));
     for (let shift of futureShifts) {
-        const taskCompletion = {
-            "checkedOff": "false",
+        const taskCompletion: TaskCompletionValuesType = {
+            "checkedOff": false,
             "taskId": taskId,
             "shiftId": shift.dataValues.id
         }
+        //@ts-ignore
         await TaskCompletion.create(taskCompletion);
     }
     res.send(task);
 }
 
-exports.update = async (req: pkg.Request, res: pkg.Response) => {
-    const id = parseInt(req.params.id, 10);
+export async function update(req: Request, res: Response) {
+    const id: number = parseInt(req.params.id, 10);
     //throws error if not found
     await getOneForId(Task, id);
 
@@ -41,14 +46,13 @@ exports.update = async (req: pkg.Request, res: pkg.Response) => {
     req.body.taskListId = undefined;
     req.body.id = undefined;
 
-    const numUpdated = await Task.update(req.body, {
+    const numUpdated: number[] = await Task.update(req.body, {
         where: { id: id },
     });
     if (numUpdated[0] <= 0) {
         throw new AppError(409, `Update for id ${id} did not update. Check request body.`)
     }
-    let updatedTask = await getOneForId(Task, id);
+    let updatedTask: TaskType = await getOneForId(Task, id);
     res.send(updatedTask);
-};
+}
 
-export default exports;

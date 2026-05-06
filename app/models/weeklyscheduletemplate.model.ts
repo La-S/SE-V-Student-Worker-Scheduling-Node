@@ -15,3 +15,5 @@ const WeeklyScheduleTemplate = SequelizeInstance.define("weeklyscheduletemplate"
 });
 
 export default WeeklyScheduleTemplate;
+
+export type WeeklyScheduleTemplateType = InstanceType<typeof WeeklyScheduleTemplate>;

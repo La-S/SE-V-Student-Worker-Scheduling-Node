@@ -18,3 +18,5 @@ const Timeclock = SequelizeInstance.define("timeclock", {
 
 
 export default Timeclock
+
+export type TimeclockType = InstanceType<typeof Timeclock>;

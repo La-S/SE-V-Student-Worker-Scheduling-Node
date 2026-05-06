@@ -13,10 +13,10 @@ import Announcement from '../models/announcement.model.ts';
 // note, behavior is undefined during daylight savings times
 cron.schedule("*/5 * * * *", async () => {
     const momentInOneHour = moment().tz("America/Chicago").add(1, 'hours');
-    const date = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const time = momentInOneHour.toDate().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false }).substring(0, 5)+":00";
+    const date: string = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const time: string = momentInOneHour.toDate().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false }).substring(0, 5)+":00";
 
-    const allShifts = await Shift.findAll({where: {
+    const allShifts: Shift[] = await Shift.findAll({where: {
         date: {[Op.eq]: date},
         startTime: { [Op.eq]: time },
     }});
@@ -32,10 +32,10 @@ cron.schedule("*/5 * * * *", async () => {
 // every minute, notify employees of posted announcements
 // note, behavior is undefined during daylight savings times
 cron.schedule("*/1 * * * *", async () => {
-    const today = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
-    const currentTime = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
+    const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
+    const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const allUnnotifiedInPast = await AnnouncementReceipt.findAll(
+    const allUnnotifiedInPast: AnnouncementReceipt[] = await AnnouncementReceipt.findAll(
         {
             include: [{
             model: Announcement,
