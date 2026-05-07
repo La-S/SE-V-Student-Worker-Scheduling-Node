@@ -87,7 +87,7 @@ export async function update(req: Request, res: Response) {
       throw new AppError(409, `${req.body.email} is already in use by another user. Use a different email.`)
     }
     if (req.body.isAdmin) {
-      throw new AppError(400, "isAdmin cannot be changed from this endpoint, please use PUT user/:id/role");
+      throw new AppError(400, "isAdmin cannot be changed from this endpoint, please use PUT user/:id/isAdmin");
     }
   }
 
@@ -114,6 +114,23 @@ export async function updateIsAdmin(req: Request, res: Response) {
   })
   if (numUpdated[0] <= 0) {
     throw new AppError(400, `Update for id ${id} failed. Check request body.`)
+  }
+  if (req.body.isAdmin === true) {
+    const businessUnits: BusinessUnit[] = await BusinessUnit.findAll();
+    for (const businessUnit of businessUnits) {
+      await Employee.create({
+        userId: id,
+        businessUnitId: businessUnit.dataValues.id,
+        currentlyEmployed: false,
+        isManager: true,
+        semester: "SP00",
+      });
+    }
+  }
+  else {
+    console.log(false);
+    const deleted = await Employee.destroy({ where: { userId: id, currentlyEmployed: false } });
+    console.log(deleted);
   }
   const updatedUser: UserType = await getOneForId(User, id);
   res.send(updatedUser);
