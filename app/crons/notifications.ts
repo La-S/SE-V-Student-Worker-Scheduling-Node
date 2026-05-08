@@ -1,14 +1,14 @@
 import cron from 'node-cron';
-import Shift from '../models/shift.model.ts';
+import Shift, { ShiftType } from '../models/shift.model.ts';
 import { Op } from 'sequelize';
 import moment from 'moment';
 import 'moment-timezone';
 import { sendNotificationToEmployee, sendNotificationToManagers } from '../services/notifications.ts';
 import { sendAnnouncementEmailToEmployeeIds } from '../services/mailer.ts';
-import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
+import AnnouncementReceipt, { AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
 import Announcement from '../models/announcement.model.ts';
-import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
-import Timeclock from '../models/timeclock.model.ts';
+import BusinessUnitSettingValue, { BusinessUnitSettingValueType } from '../models/businessunitsettingvalue.model.ts';
+import Timeclock, { TimeclockType } from '../models/timeclock.model.ts';
 
 
 // every 5 minutes, notify employees of their upcoming shifts
@@ -18,7 +18,7 @@ cron.schedule("*/5 * * * *", async () => {
     const date: string = momentInOneHour.toDate().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const time: string = momentInOneHour.toDate().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false }).substring(0, 5)+":00";
 
-    const allShifts: Shift[] = await Shift.findAll({where: {
+    const allShifts: ShiftType[] = await Shift.findAll({where: {
         date: {[Op.eq]: date},
         startTime: { [Op.eq]: time },
     }});
@@ -37,7 +37,7 @@ cron.schedule("*/1 * * * *", async () => {
     const today: string = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Chicago' });
     const currentTime: string = new Date().toLocaleTimeString("en-US", { timeZone: 'America/Chicago', hour12: false });
 
-    const allUnnotifiedInPast: AnnouncementReceipt[] = await AnnouncementReceipt.findAll(
+    const allUnnotifiedInPast: AnnouncementReceiptType[] = await AnnouncementReceipt.findAll(
         {
             include: [{
             model: Announcement,
@@ -86,7 +86,7 @@ cron.schedule("*/1 * * * *", async () => {
         const targetTimeStr: string = now.clone().subtract(bufferMinutes, 'minutes').format("HH:mm") + ":00";
         const businessUnitId: number = setting.dataValues.businessUnitId;
 
-        const lateShifts: Shift[] = await Shift.findAll({
+        const lateShifts: ShiftType[] = await Shift.findAll({
             where: {
                 date: today,
                 startTime: targetTimeStr,
