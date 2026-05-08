@@ -102,7 +102,7 @@ export function toHours (time: string): number {
     return hours + minutes / 60 + seconds / 3600;
 };
 
-export function convertDayOfWeek(dayOfWeek: string): string | undefined {
+export function convertDayOfWeek(dayOfWeek: string): string {
     switch (dayOfWeek) {
         case "M": return "Monday";
         case "T": return "Tuesday";
@@ -111,6 +111,7 @@ export function convertDayOfWeek(dayOfWeek: string): string | undefined {
         case "F": return "Friday";
         case "S": return "Saturday";
         case "SU": return "Sunday";
+        default: throw new AppError(400, "Invalid day of week string. Must be M, T, W, TH, F, S, or SU.");
     }
 }
 

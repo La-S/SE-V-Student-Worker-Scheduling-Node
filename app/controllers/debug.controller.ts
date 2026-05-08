@@ -26,6 +26,7 @@ export async function debugCreateSession(req: Request, res: Response) {
     email: req.body.email,
     userId: req.body.userId,
     expirationDate: tempExpirationDate,
+    isTerminal: req.body.isTerminal ?? false,
   };
 
   logger.log("warn", "making a new session for DEBUG USER")

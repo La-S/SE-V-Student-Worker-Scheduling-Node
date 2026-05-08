@@ -74,6 +74,7 @@ export async function login(req: Request, res: Response) {
       email: googleUserInfo.email,
       userId: user.id!,
       expirationDate: tempExpirationDate,
+      isTerminal: false
     };
 
     logger.log("info", "Making a new session");

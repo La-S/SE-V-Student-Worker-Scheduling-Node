@@ -3,7 +3,7 @@ import Shift, { type ShiftType } from "../models/shift.model.ts"
 import BusinessUnit, { type BusinessUnitType } from '../models/businessunit.model.ts';
 import { Model, Op } from 'sequelize';
 import Employee, { type EmployeeType } from '../models/employee.model.ts';
-import User from '../models/user.model.ts';
+import User, { type UserType } from '../models/user.model.ts';
 import Position, { type PositionType } from '../models/position.model.ts';
 import TaskList, { type TaskListType } from '../models/tasklist.model.ts';
 import { convertIntDayOfWeek, createDateFromString, getDateRange, getOneForId, getOneForStringId, getStringFromDate, incrementSemester } from '../services/services.ts';
@@ -25,6 +25,8 @@ import Setting, { type SettingType } from '../models/setting.model.ts';
 import BusinessUnitSettingValue, { type BusinessUnitSettingValueType } from '../models/businessunitsettingvalue.model.ts';
 import { get } from 'node:http';
 import TimeOffRequest, { type TimeOffRequestType } from '../models/timeoffrequest.model.ts';
+import { type AvailabilityPreference } from '../types/availabilitypreference.enum.ts';
+import { NotFoundError } from '../error/notfound.error.ts';
 
 
 export async function create(req: Request, res: Response) {
@@ -38,7 +40,7 @@ export async function create(req: Request, res: Response) {
             settingValue: setting.dataValues.defaultValue
         });
     }
-    const users: User[] = await User.findAll({where: {isAdmin: true}});
+    const users: UserType[] = await User.findAll({where: {isAdmin: true}});
     for (const user of users) {
         await Employee.create({
             userId: user.dataValues.id,
@@ -552,7 +554,6 @@ export async function getAllSettingsValues(req: Request, res: Response) {
 }
 
 export async function getEmployeeAvailabilityForShift(req: Request, res: Response) {
-    //TODO - add types from other branch.
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startTime: string = req.params.starttime;
@@ -561,12 +562,13 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     const position: number = parseInt(req.params.position, 10);
     const dateObject: Date = createDateFromString(date);
     const dayOfWeek: string = convertIntDayOfWeek(dateObject.getDay());
-    const preferredEmployees = new Set<Model>();
-    const availableEmployees = new Set<Model>();
-    const notSpecifiedEmployees = new Set<Model>();
-    const unavailableEmployees = new Set<Model>();
+    const preferredEmployees = new Set<EmployeeType>();
+    const availableEmployees = new Set<EmployeeType>();
+    const notSpecifiedEmployees = new Set<EmployeeType>();
+    const unavailableEmployees = new Set<EmployeeType>();
+    const conflictEmployees = new Set<EmployeeType>();
 
-    const positionModel = await Position.findOne({
+    const positionModel: PositionType | null = await Position.findOne({
         where: { id: position },
         include: [{
             model: Employee,
@@ -581,13 +583,13 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     if (!positionModel) {
         throw new NotFoundError("Position", position);
     }
-    const employees = positionModel.dataValues.employees;
+    const employees: EmployeeType[] = positionModel.dataValues.employees;
     for (const employeeModel of employees) {
         const employee = employeeModel.dataValues;
         const user = employee.user;
 
         //unavailable because of approved time off request
-        const timeOffRequest = await TimeOffRequest.findOne({
+        const timeOffRequest: TimeOffRequestType | null = await TimeOffRequest.findOne({
             where: {
                 requesterId: employee.id,
                 startDate: { [Op.lte]: date },
@@ -599,17 +601,29 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
             unavailableEmployees.add(employee);
             continue;
         }
+        const shift: ShiftType | null = await Shift.findOne({
+            where: {
+                employeeId: employee.id,
+                date: date,
+                startTime: { [Op.lte]: endTime },
+                endTime: { [Op.gte]: startTime }
+            }
+        });
+        if (shift) {
+            conflictEmployees.add(employee);
+            continue;
+        }
         //check via availabilities now
-        const availabilities = await AvailabilityTemplate.findAll({
+        const availabilities: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({
             where: {
                 userId: user.dataValues.id,
                 semester: employee.semester,
                 dayOfWeek: dayOfWeek
             }
         });
-        const available = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
-        const unavailable = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
-        let pushed = false;
+        const available: AvailabilityTemplateType[] = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
+        const unavailable: AvailabilityTemplateType[] = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
+        let pushed: boolean = false;
 
         for (const unavailability of unavailable) {
             if (unavailability.dataValues.startTime < endTime && unavailability.dataValues.endTime > startTime) {
@@ -639,8 +653,9 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     const responseObject = {
         "preferred": [...preferredEmployees],
         "available": [...availableEmployees],
-        "not specified": [...notSpecifiedEmployees],
-        "unavailable": [...unavailableEmployees]
+        "not_specified": [...notSpecifiedEmployees],
+        "unavailable": [...unavailableEmployees],
+        "conflict": [...conflictEmployees]
     }
     res.send(responseObject);
 }
