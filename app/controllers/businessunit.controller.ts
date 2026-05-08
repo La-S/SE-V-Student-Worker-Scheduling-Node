@@ -604,7 +604,7 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
         const shift: ShiftType | null = await Shift.findOne({
             where: {
                 employeeId: employee.id,
-                startDate: date,
+                date: date,
                 startTime: { [Op.lte]: endTime },
                 endTime: { [Op.gte]: startTime }
             }
