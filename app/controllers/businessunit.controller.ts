@@ -554,7 +554,6 @@ export async function getAllSettingsValues(req: Request, res: Response) {
 }
 
 export async function getEmployeeAvailabilityForShift(req: Request, res: Response) {
-    //TODO - add types from other branch.
     const id: number = parseInt(req.params.id as string, 10);
     await getOneForId(BusinessUnit, id);
     const startTime: string = req.params.starttime;
@@ -569,7 +568,7 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     const unavailableEmployees = new Set<EmployeeType>();
     const conflictEmployees = new Set<EmployeeType>();
 
-    const positionModel = await Position.findOne({
+    const positionModel: PositionType | null = await Position.findOne({
         where: { id: position },
         include: [{
             model: Employee,
@@ -584,13 +583,13 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     if (!positionModel) {
         throw new NotFoundError("Position", position);
     }
-    const employees = positionModel.dataValues.employees;
+    const employees: EmployeeType[] = positionModel.dataValues.employees;
     for (const employeeModel of employees) {
         const employee = employeeModel.dataValues;
         const user = employee.user;
 
         //unavailable because of approved time off request
-        const timeOffRequest = await TimeOffRequest.findOne({
+        const timeOffRequest: TimeOffRequestType | null = await TimeOffRequest.findOne({
             where: {
                 requesterId: employee.id,
                 startDate: { [Op.lte]: date },
@@ -615,16 +614,16 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
             continue;
         }
         //check via availabilities now
-        const availabilities = await AvailabilityTemplate.findAll({
+        const availabilities: AvailabilityTemplateType[] = await AvailabilityTemplate.findAll({
             where: {
                 userId: user.dataValues.id,
                 semester: employee.semester,
                 dayOfWeek: dayOfWeek
             }
         });
-        const available = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
-        const unavailable = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
-        let pushed = false;
+        const available: AvailabilityTemplateType[] = availabilities.filter(availabilities => availabilities.dataValues.preference !== "unavailable");
+        const unavailable: AvailabilityTemplateType[] = availabilities.filter(availabilities => availabilities.dataValues.preference === "unavailable")
+        let pushed: boolean = false;
 
         for (const unavailability of unavailable) {
             if (unavailability.dataValues.startTime < endTime && unavailability.dataValues.endTime > startTime) {
