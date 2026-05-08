@@ -14,7 +14,7 @@ import Position, { type PositionType } from "../models/position.model.ts";
 import Task from "../models/task.model.ts";
 import TaskCompletion from "../models/taskcompletion.model.ts";
 import TaskList from "../models/tasklist.model.ts";
-import BusinessUnit from "../models/businessunit.model.ts";
+import BusinessUnit, { type BusinessUnitType } from "../models/businessunit.model.ts";
 import AvailabilityTemplate, { type AvailabilityTemplateType } from "../models/availabilitytemplate.model.ts";
 import CoverRequest, { type CoverRequestType } from '../models/coverrequest.model.ts';
 import DropRequest from '../models/droprequest.model.ts';
@@ -116,7 +116,7 @@ export async function updateIsAdmin(req: Request, res: Response) {
     throw new AppError(400, `Update for id ${id} failed. Check request body.`)
   }
   if (req.body.isAdmin === true) {
-    const businessUnits: BusinessUnit[] = await BusinessUnit.findAll();
+    const businessUnits: BusinessUnitType[] = await BusinessUnit.findAll();
     for (const businessUnit of businessUnits) {
       await Employee.create({
         userId: id,
