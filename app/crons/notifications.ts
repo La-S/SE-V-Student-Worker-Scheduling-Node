@@ -3,10 +3,12 @@ import Shift from '../models/shift.model.ts';
 import { Op } from 'sequelize';
 import moment from 'moment';
 import 'moment-timezone';
-import { sendNotificationToEmployee } from '../services/notifications.ts';
+import { sendNotificationToEmployee, sendNotificationToManagers } from '../services/notifications.ts';
 import { sendAnnouncementEmailToEmployeeIds } from '../services/mailer.ts';
 import AnnouncementReceipt from '../models/announcementreceipt.model.ts';
 import Announcement from '../models/announcement.model.ts';
+import BusinessUnitSettingValue from '../models/businessunitsettingvalue.model.ts';
+import Timeclock from '../models/timeclock.model.ts';
 
 
 // every 5 minutes, notify employees of their upcoming shifts
@@ -66,5 +68,41 @@ cron.schedule("*/1 * * * *", async () => {
         annRcpt.setDataValue("notified", true); // todo, could get return value of notification to update this intelligently...
         annRcpt.save()
     }
-    
+
+})
+
+// every minute, notify manager and employee if employee hasn't clocked in past the buffer window
+// fires exactly once per shift: on the minute when (startTime + buffer) == now
+cron.schedule("*/1 * * * *", async () => {
+    const now = moment().tz("America/Chicago");
+    const today: string = now.format("YYYY-MM-DD");
+
+    const bufferSettings = await BusinessUnitSettingValue.findAll({
+        where: { settingCode: 'CLKINBUFF' }
+    });
+
+    for (const setting of bufferSettings) {
+        const bufferMinutes: number = setting.dataValues.settingValue;
+        const targetTimeStr: string = now.clone().subtract(bufferMinutes, 'minutes').format("HH:mm") + ":00";
+        const businessUnitId: number = setting.dataValues.businessUnitId;
+
+        const lateShifts: Shift[] = await Shift.findAll({
+            where: {
+                date: today,
+                startTime: targetTimeStr,
+                businessUnitId: businessUnitId,
+                employeeId: { [Op.ne]: null },
+            },
+            include: [{ model: Timeclock, required: false }],
+        });
+
+        for (const shift of lateShifts) {
+            const timeclocks: any[] = shift.dataValues.timeclocks ?? [];
+            if (!timeclocks.some((tc: any) => tc.dataValues.clockIn !== null)) {
+                console.log("sending to empl late")
+                sendNotificationToEmployee(shift.dataValues.employeeId, "You haven't clocked in", `Your shift started at ${shift.dataValues.startTime}. Please clock in as soon as possible.`);
+                sendNotificationToManagers(businessUnitId, "Employee hasn't clocked in", `An employee has not clocked in for their shift that started at ${shift.dataValues.startTime}.`);
+            }
+        }
+    }
 })
