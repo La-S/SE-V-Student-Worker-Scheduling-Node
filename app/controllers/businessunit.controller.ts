@@ -38,6 +38,16 @@ export async function create(req: Request, res: Response) {
             settingValue: setting.dataValues.defaultValue
         });
     }
+    const users: User[] = await User.findAll({where: {isAdmin: true}});
+    for (const user of users) {
+        await Employee.create({
+            userId: user.dataValues.id,
+            businessUnitId: data.dataValues.id,
+            currentlyEmployed: false,
+            isManager: true,
+            semester: "SP00",
+        });
+    }
     res.send(data);
 }
 
