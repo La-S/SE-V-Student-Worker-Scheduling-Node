@@ -653,7 +653,7 @@ export async function getEmployeeAvailabilityForShift(req: Request, res: Respons
     const responseObject = {
         "preferred": [...preferredEmployees],
         "available": [...availableEmployees],
-        "not specified": [...notSpecifiedEmployees],
+        "not_specified": [...notSpecifiedEmployees],
         "unavailable": [...unavailableEmployees],
         "conflict": [...conflictEmployees]
     }
