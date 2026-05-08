@@ -128,9 +128,7 @@ export async function updateIsAdmin(req: Request, res: Response) {
     }
   }
   else {
-    console.log(false);
     const deleted = await Employee.destroy({ where: { userId: id, currentlyEmployed: false } });
-    console.log(deleted);
   }
   const updatedUser: UserType = await getOneForId(User, id);
   res.send(updatedUser);
