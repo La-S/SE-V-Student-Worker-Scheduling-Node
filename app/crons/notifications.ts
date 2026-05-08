@@ -77,7 +77,7 @@ cron.schedule("*/1 * * * *", async () => {
     const now = moment().tz("America/Chicago");
     const today: string = now.format("YYYY-MM-DD");
 
-    const bufferSettings = await BusinessUnitSettingValue.findAll({
+    const bufferSettings: BusinessUnitSettingValueType[] = await BusinessUnitSettingValue.findAll({
         where: { settingCode: 'CLKINBUFF' }
     });
 
