@@ -99,7 +99,6 @@ cron.schedule("*/1 * * * *", async () => {
         for (const shift of lateShifts) {
             const timeclocks: TimeclockType[] = shift.dataValues.timeclocks ?? [];
             if (!timeclocks.some((tc: any) => tc.dataValues.clockIn !== null)) {
-                console.log("sending to empl late")
                 sendNotificationToEmployee(shift.dataValues.employeeId, "You haven't clocked in", `Your shift started at ${shift.dataValues.startTime}. Please clock in as soon as possible.`);
                 sendNotificationToManagers(businessUnitId, "Employee hasn't clocked in", `An employee has not clocked in for their shift that started at ${shift.dataValues.startTime}.`);
             }
