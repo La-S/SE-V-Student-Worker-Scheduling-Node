@@ -1,14 +1,14 @@
 import cron from 'node-cron';
-import Shift, { ShiftType } from '../models/shift.model.ts';
+import Shift, { type ShiftType } from '../models/shift.model.ts';
 import { Op } from 'sequelize';
 import moment from 'moment';
 import 'moment-timezone';
 import { sendNotificationToEmployee, sendNotificationToManagers } from '../services/notifications.ts';
 import { sendAnnouncementEmailToEmployeeIds } from '../services/mailer.ts';
-import AnnouncementReceipt, { AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
+import AnnouncementReceipt, { type AnnouncementReceiptType } from '../models/announcementreceipt.model.ts';
 import Announcement from '../models/announcement.model.ts';
-import BusinessUnitSettingValue, { BusinessUnitSettingValueType } from '../models/businessunitsettingvalue.model.ts';
-import Timeclock, { TimeclockType } from '../models/timeclock.model.ts';
+import BusinessUnitSettingValue, { type BusinessUnitSettingValueType } from '../models/businessunitsettingvalue.model.ts';
+import Timeclock, { type TimeclockType } from '../models/timeclock.model.ts';
 
 
 // every 5 minutes, notify employees of their upcoming shifts
